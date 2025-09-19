@@ -40,33 +40,3 @@ This method unfortunately doesn't work for repacking app.asar, but since that is
 ### (Optional) Repacking the .asar file
 Ensure that you are still within the 'resources' directory and that everything you want to repack is in a subdirectory of 'resources'
 Use "asar pack [subdirectory name] app.asar" to repack everything contained within the subdirectory back into an asar file.
-
-## Useful utilities:
-Line break python script
-
-*By Enchantingnova*
-
-This script will take a file and insert line breaks after semicolons so that it becomes somewhat more readable
-```python
-import sys
-
-if len(sys.argv) > 1:
-    fileName = sys.argv[1]
-else:
-    fileName = input("What file to read?")
-
-outputFile = open("output.js", "w")
-outputFile.write("")
-outputFile.close()
-
-outputFile = open("output.js", "a")
-file = open(fileName, "r")
-
-for char in file.readline():
-    outputFile.write(char)
-    if char == ";":
-        outputFile.write("\n")
-
-file.close()
-outputFile.close()
-```
