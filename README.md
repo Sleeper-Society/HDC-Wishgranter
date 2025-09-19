@@ -1,0 +1,69 @@
+# Hyperspace Deck Command Modding
+This is an unofficial repository collecting information for reverse-engineering and modifying Hyperspace Deck Command by Sleeper Games. 
+For now, most activity should be contained to the [wiki](https://github.com/Hederarch/HDC-Modloader/wiki) page as this is still in very exploratory phases.
+
+## Rules
+As per an official statement by Sleeper Games, modding must not:
+- Distribute or allow the distribution of copies of HDC
+- Publicly upload game assets or code
+- Violate the Sleeper Games Code of Conduct
+  - i.e. promote hate speech or discrimination, include adult material, or distribute personal information
+- Bother Sleeper Games directly.
+  - This is a fan project and should be kept among fans. Sleeper Games is busy and is not expected to help.
+
+## File Access
+A method has been found to access HDC's internal files:
+
+*By Gestahlt*
+
+
+### You will need:
+- Windows 10/11
+- [Visual Studio Code](https://code.visualstudio.com/) (or equivalent editor, though Notepad++ has been producing strange results)
+- [Node.js](https://nodejs.org/en/download)
+- (Optional) [7Zip](https://www.7-zip.org/download.html) and [this .asar extension](https://www.tc4shell.com/en/7zip/asar/)
+
+### Extracting the .asar file
+Open Visual Studio Code in or navigate to the 'resources' directory of the location of your install of HDC
+(if you're not in the resources directory already, you can use ‘cd [directory/folder name]' to move to a directory inside the directory you're currently in and 'cd ..' to move to the directory your current directory is inside of)
+Use "asar extract app.asar [subdirectory name]" to extract app.asar into a subdirectory called whatever you choose to replace [directory name] with
+Naming the subdirectory 'app.asar' makes it so that you don't need to repack, the game runs just fine off of a folder pretending to be a .asar file
+(you may first need to run "Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Unrestricted" in windows powershell as an administrator, I am not sure if this is necessary)
+
+### Alternatively:
+Using 7-zip with the asar plugin, it's possible to extract the file without using Visual Studio or even Node.js, simply navigate to the app.asar in your file explorer and use 7-zip to extract it to your desired folder
+This method unfortunately doesn't work for repacking app.asar, but since that isn't necessary you can use this method to avoid interacting with console commands
+
+### (Optional) Repacking the .asar file
+Ensure that you are still within the 'resources' directory and that everything you want to repack is in a subdirectory of 'resources'
+Use "asar pack [subdirectory name] app.asar" to repack everything contained within the subdirectory back into an asar file.
+
+## Useful utilities:
+Line break python script
+
+*By Enchantingnova*
+
+This script will take a file and insert line breaks after semicolons so that it becomes somewhat more readable
+```python
+import sys
+
+if len(sys.argv) > 1:
+    fileName = sys.argv[1]
+else:
+    fileName = input("What file to read?")
+
+outputFile = open("output.js", "w")
+outputFile.write("")
+outputFile.close()
+
+outputFile = open("output.js", "a")
+file = open(fileName, "r")
+
+for char in file.readline():
+    outputFile.write(char)
+    if char == ";":
+        outputFile.write("\n")
+
+file.close()
+outputFile.close()
+```
