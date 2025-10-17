@@ -13,7 +13,7 @@ As per an official statement by Sleeper Games, modding must not:
 - Bother Sleeper Games directly.
   - This is a fan project and should be kept among fans. Sleeper Games is busy and is not expected to help.
 
-## File Access
+## File Access (Windows)
 A method has been found to access HDC's internal files:
 
 *By Gestahlt*
@@ -40,3 +40,12 @@ This method unfortunately doesn't work for repacking app.asar, but since that is
 ### (Optional) Repacking the .asar file
 Ensure that you are still within the 'resources' directory and that everything you want to repack is in a subdirectory of 'resources'
 Use "asar pack [subdirectory name] app.asar" to repack everything contained within the subdirectory back into an asar file.
+
+## File Access (Linux)
+The Linux method is comparatively simple. This has been performed on Ubuntu 24.04.3, but should work on most systems. You will need the native Linux build in AppImage form (unavailable through Steam 
+at time of writing, but purchaseable through itch.io (here)[https://sleeper-games.itch.io/hyperspace-deck-command])
+
+Open a terminal and enter the following command: [absolute path to AppImage] --appimage-extract. For example, `/home/user/Downloads/Hyperspace\ Deck\ Command/Hyperspace\ Deck\ Command.AppImage --appimage-extract`. This will appear to list a series of files in the appimage then exit without doing anything, but it has extracted the files elsewhere. Look for a new folder, `squashfs-root`, in your Home directory. The app.asar is inside the resources folder.
+
+### Extracting the .asar file
+Ensure you have npm installed. On Ubuntu, this can be done with `sudo apt install -y nodejs npm` to install natively (the -y flag confirms you approve the installation and can be omitted if you'd like to check first), then `nodejs -v` and `npm -v` to verify they have installed correctly. Once secure, create a new folder in /squashfs-root/resources/ next to the app.asar and extract into it. For example, after making a folder called `HDC_unpack`, change the terminal dirctory to /home/squashfs-root/resources/ and run `npx @electron/asar extract app.asar HDC_unpack`. The .asar is now extracted, with files available in /HDC_unpack/app/
