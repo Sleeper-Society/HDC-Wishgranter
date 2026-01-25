@@ -1,0 +1,30 @@
+{
+  "name": "wish-granter",
+  "version": "0.0.1",
+  "description": "Modloader for Sleeper Game's Hyperspace Deck Command",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/claire-aware/WishGranter.git"
+  },
+  "keywords": [
+    "modloader",
+    "game"
+  ],
+  "author": "Claire Woods Flechette.net",
+  "license": "CC0-1.0",
+  "bugs": {
+    "url": "https://github.com/claire-aware/WishGranter/issues"
+  },
+  "homepage": "https://github.com/claire-aware/WishGranter#readme",
+  "devDependencies": {
+    "@electron/remote": "^2.0.8"
+  },
+  "dependencies": {
+    "steam-locate": "^1.0.6"
+  }
+}
