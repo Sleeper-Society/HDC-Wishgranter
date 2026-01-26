@@ -21,10 +21,8 @@
     "url": "https://github.com/claire-aware/WishGranter/issues"
   },
   "homepage": "https://github.com/claire-aware/WishGranter#readme",
-  "devDependencies": {
-    "@electron/remote": "^2.0.8"
-  },
   "dependencies": {
+    "@electron/remote": "^2.0.8",
     "steam-locate": "^1.0.6"
   }
 }

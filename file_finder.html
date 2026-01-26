@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
@@ -16,9 +16,13 @@
   </head>
   <body>
     <img src="HyperspaceBoxArt.png">
+    <label for="hyperspace_file_location_input">Hyperspace Deck Command Installation:</label>
     <input type="text" id="hyperspace_file_location_input"/>
-    <label for="hyperspace_file_location_input">Please locate your Hyperspace Deck Command Installation</label>
-    <button id="hyperspace_file_location_button">Found it!</button>
+    <button></button>
+    <label for="mods_file_location_input">Mods folder:</label>
+    <input type="text" id="mods_file_location_input"/>
+    <button></button>
+    <button id="hyperspace_file_location_button">Start Game</button>
+    <script src="file_finder.js"></script>
   </body>
-  <script src="file_finder.js"></script>
 </html>
