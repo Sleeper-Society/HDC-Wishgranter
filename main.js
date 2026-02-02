@@ -1,91 +1,86 @@
-const {app, BrowserWindow, shell, Menu, ipcMain } = require('electron');
-const path = require('node:path');
-const { findSteamApp } = require('steam-locate');
-
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
-let finderWindow = null;
-let gameWindow = null;
-
-// Initialize `@electron/remote` module
-require('@electron/remote/main').initialize();
-
-const createGameFinderWindow = () => {
-    finderWindow = new BrowserWindow({
-        width: 800,
-        height: 600,
-        title: "Finding Hyperspace Deck Command",
-        webPreferences: {
-            preload: path.join(__dirname, 'file_finder_preload.js')
-        }
-    });
-
-    finderWindow.loadFile('file_finder.html');
-
-     // Emitted when the window is closed.
-    finderWindow.on("closed", function() {
-        // Dereference the window object, usually you would store windows
-        // in an array if your app supports multi windows, this is the time
-        // when you should delete the corresponding element.
-        finderWindow = null;
-    });
-}
-
-app.whenReady().then(() => {
-    ipcMain.handle('beginGame', createGameWindow)
-    ipcMain.handle('findSteamApp', findSteamGamePath)
-    createGameFinderWindow()
+const {findSteamApp} = require('steam-locate')
+findSteamApp('2711190').then(response => {
+    document.getElementById('hyperspace_file_location_input').setAttribute('value', response.installDir)
 })
 
-function createGameWindow(_event, gameFilePath){
-    finderWindow.close()
+const {dialog} = require('@electron/remote')
+async function findFile(output_id) {
+    const { canceled, filePaths } = await dialog.showOpenDialog({options: {
+        defaultPath: document.getElementById(output_id).getAttribute('value'),
+        properties: ['openDirectory']
+    }})
+    if (!canceled) {
+        document.getElementById(output_id).setAttribute('value', filePaths[0])
+    }
+}
+for (button of document.getElementsByTagName('button')) {
+    if (button.hasAttribute('for')){
+        button.addEventListener('click', findFile.bind(this, button.getAttribute('for')))
+    }
+}
 
-    // Create the browser window.
-    gameWindow = new BrowserWindow({
-        width: 1280,
-        height: 720,
-        useContentSize: true,
-        title: "Hyperspace Deck Command: Wishgranter",
-        backgroundColor: '#000000',
-        webPreferences: {
-            // Allow Node.js API access in renderer process, as long
-            // as we've not removed dependency on it and on "@electron/remote".
-            nodeIntegration: true,
-            contextIsolation: false,
+const fs = require('fs')
+const {BrowserWindow} = require('@electron/remote')
+const getPath = () => document.getElementById('hyperspace_file_location_input').getAttribute('value') + '/resources/app.asar/app/'
+const web_contents = BrowserWindow.getFocusedWindow().webContents
+document.getElementById('start_game_button').addEventListener('click', startGame)
+async function startGame() {
+    document.getElementById('find_game').style.display = 'none'
+    document.getElementById('load_game').style.display = 'flex'
+    await Promise.all([loadGdscripts(), parseCode0(), loadMods()])
+    document.getElementById('load_game').style.display = 'none'
+    baseStartGame()
+}
+async function loadGdscripts() {
+    let data = fs.readFileSync(getPath() + 'index.html', 'utf-8') 
+    await new Promise((resolve, reject) => {
+        const parser = new DOMParser
+        const base_document = parser.parseFromString(data, 'text/html')
+        const gd_script_elements = Array.from(base_document.head.getElementsByTagName('script'))//.filter((value) => !['code0.js', 'data.js', 'pixi-renderers/loadingscreen-pixi-renderer.js'].includes(value.getAttribute('src')))
+        let loaded_scripts = 0
+        const on_script_loaded = function () {
+            loaded_scripts += 1
+            document.getElementById('gdstatus').setAttribute('load_percent', ((loaded_scripts / gd_script_elements.length) * 100) + '%')
+            if (loaded_scripts >= gd_script_elements.length){
+                resolve()
+            }
         }
-    });
+        const load_next_script = function (iterator) {
+            const result = iterator.next()
+            if (result.done) {return}
+            const path = getPath() + result.value.getAttribute('src')
+            const script_orphan = document.createElement('script')
+            script_orphan.src = path
+            script_orphan.addEventListener('load', on_script_loaded)
+            script_orphan.addEventListener('load', load_next_script.bind(this, iterator))
+            script_orphan.crossOrigin= 'anonymous'
+            document.head.appendChild(script_orphan)
+        }
+        load_next_script(gd_script_elements[Symbol.iterator]())
+    })
+}
+async function parseCode0() {
+    
+}
+async function loadMods() {
+    
+}
+function baseStartGame(){
+    //Initialization
+    var game = new gdjs.RuntimeGame(gdjs.projectData, {})
 
-    // Enable `@electron/remote` module for renderer process
-    require('@electron/remote/main').enable(gameWindow.webContents);
+    //Create a renderer
+    game.getRenderer().createStandardCanvas(document.body)
 
-    // Open external link in the OS default browser
-    gameWindow.webContents.setWindowOpenHandler(details => {
-        shell.openExternal(details.url);
-        return { action: 'deny' };
-    });
+    //Bind keyboards/mouse/touch events
+    game.getRenderer().bindStandardEvents(game.getInputManager(), window, document)
 
-    // and load the index.html of the app.
-    gameWindow.loadFile(gameFilePath + "/resources/app.asar/app/index.html");
-
-    Menu.setApplicationMenu(null);
-
-    // Open the DevTools.
-    // gameWindow.webContents.openDevTools()
-
-    // Emitted when the window is closed.
-    gameWindow.on("closed", function() {
-        // Dereference the window object, usually you would store windows
-        // in an array if your app supports multi windows, this is the time
-        // when you should delete the corresponding element.
-        gameWindow = null;
-    });
-
-    // Quit when all windows are closed.
-    app.on("window-all-closed", function() {
-        app.quit();
+    //Load all assets and start the game
+    game.loadAllAssets(function() {
+        game.startGameLoop()
     });
 }
 
-async function findSteamGamePath(_event, gameID){
-    return (await findSteamApp(gameID)).installDir
-}
+
+
+

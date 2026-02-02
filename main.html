@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self' 'unsafe-inline'; script-src 'self'"
+    />
+    <meta
+      http-equiv="X-Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'"
+    />
+    <title>Hyperspace Deck Command: Wishgranter</title>
+    <link href="main.css" rel="stylesheet" type="text/css" media="all" />
+  </head>
+  <body>
+    <div id="find_game">
+      <img src="HyperspaceBoxArt.png">
+      <label for="hyperspace_file_location_input">Hyperspace Deck Command Installation:</label>
+      <input type="text" id="hyperspace_file_location_input"/>
+      <button for="hyperspace_file_location_input"><img src="folder.svg"></button>
+      <label for="mods_file_location_input">Mods folder:</label>
+      <input type="text" id="mods_file_location_input"/>
+      <button for="mods_file_location_input"><img src="folder.svg"></button>
+      <button id="start_game_button">Start Game</button>
+    </div>
+    <div id="load_game">
+      <p id="gdstatus" class="loading_bar">Gdevelop scripts and plugins: ...</p>
+      <p id="hdcstatus" class="loading_bar">Hyperspace Deck Command: ...</p>
+      <p id="modstatus" class="loading_bar">Mods: ...</p>
+      <span id="loading_bar" class="loading_bar"></span>
+    </div>
+    <script src="main.js"></script>
+  </body>
+</html>

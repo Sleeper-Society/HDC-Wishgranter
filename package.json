@@ -2,7 +2,7 @@
   "name": "wish-granter",
   "version": "0.0.1",
   "description": "Modloader for Sleeper Game's Hyperspace Deck Command",
-  "main": "main.js",
+  "main": "index.js",
   "scripts": {
     "start": "electron .",
     "test": "test"

@@ -1,0 +1,33 @@
+@font-face {
+    font-family: "Oxanium";
+    src: url('./Oxanium-Hyper.ttf');
+}
+body{
+    font-family: Oxanium;
+    --background-color: #2121ff;
+    --forground-color: #affafe;
+    color: var(--forground-color);
+    background-color: var(--background-color);
+
+}
+#find_game{
+    
+    display: grid;
+    grid-template-columns: auto 2fr .2fr;
+}
+#find_game img, button:last-child{
+    grid-column: 1 / -1;
+}
+#find_game label{
+    align-self: center;
+}
+#load_game{
+    display: none;
+    flex-direction: column;
+}
+.loading_bar{
+    width: 100%;
+    height: 20px;
+    border: groove;
+    background: linear-gradient(to right, var(--forground-color) attr(load_percent type(<percentage>), 0%), var(--background-color) attr(load_percent type(<percentage>), 0%));
+}
