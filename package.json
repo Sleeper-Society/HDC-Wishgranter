@@ -4,6 +4,7 @@
   "description": "Modloader for Sleeper Game's Hyperspace Deck Command",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
     "start": "electron .",
     "test": "test"
   },
@@ -24,5 +25,10 @@
   "dependencies": {
     "@electron/remote": "^2.0.8",
     "steam-locate": "^1.0.6"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }
