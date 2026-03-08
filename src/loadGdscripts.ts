@@ -1,13 +1,17 @@
 const fs = require('fs')
 
+const reimplementaiton_list = [
+    /*'code0.js',*/
+    'data.js', 
+    ]
+
 export function loadGdscripts(hyperspace_path : string, mods_path : string){
     let data = fs.readFileSync(hyperspace_path + 'index.html', 'utf-8') 
     const parser = new DOMParser
     const base_document = parser.parseFromString(data, 'text/html')
     return Array.from(base_document.head.getElementsByTagName('script'))
     .filter(
-        (value) => ![/*'code0.js',*/ 'data.js', /*'pixi-renderers/loadingscreen-pixi-renderer.js'*/]
-        .includes(value.getAttribute('src')!))
+        (value) => !reimplementaiton_list.includes(value.getAttribute('src')!))
     .map((value, index, array) => {
         return {
             status_text: "Loading " + value.getAttribute('src'),

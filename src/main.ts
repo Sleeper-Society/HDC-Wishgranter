@@ -78,12 +78,9 @@ function enableFileLoctionButtons(){
     }
 }
 function enableStartGameButton(){
-    document.getElementById('start_game_button')?.addEventListener('click', async function startGame() {
+    document.getElementById('start_game_button')?.addEventListener('click', function startGame() {
         savePaths()
-        file_location_parent.style.display = 'none'
-        loading_parent.style.display = 'flex'
-        await runThroughLoadingSequence(load_sequence)
-        loading_parent.style.display = 'none'
+        runThroughLoadingSequence(load_sequence)
     })
 }
 
@@ -104,12 +101,13 @@ async function runThroughLoadingSequence(load_sequence : load_sequence_element[]
         }
         index++
     }
-    loading_bars[level].textContent = ''
-    loading_bars[level].setAttribute('load_percent', '0%')
+    loading_bars[level].textContent = level == 0 ? loading_bars[level].textContent : ''
+    loading_bars[level].setAttribute('load_percent', level == 0 ? '100%' : '0%')
 }
 
 function baseStartGame(){
     // @ts-expect-error
+    // GDJS does exist, but in the gloabl js scope
     //Initialization
     var game = new gdjs.RuntimeGame(gdjs.projectData, {})
 

@@ -2,26 +2,39 @@
     font-family: "Oxanium";
     src: url('./Oxanium-Hyper.ttf');
 }
+html{
+    height: 100%;
+    align-content: center;
+    align-items: center;
+    display: flex;
+}
 body{
     font-family: Oxanium;
     --background-color: #2121ff;
     --forground-color: #affafe;
     color: var(--forground-color);
     background-color: var(--background-color);
-
+    transition: background-color 3s linear;
+    align-content: center;
+    align-items: center;
+    width: 100%;
 }
 #find_game{
     display: grid;
     grid-template-columns: auto 2fr .2fr;
 }
-#find_game img, button:last-child{
-    grid-column: 1 / -1;
+#find_game div{
+    text-align: center;
+}
+#find_game :first-child, button:last-child{
+    grid-column: 1 / -1;   
 }
 #find_game label{
     align-self: center;
 }
 #load_game{
-    display: none;
+    width: 100%;
+    display: flex;
     flex-direction: column;
 }
 .loading_bar{
