@@ -11,7 +11,6 @@ body{
 
 }
 #find_game{
-    
     display: grid;
     grid-template-columns: auto 2fr .2fr;
 }
@@ -30,4 +29,13 @@ body{
     height: 20px;
     border: groove;
     background: linear-gradient(to right, var(--forground-color) attr(load_percent type(<percentage>), 0%), var(--background-color) attr(load_percent type(<percentage>), 0%));
+    text-shadow:
+                -2px -2px 0 var(--background-color),
+                2px -2px 0 var(--background-color),
+                -2px 2px 0 var(--background-color),
+                2px 2px 0 var(--background-color),
+                -3px 0px 0 var(--background-color),
+                3px 0px 0 var(--background-color),
+                0px -3px 0 var(--background-color),
+                0px 3px 0 var(--background-color);
 }
