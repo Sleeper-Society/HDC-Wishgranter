@@ -2,6 +2,16 @@ import loading_reimplementation from "./loading_reimplementation.ts"
 const fs = require('fs')
 
 type Mod = {
+    name : string,
+    descr? : string,
+    description? : string,
+    version : string
+    dependencies? : [string, string][]
+    seealso? : [string, string][]
+    load : () => void
+}
+
+type Mod = {
     name: string,
     descr ? : string,
     description ? : string,
