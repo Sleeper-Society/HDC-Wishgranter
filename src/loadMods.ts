@@ -1,14 +1,22 @@
 import loading_reimplementation from "./loading_reimplementation.ts"
+import {finished_loading} from "./loading_reimplementation.ts"
 const fs = require('fs')
 
+type load_sequence_returns = void | load_sequence_element[] | Promise<void | load_sequence_element[]>
+type load_sequence_function = ((hyperspace_path : string, mods_path : string) => load_sequence_returns) | (() => load_sequence_returns)
+type load_sequence_element = {
+    status_text : string, 
+    function : load_sequence_function
+}
 type Mod = {
     name: string,
     descr ? : string,
     description ? : string,
-    version: string
-    dependencies ? : [string, string][]
-    seealso ? : [string, string][]
-    load: () => void
+    version: string,
+    dependencies ? : [string, string][],
+    seealso ? : [string, string][],
+    load: load_sequence_function,
+    ongamestart ? : () => void,
 }
 
 export async function loadMods(hyperspace_path: string, mods_path: string) {
@@ -49,8 +57,11 @@ export async function loadMods(hyperspace_path: string, mods_path: string) {
             return {
                 status_text: "Loading " + mod.name ,
                 function: () => {
-                    try {
-                        mod.load()
+                    try { 
+                        if (mod.ongamestart){
+                            finished_loading.then(mod.ongamestart)
+                        }
+                        return mod.load(hyperspace_path, mods_path)
                     } catch (error) {
                         console.error(error);
                 }
@@ -62,6 +73,7 @@ export async function loadMods(hyperspace_path: string, mods_path: string) {
 }
 
 function convertDefualtDataToMod(hyperspace_path: string): Mod {
+    
     return {
         name: "Base Game",
         version: '1.0.0',
