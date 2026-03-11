@@ -1,7 +1,7 @@
 const fs = require('fs')
 
 const reimplementaiton_list = [
-    /*'code0.js',*/
+    'code0.js',
     'data.js', 
     ]
 
