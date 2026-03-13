@@ -1,3 +1,5 @@
+import { Game } from "./game"
+
 const fs = require('fs')
 
 const reimplementaiton_list = [
@@ -5,7 +7,7 @@ const reimplementaiton_list = [
     'data.js', 
     ]
 
-export function loadGdscripts(hyperspace_path : string, mods_path : string){
+export function loadGdscripts(hyperspace_path : string, mods_path : string, game : Game){
     let data = fs.readFileSync(hyperspace_path + 'index.html', 'utf-8') 
     const parser = new DOMParser
     const base_document = parser.parseFromString(data, 'text/html')

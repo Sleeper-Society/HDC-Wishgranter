@@ -1,90 +1,104 @@
+import {
+    Game
+} from "./game.ts";
+import {
+    load_sequence_element,
+    load_sequence_returns
+} from "./load_sequence_element.ts";
 import loading_reimplementation from "./loading_reimplementation.ts"
-import {finished_loading} from "./loading_reimplementation.ts"
+import {
+    finished_loading
+} from "./loading_reimplementation.ts"
+import {
+    Mod
+} from "./Mod.ts"
 const fs = require('fs')
 
-type load_sequence_returns = void | load_sequence_element[] | Promise<void | load_sequence_element[]>
-type load_sequence_function = ((hyperspace_path : string, mods_path : string) => load_sequence_returns) | (() => load_sequence_returns)
-type load_sequence_element = {
-    status_text : string, 
-    function : load_sequence_function
-}
-type Mod = {
-    name: string,
-    descr ? : string,
-    description ? : string,
-    version: string,
-    dependencies ? : [string, string][],
-    seealso ? : [string, string][],
-    load: load_sequence_function,
-    ongamestart ? : () => void,
+export function loadModInfo(hyperspace_path: string, mods_path: string, game: Game): load_sequence_returns {
+    let output: load_sequence_element[] = [{
+        status_text: "Reading Base Game as mod",
+        function: (hyperspace_path: string, mods_path: string) => {
+            game.modlist.push(convertDefualtDataToMod(hyperspace_path, mods_path));
+        }
+    }]
+    return output.concat((fs.readdirSync(mods_path) as string[])
+        .filter((path: string) => {
+            const file_exists = fs.statSync(mods_path + '/' + path + "/index.js").isFile()
+            if (!file_exists) {
+                console.warn(path, ' mod at ', mods_path + '/' + path + "/index.js", ' skipped: no index')
+            }
+            return file_exists
+        })
+        .map((path: string): load_sequence_element => {
+            return {
+                status_text: "Reading " + path,
+                function: (hyperspace_path: string, mods_path: string) => {
+                    return new Promise((resolve) => {
+                        // @ts-expect-error
+                        // import() conflicts with not adding error causeing module nonsesense to top of build files
+                        import(mods_path + '/' + path + "/index.js").catch((reason) => {
+                            console.error(reason);
+                        }).then((mod_module) => {
+                            try {
+                                const mod = mod_module.default()
+                                game.modlist.push(mod)
+                            } catch (error) {
+                                console.error(error);
+                            }
+                            resolve()
+                        })
+                    })
+                }
+            }
+        }))
 }
 
-export async function loadMods(hyperspace_path: string, mods_path: string) {
-    let mods: Mod[] = [];
-    return [{
-        status_text : "Loading Mod Info",
-        function : (hyperspace_path: string, mods_path: string) => {
-            let output = [{
-                status_text : "Reading Base Game as mod",
-                function : (hyperspace_path: string, mods_path: string) => {
-                    mods.push(convertDefualtDataToMod(hyperspace_path));
-                }
-            }]
-            const modpaths = fs.readdirSync(mods_path)
-            output.concat(modpaths.map((path : string) => {
-                return {
-                    status_text : "Reading " + path,
-                    function : async (hyperspace_path: string, mods_path: string) => {
-                        try {
-                            const full_path = mods_path + '/' + path + "/index.js"
-                            // @ts-expect-error
-                            // import() conflicts with not adding module crap to top of build files
-                            const mod_module = await import(full_path)
-                            const mod = mod_module.default()
-                            mods.push(mod)
-                        } catch (error) {
-                            console.error(error);
-                        }
+export function loadMods(hyperspace_path: string, mods_path: string, game: Game): load_sequence_returns {
+    return game.modlist.map((mod) => {
+        return {
+            status_text: "Loading " + mod.name,
+            function: () => {
+                try {
+                    if (mod.ongamestart) {
+                        //finished_loading.then(mod.ongamestart)
                     }
-                }
-            }))
-            return output
-        }
-    },{
-        status_text : "Loading Mods",
-        function : () => {
-        return mods.map((mod, index) => {
-            return {
-                status_text: "Loading " + mod.name ,
-                function: () => {
-                    try { 
-                        if (mod.ongamestart){
-                            finished_loading.then(mod.ongamestart)
-                        }
-                        return mod.load(hyperspace_path, mods_path)
-                    } catch (error) {
-                        console.error(error);
+                    return mod.load(hyperspace_path, mods_path, game)
+                } catch (error) {
+                    console.error(error);
                 }
             }
         };
-    });
-        }
-    }]
+    })
 }
 
-function convertDefualtDataToMod(hyperspace_path: string): Mod {
-    
+function convertDefualtDataToMod(hyperspace_path: string, mods_path: string): Mod {
+
     return {
         name: "Base Game",
         version: '1.0.0',
         load: () => {
-            let data: string = fs.readFileSync(hyperspace_path + '/data.js', 'utf8')
-            const regex = /file: "([\w/]*\.(?:(?:png)|(?:wav)|(?:json)|(?:ogg)))"/g
-            data = data.replace(regex, 'file: "' + hyperspace_path + '$1"')
-            eval(data)
+            const promise = new Promise < void > ((resolve) => {
+                fs.readFile(hyperspace_path + '/data.js', 'utf8', (_err: any, data: string) => {
+                    const regex = /file: "([\w/]*\.(?:(?:png)|(?:wav)|(?:json)|(?:ogg)))"/g
+                    data = data.replace(regex, 'file: "' + hyperspace_path + '$1"')
+                    fs.writeFile(mods_path + "/parsedData.js", data, () => {
+                        const script_orphan = document.createElement('script')
+                        script_orphan.src = mods_path + "/parsedData.js"
+                        script_orphan.crossOrigin = 'anonymous'
+                        script_orphan.addEventListener('load', () => {
+                            fs.rm(mods_path + "/parsedData.js", () => {
+                                resolve()
+                            })
+                        })
+                        document.head.appendChild(script_orphan)
+                    })
+                })
+            })
+
             // @ts-expect-error
             // GDJS does exist, but declaring it here will bugger the eval call
             gdjs.LoadingScreenRenderer = loading_reimplementation
+            return promise
         }
     }
 }

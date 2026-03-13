@@ -1,4 +1,5 @@
 import {
+    loadModInfo,
     loadMods
 } from "./loadMods.ts"
 import {
@@ -7,6 +8,8 @@ import {
 import {
     loadGdscripts
 } from "./loadGdscripts.ts"
+import { Game } from "./game.ts"
+import { load_sequence_element } from "./load_sequence_element.ts"
 
 const {
     dialog
@@ -22,14 +25,6 @@ const getHyperspacePath = () => hyperspace_file_location_input?.getAttribute('va
 const getModsPath = () => document.getElementById('mods_file_location_input')?.getAttribute('value') as string
 const config_path = os.homedir() + "/HDC/config.json"
 
-type load_sequence_returns = void | load_sequence_element[] | Promise < void | load_sequence_element[] >
-    type load_sequence_function = ((hyperspace_path: string, mods_path: string) => load_sequence_returns) | (() =>
-        load_sequence_returns)
-type load_sequence_element = {
-    status_text: string,
-    function: load_sequence_function
-}
-
 prepopulateFileLocations();
 enableFileLoctionButtons();
 enableStartGameButton([{
@@ -37,11 +32,15 @@ enableStartGameButton([{
         function: loadGdscripts
     },
     {
+        status_text: "Loading Modlist",
+        function: loadModInfo
+    },
+    {
         status_text: "Creating hooks for mods",
         function: parseCode0
     },
     {
-        status_text: "Adding mods",
+        status_text: "Loading mods",
         function: loadMods
     },
     {
@@ -102,7 +101,8 @@ function enableStartGameButton(load_sequence: load_sequence_element[]) {
     button.addEventListener('click', function startGame() {
         button.disabled = true
         savePaths()
-        runThroughLoadingSequence(load_sequence)
+        const game = new Game()
+        runThroughLoadingSequence(load_sequence, game)
     })
 }
 
@@ -113,7 +113,7 @@ function savePaths() {
     fs.writeFile(config_path, JSON.stringify(config), 'utf8', () => {})
 }
 
-async function runThroughLoadingSequence(load_sequence: load_sequence_element[]) {
+async function runThroughLoadingSequence(load_sequence: load_sequence_element[], game : Game) {
     let index = 0
     const loading_bar = document.createElement('p')
     loading_bar.className = 'loading_bar'
@@ -121,9 +121,9 @@ async function runThroughLoadingSequence(load_sequence: load_sequence_element[])
     for (let element of load_sequence) {
         loading_bar.textContent = element.status_text
         loading_bar.setAttribute('load_percent', ((index / load_sequence.length) * 100) + '%')
-        let sub_sequence = await element.function(getHyperspacePath(), getModsPath())
+        let sub_sequence = await element.function(getHyperspacePath(), getModsPath(), game)
         if (sub_sequence) {
-            await runThroughLoadingSequence(sub_sequence)
+            await runThroughLoadingSequence(sub_sequence, game)
         }
         index++
     }
