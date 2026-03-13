@@ -79,8 +79,9 @@ function convertDefualtDataToMod(hyperspace_path: string, mods_path: string): Mo
         load: () => {
             const promise = new Promise < void > ((resolve) => {
                 fs.readFile(hyperspace_path + '/data.js', 'utf8', (_err: any, data: string) => {
-                    const regex = /file: "([\w/]*\.(?:(?:png)|(?:wav)|(?:json)|(?:ogg)))"/g
-                    data = data.replace(regex, 'file: "' + hyperspace_path + '$1"')
+                    const regex = /"?file"?: ?"([\w/]*\.(?:(?:png)|(?:wav)|(?:json)|(?:ogg)))"/g
+                    console.log(data.match(regex))
+                    data = data.replace(regex, '"file":"' + hyperspace_path + '$1"')
                     fs.writeFile(mods_path + "/parsedData.js", data, () => {
                         const script_orphan = document.createElement('script')
                         script_orphan.src = mods_path + "/parsedData.js"
