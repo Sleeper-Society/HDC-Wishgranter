@@ -10,6 +10,7 @@ import {
 } from "./loadGdscripts.ts"
 import { Game } from "./game.ts"
 import { load_sequence_element } from "./load_sequence_element.ts"
+import { LoadingBarElement } from "./loading_bar.ts"
 
 const {
     dialog
@@ -17,13 +18,15 @@ const {
 const fs = require('fs')
 const os = require('os')
 
-const loading_parent = document.getElementById("load_game") as HTMLElement
+const loading_bar = document.getElementById("loading_bar") as LoadingBarElement
 const hyperspace_file_location_input = document.getElementById('hyperspace_file_location_input')
 const mods_file_location_input = document.getElementById('mods_file_location_input')
 
 const getHyperspacePath = () => hyperspace_file_location_input?.getAttribute('value') + '/resources/app.asar/app/'
 const getModsPath = () => document.getElementById('mods_file_location_input')?.getAttribute('value') as string
 const config_path = os.homedir() + "/HDC/config.json"
+
+declare var gdjs : any
 
 prepopulateFileLocations();
 enableFileLoctionButtons();
@@ -114,25 +117,18 @@ function savePaths() {
 }
 
 async function runThroughLoadingSequence(load_sequence: load_sequence_element[], game : Game) {
-    let index = 0
-    const loading_bar = document.createElement('p')
-    loading_bar.className = 'loading_bar'
-    loading_parent.appendChild(loading_bar)
+    loading_bar.split(load_sequence.length)
     for (let element of load_sequence) {
         loading_bar.textContent = element.status_text
-        loading_bar.setAttribute('load_percent', ((index / load_sequence.length) * 100) + '%')
         let sub_sequence = await element.function(getHyperspacePath(), getModsPath(), game)
         if (sub_sequence) {
             await runThroughLoadingSequence(sub_sequence, game)
         }
-        index++
+        loading_bar.complete()
     }
-    loading_bar.remove()
 }
 
 function baseStartGame() {
-    // @ts-expect-error
-    // GDJS does exist, but in the gloabl js scope
     //Initialization
     var game = new gdjs.RuntimeGame(gdjs.projectData, {})
 
@@ -146,4 +142,6 @@ function baseStartGame() {
     game.loadAllAssets(function () {
         game.startGameLoop()
     });
+
+    
 }

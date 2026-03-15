@@ -4,9 +4,11 @@
     <meta charset="UTF-8" />
     <title>Hyperspace Deck Command: Wishgranter</title>
     <link href="main.css" rel="stylesheet" type="text/css" media="all" />
+    <script src="build/loading_bar.js" type="module"></script>
     <script src="build/main.js" defer type="module"></script>
   </head>
   <body>
+    <div id="status_layer"></div>
     <div id="find_game">
       <div><img src="HyperspaceBoxArt.png"></div>
       <label for="hyperspace_file_location_input">Hyperspace Deck Command Installation:</label>
@@ -17,7 +19,6 @@
       <button for="mods_file_location_input"><img src="folder.svg"></button>
       <button id="start_game_button">Start Game</button>
     </div>
-    <div id="load_game">
-    </div>
+    <loading-bar id="loading_bar"></loading-bar>
   </body>
 </html>

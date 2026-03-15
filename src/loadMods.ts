@@ -5,29 +5,28 @@ import {
     load_sequence_element,
     load_sequence_returns
 } from "./load_sequence_element.ts";
-import loading_reimplementation from "./loading_reimplementation.ts"
-import {
-    finished_loading
-} from "./loading_reimplementation.ts"
+import get_loading_reimplementation from "./loading_reimplementation.ts"
 import {
     Mod
 } from "./Mod.ts"
 const fs = require('fs')
 
+declare var gdjs : any
+
 export function loadModInfo(hyperspace_path: string, mods_path: string, game: Game): load_sequence_returns {
     let output: load_sequence_element[] = [{
         status_text: "Reading Base Game as mod",
         function: (hyperspace_path: string, mods_path: string) => {
-            game.modlist.push(convertDefualtDataToMod(hyperspace_path, mods_path));
+            game.modlist.push(convertDefualtDataToMod(hyperspace_path, mods_path, game));
         }
     }]
     return output.concat((fs.readdirSync(mods_path) as string[])
         .filter((path: string) => {
-            const file_exists = fs.statSync(mods_path + '/' + path + "/index.js").isFile()
-            if (!file_exists) {
+            const output = !fs.statSync(mods_path + '/' + path).isDirectory() || !fs.statSync(mods_path + '/' + path + "/index.js").isFile()
+            if (!output) {
                 console.warn(path, ' mod at ', mods_path + '/' + path + "/index.js", ' skipped: no index')
             }
-            return file_exists
+            return output
         })
         .map((path: string): load_sequence_element => {
             return {
@@ -59,9 +58,6 @@ export function loadMods(hyperspace_path: string, mods_path: string, game: Game)
             status_text: "Loading " + mod.name,
             function: () => {
                 try {
-                    if (mod.ongamestart) {
-                        //finished_loading.then(mod.ongamestart)
-                    }
                     return mod.load(hyperspace_path, mods_path, game)
                 } catch (error) {
                     console.error(error);
@@ -71,7 +67,7 @@ export function loadMods(hyperspace_path: string, mods_path: string, game: Game)
     })
 }
 
-function convertDefualtDataToMod(hyperspace_path: string, mods_path: string): Mod {
+function convertDefualtDataToMod(hyperspace_path: string, mods_path: string, game : Game): Mod {
 
     return {
         name: "Base Game",
@@ -95,9 +91,7 @@ function convertDefualtDataToMod(hyperspace_path: string, mods_path: string): Mo
                 })
             })
 
-            // @ts-expect-error
-            // GDJS does exist, but declaring it here will bugger the eval call
-            gdjs.LoadingScreenRenderer = loading_reimplementation
+            gdjs.LoadingScreenRenderer = get_loading_reimplementation(game)
             return promise
         }
     }
