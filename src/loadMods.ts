@@ -22,11 +22,12 @@ export function loadModInfo(hyperspace_path: string, mods_path: string, game: Ga
     }]
     return output.concat((fs.readdirSync(mods_path) as string[])
         .filter((path: string) => {
-            const output = !fs.statSync(mods_path + '/' + path).isDirectory() || !fs.statSync(mods_path + '/' + path + "/index.js").isFile()
-            if (!output) {
-                console.warn(path, ' mod at ', mods_path + '/' + path + "/index.js", ' skipped: no index')
+            const err = fs.accessSync(mods_path + '/' + path + '/index.js', fs.constants.R_OK)
+            if (err){
+                console.warn('Unable to load ', path, '. ', err)
+                return false
             }
-            return output
+            return true
         })
         .map((path: string): load_sequence_element => {
             return {
