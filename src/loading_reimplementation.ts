@@ -25,10 +25,5 @@ export default function(game : Game) {return class{
         file_location_parent.style.display = 'none'
         loading_bar.style.display = 'none'
         document.body.style.backgroundColor = 'black'
-        for (let mod of game.modlist){
-            if(mod.ongamestart){
-                mod.ongamestart()
-            }
-        }
     }
 }}

@@ -1,5 +1,6 @@
+import { Game } from "./game";
 import { load_sequence_function } from "./load_sequence_element";
-
+type RuntimeGame = any
 export type Mod = {
     name: string;
     descr?: string;
@@ -8,5 +9,5 @@ export type Mod = {
     dependencies?: [string, string][];
     seealso?: [string, string][];
     load: load_sequence_function;
-    ongamestart?: () => void;
+    gamestart?: (game : Game, gdgame : RuntimeGame) => void;
 };

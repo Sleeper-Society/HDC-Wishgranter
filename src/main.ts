@@ -128,19 +128,32 @@ async function runThroughLoadingSequence(load_sequence: load_sequence_element[],
     }
 }
 
-function baseStartGame() {
+function baseStartGame(_hyperspace_path : string, _mods_path : string, game : Game) {
     //Initialization
-    var game = new gdjs.RuntimeGame(gdjs.projectData, {})
+    var gdgame = new gdjs.RuntimeGame(gdjs.projectData, {})
 
     //Create a renderer
-    game.getRenderer().createStandardCanvas(document.body)
+    gdgame.getRenderer().createStandardCanvas(document.body)
+
+    //Put at the back of the dom
+    //@ts-ignore
+    document.body.moveBefore(document.body.getElementsByTagName('canvas')[0],document.body.firstChild)
 
     //Bind keyboards/mouse/touch events
-    game.getRenderer().bindStandardEvents(game.getInputManager(), window, document)
+    gdgame.getRenderer().bindStandardEvents(gdgame.getInputManager(), window, document)
 
     //Load all assets and start the game
-    game.loadAllAssets(function () {
-        game.startGameLoop()
+    gdgame.loadAllAssets(function () {
+        gdgame.startGameLoop()
+        for (let mod of game.modlist){
+            if(mod.gamestart){
+                try {
+                    mod.gamestart(game, gdgame)
+                } catch (error) {
+                    console.error(error)
+                }
+            }
+        }
     });
 
     
