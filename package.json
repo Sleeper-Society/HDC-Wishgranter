@@ -2,13 +2,51 @@
   "name": "wish-granter",
   "version": "0.0.1",
   "description": "Modloader for Sleeper Game's Hyperspace Deck Command",
-  "main": "index.js",
+  "main": "dist/exports.js",
+  "mocha": {
+    "enable-source-maps": true,
+    "spec": "./dist/**/*_test.js",
+    "ui": "qunit",
+    "require": "./dist/tests/hooks.js",
+    "inline-diffs": true
+  },
+  "files": [
+    "package.json",
+    "README.md",
+    "src/**/*.ts",
+    "dist/**/*.js",
+    "dist/**/*.js.map",
+    "dist/**/*.d.ts",
+    "dist/**/*.d.ts.map",
+    "!src/test/",
+    "!src/**/*_test.ts",
+    "!dist/test/",
+    "!dist/**/*_test.js",
+    "!dist/**/*_test.js.map",
+    "!dist/**/*_test.d.ts",
+    "!dist/**/*_test.d.ts.map"
+  ],
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/exports.d.ts",
+        "default": "./dist/exports.js"
+      }
+    }
+  },
+  "types": "./dist/exports.ts",
   "scripts": {
-    "build": "tsc",
-    "start": "electron-forge start",
-    "test": "test",
-    "package": "electron-forge package",
-    "make": "electron-forge make"
+    "\n========== Building ==========": "",
+    "build": "npm run clean && tsc && node dist/renderer/cleaner.js",
+    "watch": "tsc --watch",
+    "clean": "shx rm -rf ./dist/*",
+    "\n========== Testing ==========": "",
+    "test": "npm run build && mocha ",
+    "start": "npm run build && electron-forge start --app-path ./dist/mod_menu/index.js",
+    "debug": "npm run build && electron-forge start --app-path ./dist/mod_menu/index.js --vscode",
+    "\n========== Exporting ==========": "",
+    "package": "electron-forge package -- --platform=\"win32,linux\"",
+    "make": "electron-forge make -- --platform=\"win32,linux\""
   },
   "repository": {
     "type": "git",
@@ -21,26 +59,25 @@
   "author": "Claire Woods Flechette.net",
   "license": "CC0-1.0",
   "bugs": {
-    "url": "https://github.com/claire-aware/WishGranter/issues"
+    "url": "https://github.com/Hederarch/HDC-Modloader/issues"
   },
-  "homepage": "https://github.com/claire-aware/WishGranter#readme",
+  "homepage": "https://github.com/Hederarch/HDC-Modloader#readme",
   "dependencies": {
-    "@electron/remote": "^2.0.8",
-    "electron-squirrel-startup": "^1.0.1",
     "steam-locate": "^1.0.6"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.11.1",
-    "@electron-forge/maker-deb": "^7.11.1",
-    "@electron-forge/maker-rpm": "^7.11.1",
-    "@electron-forge/maker-squirrel": "^7.11.1",
     "@electron-forge/maker-zip": "^7.11.1",
     "@electron-forge/plugin-auto-unpack-natives": "^7.11.1",
     "@electron-forge/plugin-fuses": "^7.11.1",
     "@electron/fuses": "^1.8.0",
     "@types/node": "^25.3.0",
+    "@types/sinon": "^21.0.0",
     "electron": "41.0.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "mocha": "^11.7.5",
+    "shx": "^0.4.0",
+    "sinon": "^21.0.3",
+    "source-map-support": "^0.5.21",
+    "typescript": "^6.0.2"
   }
 }

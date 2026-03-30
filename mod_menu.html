@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hyperspace Deck Command: Wishgranter</title>
+    <link href="mod_menu.css" rel="stylesheet" type="text/css" media="all" />
+    <script src="dist/renderer/loading_bar.js"></script>
+    <script src="dist/renderer/mod_menu.js" defer></script>
+  </head>
+  <body>
+    <template>
+      <img class="icon">
+      <h2 class="name"></h2>
+      <p class="version"></p>
+      <p class="description"></p>
+      <button class="move_up">↑</button>
+      <button class="move_down">↓</button>
+    </template>
+    <div id="modlist"></div>
+    <div><img src="HyperspaceBoxArt.png"></div>
+    <label for="hyperspace_file_location_input">Hyperspace Deck Command Installation:</label>
+    <input type="text" id="hyperspace_file_location_input"/>
+    <button class="steam_button"><img src="steam.svg"></button>
+    <button class="file_location_button" for="hyperspace_file_location_input"><img src="folder.svg"></button>
+    <label for="mods_file_location_input">Mods folder:</label>
+    <input type="text" id="mods_file_location_input"/>
+    <button class="file_location_button" for="mods_file_location_input"><img src="folder.svg"></button>
+    <button id="start_game_button">Start Game</button>
+    <loading-bar id="loading_bar"></loading-bar>
+  </body>
+</html>

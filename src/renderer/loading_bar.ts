@@ -1,8 +1,16 @@
-export class LoadingBarElement extends HTMLElement{
-    private initial_split : number = 0
-    private split_stack : number[] = []
-    private completion_stack : number[] = []
-    split(peices : number) : void{
+import PreloadedWindow from "./bridge"
+
+class LoadingBarElement extends HTMLElement{
+    split_stack: number[] = []
+    initial_split: number = 0
+    completion_stack: number[] = []
+    constructor(){
+        super()
+        this.split_stack = []
+        this.initial_split = 0
+        this.completion_stack = []
+    }
+    split(peices: number){
         if (this.split_stack.length == 0 && this.initial_split == 0){
             this.initial_split = peices
         }
@@ -10,7 +18,7 @@ export class LoadingBarElement extends HTMLElement{
         this.completion_stack.push(0)
         this.rerender()
     }
-    complete() : void {
+    complete() {
         if (++this.completion_stack[this.completion_stack.length - 1] >= this.split_stack[this.split_stack.length - 1]){
             this.completion_stack.pop()
             this.split_stack.pop()
@@ -18,11 +26,11 @@ export class LoadingBarElement extends HTMLElement{
         }
         this.rerender()
     }
-    private getCompletionPercent(completion_stack : number[]){
-        return completion_stack.reduce((previous_value, current_value, index) => {
+    getCompletionPercent(completion_stack: any[]){
+        return completion_stack.reduce((previous_value: number, current_value: number, index: number) => {
             const sub_split_stack = this.split_stack.slice(0, index + 1)
             const sum = sub_split_stack.reduce(
-                (previous_value, current_value) => {
+                (previous_value: number, current_value: number) => {
                     return previous_value * current_value
                 }
             , 1)
@@ -48,12 +56,17 @@ export class LoadingBarElement extends HTMLElement{
         return ['load_percent']
     }
 
-    attributeChangedCallback(_name : string, _oldValue : string, newValue : string) {
+    attributeChangedCallback(_name: any , _oldValue: any, newValue: string) {
         this.split_stack = [this.initial_split,100]
         this.completion_stack = [this.initial_split - 1, Number.parseInt(newValue.substring(0, newValue.length - 1))] 
         this.rerender()
     }
-    
+    connectedCallback(){
+        let loading = (window as unknown as PreloadedWindow).loading
+        loading.onNewStatus((new_status: string | null) => {this.textContent = new_status})
+        loading.onSplit(this.split.bind(this))
+        loading.onComplete(this.complete.bind(this))
+    }
 } 
 
 customElements.define('loading-bar', LoadingBarElement)

@@ -18,22 +18,26 @@ body{
     align-content: center;
     align-items: center;
     width: 100%;
-}
-#find_game{
     display: grid;
-    grid-template-columns: auto 2fr .2fr;
+    grid-template-columns: 50% auto 2fr .2fr .2fr;
+    grid-column-gap: 8px;
 }
-#find_game div{
-    text-align: center;
+#modlist{
+    grid-column: 1;
+    grid-row: 1 / 5;
+    height: 100%;
+    background-color: #63636380
 }
-#find_game :first-child, button:last-child{
-    grid-column: 1 / -1;   
-}
-#find_game label{
+label{
     align-self: center;
+    grid-column: 2
+}
+div:has(img), button:last-of-type, loading-bar{
+    text-align: center;
+    grid-column: 2 / -1;   
 }
 loading-bar{
-    width: 100%;
+    grid-column: 1 / -1;   
     height: 20px;
     border: groove;
     display: block;
@@ -43,6 +47,6 @@ loading-bar{
             2px -2px 0 rgb(var(--background-color)),
             -2px 2px 0 rgb(var(--background-color)),
             2px 2px 0 rgb(var(--background-color)),
-            -3px 0px 0 rgb(var(--background-color)),
-            3px 0px 0 rgb(var(--background-color));
+            -3px 0 0 rgb(var(--background-color)),
+            3px 0 0 rgb(var(--background-color));
 }
