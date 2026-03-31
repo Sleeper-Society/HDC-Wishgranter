@@ -1,7 +1,7 @@
-const loading_bar = document.getElementById("loading_bar")!
+const loading_bar = document.getElementById("loading_bar")!;
 declare var gdjs: any;
 
-(function (gdjs: any) {
+(function(gdjs: any) {
     class LoadingReimplementiation {
         constructor(renderer: any, _imagemanager: any, loadingscreenproperties: any, _watermarkproperties: any,
             _falsebool: any) {

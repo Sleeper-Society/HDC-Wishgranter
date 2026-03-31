@@ -1,17 +1,17 @@
-import { version } from "node:os"
-import { Game } from "../game.ts"
-import { LoadableModMetaData, Mod, ModLoadInfo, ModMetaData } from "../mod.ts"
+import {
+    LoadableModMetaData,
+    ModLoadInfo,
+} from "../mod.ts"
 import PreloadedWindow from "./bridge.ts"
 
-const modlist_parent = document.getElementById('modlist')!
-const mod_entry_template = document.getElementsByTagName('template')[0]!
-const hyperspace_file_location_input = document.getElementById('hyperspace_file_location_input')!
-const mods_file_location_input = document.getElementById('mods_file_location_input')!
+const modlist_parent = document.getElementById('modlist') !
+    const mod_entry_template = document.getElementsByTagName('template')[0] !
+        const hyperspace_file_location_input = document.getElementById('hyperspace_file_location_input') !
+            const mods_file_location_input = document.getElementById('mods_file_location_input') !
 
+                populateHtml()
 
-populateHtml()
-
-async function populateHtml(){
+async function populateHtml() {
     await prepopulateFileLocations();
     enableFileLocationButtons();
     enableStartGameButton();
@@ -21,24 +21,28 @@ async function populateHtml(){
 }
 
 async function prepopulateFileLocations() {
-    hyperspace_file_location_input?.setAttribute('value', await (window as unknown as PreloadedWindow).wishgranter.getDefaultHyperspacePath())
-    mods_file_location_input?.setAttribute('value', await (window as unknown as PreloadedWindow).wishgranter.getDefaultModsPath())
+    hyperspace_file_location_input?.setAttribute('value', await (window as unknown as PreloadedWindow).wishgranter
+        .getDefaultHyperspacePath())
+    mods_file_location_input?.setAttribute('value', await (window as unknown as PreloadedWindow).wishgranter
+        .getDefaultModsPath())
     mods_file_location_input?.addEventListener('change', populateModList)
 }
 
 function enableFileLocationButtons() {
     for (let button of document.getElementsByClassName('file_location_button')) {
         button.addEventListener('click', async function findFile() {
-            const output_id = button.getAttribute('for')!
-            const default_path = document.getElementById(output_id)?.getAttribute('value')
-            document.getElementById(output_id)?.setAttribute('value', await (window as unknown as PreloadedWindow).wishgranter
+            const output_id = button.getAttribute('for') !
+                const default_path = document.getElementById(output_id)?.getAttribute('value')
+            document.getElementById(output_id)?.setAttribute('value', await (
+                    window as unknown as PreloadedWindow).wishgranter
                 .askUserForDirectory(
                     default_path))
         })
     }
     for (let button of document.getElementsByClassName('steam_button')) {
         button.addEventListener('click', async function fillSteam() {
-            hyperspace_file_location_input?.setAttribute('value', await (window as unknown as PreloadedWindow).wishgranter
+            hyperspace_file_location_input?.setAttribute('value', await (
+                    window as unknown as PreloadedWindow).wishgranter
                 .getSteamGameLocation())
         })
     }
@@ -48,19 +52,22 @@ function enableStartGameButton() {
     const button = document.getElementById('start_game_button') as HTMLButtonElement
     button.addEventListener('click', function startGame() {
         button.disabled = true;
-        (window as unknown as PreloadedWindow).wishgranter.startGame(hyperspace_file_location_input.getAttribute('value')!, getMods())
+        (window as unknown as PreloadedWindow).wishgranter.startGame(hyperspace_file_location_input
+            .getAttribute('value') !, getMods())
     })
 }
 
-function getMods() : ModLoadInfo[] {
-    return (Array.from(modlist_parent.children) as ModEntry[]).map((value) => value.mod).filter((value) => value != undefined)
+function getMods(): ModLoadInfo[] {
+    return (Array.from(modlist_parent.children) as ModEntry[]).map((value) => value.mod).filter((value) => value !=
+        undefined)
 }
 
 async function populateModList() {
     modlist_parent.innerHTML = ''
-    for (let mod of await (window as unknown as PreloadedWindow).wishgranter.getModsFromLocation(hyperspace_file_location_input.getAttribute(
-                'value')!,
-            mods_file_location_input.getAttribute('value')!)) {
+    for (let mod of await (window as unknown as PreloadedWindow).wishgranter.getModsFromLocation(
+            hyperspace_file_location_input.getAttribute(
+                'value') !,
+            mods_file_location_input.getAttribute('value') !)) {
         const mod_entry = document.createElement('mod-entry') as ModEntry
         mod_entry.mod = mod
         modlist_parent.append(mod_entry)
@@ -84,16 +91,21 @@ class ModEntry extends HTMLElement {
             this.getElementsByClassName('description')[0].textContent = this.mod.description
         }
 
-        this.getElementsByClassName('move_up')[0].addEventListener('click',() => {this.parentElement?.moveBefore(this,this.previousSibling)})
-        this.getElementsByClassName('move_down')[0].addEventListener('click',() => {this.parentElement?.moveBefore(this,this.nextSibling)})
+        this.getElementsByClassName('move_up')[0].addEventListener('click', () => {
+            this.parentElement?.moveBefore(this, this.previousSibling)
+        })
+        this.getElementsByClassName('move_down')[0].addEventListener('click', () => {
+            this.parentElement?.moveBefore(this, this.nextSibling)
+        })
     }
 
 }
 
 customElements.define('mod-entry', ModEntry)
 
-declare var gdjs : any
-function baseStartGame(modlist: ((runtime_game : any) => void)[]) {
+declare var gdjs: any
+
+function baseStartGame(modlist: ((runtime_game: any) => void)[]) {
     //Initialization
     var gdgame = new gdjs.RuntimeGame(gdjs.projectData, {})
 
@@ -107,7 +119,7 @@ function baseStartGame(modlist: ((runtime_game : any) => void)[]) {
     gdgame.getRenderer().bindStandardEvents(gdgame.getInputManager(), window, document)
 
     //Load all assets and start the game
-    gdgame.loadAllAssets(async function () {
+    gdgame.loadAllAssets(async function() {
         gdgame.startGameLoop()
         for (let mod of modlist) {
             try {
@@ -117,12 +129,10 @@ function baseStartGame(modlist: ((runtime_game : any) => void)[]) {
             }
         }
     });
-
-
 }
 
-async function addScript(script_source : string) {
-    return new Promise<void>((resolve) => {
+async function addScript(script_source: string) {
+    return new Promise < void > ((resolve) => {
         const script_orphan = document.createElement('script')
         script_orphan.src = script_source
         script_orphan.crossOrigin = 'anonymous'

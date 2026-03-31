@@ -1,44 +1,51 @@
 import fsPromise from "fs/promises";
 import fs from 'fs'
-import { Game } from "./game.ts";
-import { LoadSequenceFunction, LoadSequenceReturns } from "./mod_menu/load_sequence.ts";
-import { PathLike } from "fs";
+import {
+    Game
+} from "./game.ts";
+import {
+    LoadSequenceFunction,
+    LoadSequenceReturns
+} from "./mod_menu/load_sequence.ts";
+import {
+    PathLike
+} from "fs";
 import path from "path";
 
 type RuntimeGame = any
-export interface Mod{
-    metadata : ModMetaData
-    load?: LoadSequenceFunction;
-    gamestart?: (gdgame : RuntimeGame) => void;
+export interface Mod {
+    metadata: ModMetaData
+    load ? : LoadSequenceFunction;
+    gamestart ? : (gdgame: RuntimeGame) => void;
 };
-export interface ModHeader{
+export interface ModHeader {
     name: string;
     version: string;
 }
 export interface ModMetaData extends ModHeader {
-    descr?: string;
-    description?: string;
-    
-    icon?: string;
-    dependencies?: [string, string][];
-    seealso?: [string, string][];
-} 
-interface loadable{
-    path: PathLike
-    is_default? : true
+    descr ? : string;
+    description ? : string;
+
+    icon ? : string;
+    dependencies ? : [string, string][];
+    seealso ? : [string, string][];
 }
-export interface LoadableModMetaData extends ModMetaData, loadable{}
+interface loadable {
+    path: PathLike
+    is_default ? : true
+}
+export interface LoadableModMetaData extends ModMetaData, loadable {}
 
-export interface ModLoadInfo extends ModHeader,loadable{}
+export interface ModLoadInfo extends ModHeader, loadable {}
 
 
-export let bad_mod : LoadableModMetaData ={
+export let bad_mod: LoadableModMetaData = {
     name: "Something went wrong",
-    version : '0',
+    version: '0',
     path: ''
 }
 
-export async function modLoadInfoToMod(input : ModLoadInfo) : Promise<Mod>{
+export async function modLoadInfoToMod(input: ModLoadInfo): Promise < Mod > {
     if (input.is_default) return await convertDefualtDataToMod(input.path)
     let has_index = fs.existsSync(input.path)
     if (has_index) try {
@@ -47,18 +54,22 @@ export async function modLoadInfoToMod(input : ModLoadInfo) : Promise<Mod>{
     } catch (error) {
         console.warn('Unable to load ', path, '. ', error)
     }
-    if (!has_index) return {metadata:bad_mod}
+    if (!has_index) return {
+        metadata: bad_mod
+    }
     return import(path.join(input.path.toString(), "/index.js")).catch((reason) => {
-            console.error(reason)
-            return bad_mod
-        }).then((mod_module) => {
-          try {
-              return mod_module.default
-          } catch (error) {
-              console.error(error);
-              return {metadata:bad_mod}
-          }                      
-        })
+        console.error(reason)
+        return bad_mod
+    }).then((mod_module) => {
+        try {
+            return mod_module.default
+        } catch (error) {
+            console.error(error);
+            return {
+                metadata: bad_mod
+            }
+        }
+    })
 }
 
 export function loadMods(hyperspace_path: string, game: Game): LoadSequenceReturns {
@@ -76,22 +87,24 @@ export function loadMods(hyperspace_path: string, game: Game): LoadSequenceRetur
     });
 }
 
-async function convertDefualtDataToMod(hyperspace_path: PathLike) : Promise<Mod>{
-    return fsPromise.readFile(path.join(hyperspace_path.toString(),'resources', 'app.asar', 'app', 'data.js'), 'utf8').then((data) => {
-        let jsdata : any = {}
+async function convertDefualtDataToMod(hyperspace_path: PathLike): Promise < Mod > {
+    return fsPromise.readFile(path.join(hyperspace_path.toString(), 'resources', 'app.asar', 'app', 'data.js'), 'utf8').then((data) => {
+        let jsdata: any = {}
         eval('jsdata = ' + data.substring(19, data.length - ('gdjs.runtimeGameOptions = {};'.length + 1)));
-        return {metadata : {
-            name: jsdata.properties.name,
-            version: jsdata.properties.version,
-            description: jsdata.properties.description,
+        return {
+            metadata: {
+                name: jsdata.properties.name,
+                version: jsdata.properties.version,
+                description: jsdata.properties.description,
 
-        }};
+            }
+        };
     });
 }
 
-export async function convertDefualtDataToLoadableModMetaData(hyperspace_path: PathLike): Promise<LoadableModMetaData> {
-    return fsPromise.readFile(path.join(hyperspace_path.toString(),'resources', 'app.asar', 'app', 'data.js'), 'utf8').then((data) => {
-        let jsdata : any = {}
+export async function convertDefualtDataToLoadableModMetaData(hyperspace_path: PathLike): Promise < LoadableModMetaData > {
+    return fsPromise.readFile(path.join(hyperspace_path.toString(), 'resources', 'app.asar', 'app', 'data.js'), 'utf8').then((data) => {
+        let jsdata: any = {}
         eval('jsdata = ' + data.substring(19, data.length - ('gdjs.runtimeGameOptions = {};'.length + 1)));
         return {
             name: jsdata.properties.name,
@@ -102,4 +115,3 @@ export async function convertDefualtDataToLoadableModMetaData(hyperspace_path: P
         };
     });
 }
-

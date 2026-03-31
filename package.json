@@ -36,6 +36,7 @@
   },
   "types": "./dist/exports.ts",
   "scripts": {
+    "pretty": "js-beautify src/**/*.ts -r",
     "\n========== Building ==========": "",
     "build": "npm run clean && tsc && node dist/renderer/cleaner.js",
     "watch": "tsc --watch",
@@ -74,6 +75,7 @@
     "@types/node": "^25.3.0",
     "@types/sinon": "^21.0.0",
     "electron": "41.0.0",
+    "js-beautify": "^1.15.4",
     "mocha": "^11.7.5",
     "shx": "^0.4.0",
     "sinon": "^21.0.3",

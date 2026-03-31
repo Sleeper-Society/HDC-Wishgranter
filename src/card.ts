@@ -1,3 +1,3 @@
-export class Card{
-    
+export class Card {
+
 }

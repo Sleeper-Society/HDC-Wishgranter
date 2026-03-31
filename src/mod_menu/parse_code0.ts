@@ -1,18 +1,20 @@
-import { Card } from "../card.ts"
+import {
+    Card
+} from "../card.ts"
 
-export function AddCard(card : Card){
-
-}
-
-export function AddEncounter(){
+export function AddCard(card: Card) {
 
 }
-export function AddStartingDeck(){
+
+export function AddEncounter() {
 
 }
-export function AddKeyword(){
-    
+export function AddStartingDeck() {
+
 }
-export function AddDongle(){
+export function AddKeyword() {
+
+}
+export function AddDongle() {
 
 }
