@@ -15,7 +15,9 @@ const loading: PreloadedWindow["loading"] = {
     onNewStatus: (callback: (new_status: string) => void) => ipcRenderer.on('loading_status', (_event: IpcRendererEvent, new_status: string) => callback(new_status)),
     onSplit: (callback: (peices: number) => void) => ipcRenderer.on('loading_split', (_event: IpcRendererEvent, peices: number) => callback(peices)),
     onComplete: (callback: () => void) => ipcRenderer.on('loading_complete', (_event: IpcRendererEvent) => callback()),
-    onAddScript: (callback: (script_source: string) => Promise < void > ) => ipcRenderer.on('add_script', (_event: IpcRendererEvent, script_source: string) => callback(script_source).then(() => ipcRenderer.invoke(script_source + '_loaded')))
+    onAddScript: (callback: (script_source: string) => Promise<void>) => ipcRenderer.on('add_script', (_event: IpcRendererEvent, script_source: string) => callback(script_source).then(() => ipcRenderer.invoke(script_source + '_loaded'))),
+    load_game_percent_increase: () => ipcRenderer.invoke('loading'),
+    game_loaded : () => ipcRenderer.invoke('game_loaded')
 }
 const wishgranter: PreloadedWindow["wishgranter"] = {
     onGameStart: (callback: (modlist: ((runtime_game: any) => void)[]) => void) => ipcRenderer.on('start_game', (_event: IpcRendererEvent, modlist: ((runtime_game: any) => void)[]) => callback(modlist)),

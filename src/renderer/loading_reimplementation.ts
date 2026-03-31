@@ -1,29 +1,24 @@
-const loading_bar = document.getElementById("loading_bar")!;
+import PreloadedWindow from "./bridge";
+
 declare var gdjs: any;
 
 (function(gdjs: any) {
     class LoadingReimplementiation {
+        private previous_percent = 0
         constructor(renderer: any, _imagemanager: any, loadingscreenproperties: any, _watermarkproperties: any,
             _falsebool: any) {
-            (renderer.getPIXIRenderer().background.color =
-                loadingscreenproperties.backgroundColor)
-
-            for (let element of document.body.getElementsByTagName('canvas')) {
-                (element as HTMLElement).style.display = 'none'
-            }
+            (renderer.getPIXIRenderer().background.color = loadingscreenproperties.backgroundColor)
         }
         setPercent(new_percent: number) {
-            loading_bar.setAttribute('load_percent', new_percent + '%')
+            for(let i = this.previous_percent; i < new_percent; i++) (window as unknown as PreloadedWindow).loading.load_game_percent_increase()
+            this.previous_percent = new_percent
         }
         renderIfNeeded() {
-            return Number(loading_bar.getAttribute('load_percent')) < 1.0;
+            return this.previous_percent < 1.0;
         }
         unload() {
-            for (let element of document.body.getElementsByTagName('canvas')) {
-                (element as HTMLElement).style.display = ''
-            }
-
-            document.body.style.backgroundColor = 'black'
+            (window as unknown as PreloadedWindow).loading.game_loaded()
+            document.body.setAttribute('game_loaded','')
         }
 
     }

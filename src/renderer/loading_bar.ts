@@ -22,7 +22,6 @@ class LoadingBarElement extends HTMLElement {
         if (++this.completion_stack[this.completion_stack.length - 1] >= this.split_stack[this.split_stack.length - 1]) {
             this.completion_stack.pop()
             this.split_stack.pop()
-            this.complete()
         }
         this.rerender()
     }
@@ -50,15 +49,6 @@ class LoadingBarElement extends HTMLElement {
         }
         gradient += ', rgba(var(--background-color), 0) ' + (completion_percent * 100) + '%'
         this.style.background = gradient + ', rgba(var(--background-color), 0) 100%)'
-    }
-    static get observedAttributes() {
-        return ['load_percent']
-    }
-
-    attributeChangedCallback(_name: any, _oldValue: any, newValue: string) {
-        this.split_stack = [this.initial_split, 100]
-        this.completion_stack = [this.initial_split - 1, Number.parseInt(newValue.substring(0, newValue.length - 1))]
-        this.rerender()
     }
     connectedCallback() {
         let loading = (window as unknown as PreloadedWindow).loading

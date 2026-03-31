@@ -44,12 +44,14 @@ const config_path = path.join(os.homedir(), 'HDC', 'config.json')
  */
 export default class Game {
     public modlist: Mod[] = [];
-    private game_window: BrowserWindow
+    private game_window: BrowserWindow;
+    private aborts: (() => void)[] = [];
     public AddCard = AddCard
     public AddEncounter = AddEncounter
     public AddStartingDeck = AddStartingDeck
     public AddKeyword = AddKeyword
     public AddDongle = AddDongle
+    
     constructor(get_main_window: () => BrowserWindow) {
         this.setupPreloads()
         this.game_window = get_main_window()
@@ -68,7 +70,7 @@ export default class Game {
     }
     private async startGame(hyperspace_path: PathLike, modlist: ModLoadInfo[]) {
         this.modlist = await Promise.all(modlist.map(modLoadInfoToMod))
-        Game.runThroughLoadingSequence([{
+        this.runThroughLoadingSequence([{
                 status_text: "Loading Wishgranter",
                 function: loadWishgranter
             },
@@ -78,15 +80,30 @@ export default class Game {
             },
             {
                 status_text: "Loading Hyperspace Deck Command",
-                function: (_hyperspace_path: string, game: Game) => this.game_window.webContents.send(
+                function: this.loadGame.bind(this)
+            },
+        ], hyperspace_path)
+    }
+    private loadGame() : LoadSequenceElement[]{
+        return [{
+            status_text: 'Starting Game',
+            function: (_hyperspace_path: string, game: Game) => this.game_window.webContents.send(
                     'start_game', this.modlist.filter((value) => value.gamestart).map((value) =>
                         value.gamestart))
-            },
-        ], hyperspace_path, this)
+        }].concat(Array.apply(null,Array(100)).map(() => {return {
+                status_text: 'Loading Hyperspace Deck Command',
+                function: () => new Promise<void>((resolve) => ipcMain.handleOnce('loading', (_event) => resolve()))
+            }}))
     }
     private setupPreloads() {
+        this.setupLoadingPreloads()
         this.setupModMenuPreloads()
         this.setupRemoteReplacePreloads()
+    }
+    private setupLoadingPreloads(){
+        ipcMain.handle('game_loaded', (_event) => {
+            while(this.aborts.length > 0) this.aborts.pop()!();
+        })
     }
     private setupModMenuPreloads() {
         ipcMain.handle('getHyperspace', (_event) => {
@@ -158,15 +175,13 @@ export default class Game {
                     return filePaths[0]
                 }
                 return ''
-            }),
-            ipcMain.handle('startGame', (_event, hyperspace_path: PathLike, modlist: ModLoadInfo[]) => this.startGame(
+            })
+        ipcMain.handle('startGame', (_event, hyperspace_path: PathLike, modlist: ModLoadInfo[]) => this.startGame(
                 hyperspace_path, modlist))
     }
     private setupRemoteReplacePreloads() {
         this.setupWindowPreloads()
         this.setupFilesystemPreloads()
-
-
     }
     private setupWindowPreloads() {
         ipcMain.handle('focus', (_event) => this.game_window.focus())
@@ -195,17 +210,21 @@ export default class Game {
         }))
         ipcMain.handle('exists', (_event, file: PathLike) => fs.existsSync(file))
     }
-    public static async runThroughLoadingSequence(load_sequence: LoadSequenceElement[], hyperspace_path: PathLike, game:
-        Game) {
-        game.game_window.webContents.send('loading_split', load_sequence.length)
+    public async runThroughLoadingSequence(load_sequence: LoadSequenceElement[], hyperspace_path: PathLike) {
+        const aborter = new Promise<void>((resolve) => this.aborts.push(resolve))
+        this.game_window.webContents.send('loading_split', load_sequence.length)
         for (let element of load_sequence) {
-            game.game_window.webContents.send('loading_status', element.status_text)
-            let sub_sequence = await element.function(path.join(hyperspace_path.toString(), 'resources', 'app.asar',
-                'app'), game)
+            this.game_window.webContents.send('loading_status', element.status_text)
+            let sub_sequence = await Promise.any(
+                [
+                    element.function(path.join(hyperspace_path.toString(), 'resources', 'app.asar', 'app'), this),
+                    aborter
+                ])
             if (sub_sequence) {
-                await Game.runThroughLoadingSequence(sub_sequence, hyperspace_path, game)
+                await this.runThroughLoadingSequence(sub_sequence, hyperspace_path)
             }
-            game.game_window.webContents.send('loading_complete')
+            this.game_window.webContents.send('loading_complete')
         }
+        this.aborts.pop()
     }
 }

@@ -8,6 +8,8 @@ import {
 
 export default interface PreloadedWindow {
     loading: {
+        game_loaded() : void;
+        load_game_percent_increase(): void;
         onComplete(subscriber: () => void): void;
         onSplit(subscriber: (peices: number) => void): void;
         onNewStatus(subscriber: (new_status: string) => void): void;

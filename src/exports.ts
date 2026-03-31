@@ -1,3 +1,5 @@
+import Game from './game.ts';
+
 export {
     LoadSequenceElement,
     LoadSequenceFunction,
@@ -5,10 +7,7 @@ export {
     LoadSequenceAsyncReturns
 }
 from './mod_menu/load_sequence.ts';
-export {
-    Game
-}
-from './game.ts';
+export {Game}
 export {
     Mod
 }

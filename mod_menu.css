@@ -14,13 +14,23 @@ body{
     --forground-color: 175, 250, 254;
     color: rgb(var(--forground-color));
     background-color: rgb(var(--background-color));
-    transition: background-color 3s linear;
     align-content: center;
     align-items: center;
     width: 100%;
     display: grid;
     grid-template-columns: 50% auto 2fr .2fr .2fr;
     grid-column-gap: 8px;
+}
+body[game_loaded]{
+    background-color : black;
+    transition: background-color 3s linear;
+}
+body[game_loaded] *[mod_menu]{
+    opacity: 0;
+    transition: opacity 2.5s linear;
+}
+body:not([game_loaded]) canvas{
+    display: none;
 }
 #modlist{
     grid-column: 1;
