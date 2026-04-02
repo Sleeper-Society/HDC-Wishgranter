@@ -15,4 +15,7 @@ from "./mod.ts";
 export {
     Card
 }
-from './card.ts';
+from './HDCTypes/card.ts';
+export {Dongle} from './HDCTypes/dongle.ts'
+export {Encounter} from './HDCTypes/encounter.ts'
+export {StartingDeck} from './HDCTypes/starting_deck.ts'

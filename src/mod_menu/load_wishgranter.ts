@@ -4,11 +4,9 @@ import {
     LoadSequenceElement
 } from "../exports.ts"
 import fs from 'fs/promises'
-import fss from 'fs'
 import path from "path";
-import {
-    assert
-} from "console";
+import { replaceData } from "./parse_data.ts";
+import { replaceCode0 } from "./parse_code0.ts";
 
 type ScriptReplacer = (hyperspace_path: string, game: Game, finisher: (on_finished ? : () => void) => void) => (string |
     Promise < string | [string, Iterable < LoadSequenceElement > ] > );
@@ -16,25 +14,8 @@ type ScriptReplacer = (hyperspace_path: string, game: Game, finisher: (on_finish
 const reimplementaitons: {
     [discarded_path: string]: ScriptReplacer
 } = {
-    'data.js': (hyperspace_path, game, finsher) => getTemporaryReplacedFile(hyperspace_path, game,
-        finsher,
-        'data.js',
-        [
-            [
-                /"?file"?: ?"([\w/]*\.(?:(?:png)|(?:wav)|(?:json)|(?:ogg)))"/g,
-                '"file":"' + hyperspace_path + '/$1"'
-            ]
-        ]),
-    'code0.js': (hyperspace_path, game, finsher) => getTemporaryReplacedFile(hyperspace_path, game,
-        finsher,
-        'code0.js',
-        [
-            [
-                /gdjs\s*\.evtsExt__GetPropertiesData__ReturnGameVersion\.func\(runtimeScene, null\)(?: \+(\s*)"(.*)")?/g,
-                'gdjs.evtsExt__GetPropertiesData__ReturnGameVersion.func(runtimeScene, null) +$1" (' + (game
-                    .modlist.length > 1 ? (game.modlist.length + ' Mods - ') : '') + 'Wishgranter)"'
-            ]
-        ]),
+    'data.js': replaceData,
+    'code0.js': replaceCode0,
     'pixi-renderers/loadingscreen-pixi-renderer.js': () => 'dist/renderer/loading_reimplementation.js',
     'pixi-renderers/runtimegame-pixi-renderer.js': (hyperspace_path, game, finisher) => getTemporaryReplacedFile(
         hyperspace_path,
@@ -76,30 +57,26 @@ export let loadWishgranter: LoadSequenceFunction = async (hyperspace_path: strin
             }]))
 }
 
-let directory: string = ''
-
-async function getTemporaryReplacedFile(hyperspace_path: string,
+export async function getTemporaryReplacedFile(hyperspace_path: string,
     game: Game,
     finisher: (on_finished ? : () => void) => void,
     file_name: string,
-    replacements: [regex: RegExp, replacement: string][]
-): Promise < string | [string, Iterable < LoadSequenceElement > ] > {
-    if (!directory || !fss.existsSync(directory)) {
-        directory = path.join(game.getTempDirectory(), 'HDCWishgranter')
-        fs.mkdir(directory, {
-            recursive: true
-        })
-    }
-    const temp_path = path.join(directory, 'parsed' + file_name.replaceAll(/\//g, ''))
-    finisher(tempDirectoryCleanup)
+    replacements: [regex: RegExp, replacement: string | ((match : ArrayIterator<RegExpMatchArray | null>) => Iterable<[matched : string, replacement : string | Promise<string>]>)][]
+): Promise < string | [string, LoadSequenceElement[] ] > {
+    const temp_path = path.join(game.getTempDirectory(), 'parsed' + file_name.replaceAll(/\//g, ''))
+    finisher(game.tempDirectoryCleanup)
     let data = await fs.readFile(path.join(hyperspace_path, file_name), 'utf8');
     let output = replacements.map((value, index, array): LoadSequenceElement => {
         return {
             status_text: file_name + ' Replacement Pass ' + index + '/' + array.length,
-            function: () => {
-                assert(data.match(value[0]), value[0])
-                data = value[0].global ? data.replaceAll(value[0], value[1]) : data.replace(value[0],
-                    value[1]);
+            function: async () => {
+                const match = value[0].global ? data.matchAll(value[0]) : [data.match(value[0])][Symbol.iterator]()
+                if (typeof value[1] == 'function'){
+                    for (const replacement of value[1](match)) data.replace(replacement[0],await replacement[1])
+                } else {
+                    data = value[0].global ? data.replaceAll(value[0], value[1]) : data.replace(value[0],
+                                        value[1]);
+                }
             }
         };
     });
@@ -115,10 +92,3 @@ async function getTemporaryReplacedFile(hyperspace_path: string,
     return temp_path;
 }
 
-async function tempDirectoryCleanup() {
-    await fs.rm(directory, {
-        force: true,
-        recursive: true
-    });
-    return directory = '';
-}

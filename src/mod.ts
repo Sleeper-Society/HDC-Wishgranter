@@ -1,4 +1,3 @@
-import fsPromise from "fs/promises";
 import fs from 'fs'
 import Game from "./game.ts";
 import {
@@ -9,6 +8,7 @@ import {
     PathLike
 } from "fs";
 import path from "path";
+import { bakeJSONs, convertDefualtDataToMod } from "./mod_menu/parse_data.ts";
 
 type RuntimeGame = any
 export interface Mod {
@@ -82,34 +82,9 @@ export function loadMods(hyperspace_path: string, game: Game): LoadSequenceRetur
                 }
             }
         };
-    });
+    }).concat([{
+        status_text: 'Applying Mods',
+        function: bakeJSONs
+    }]);
 }
 
-async function convertDefualtDataToMod(hyperspace_path: PathLike): Promise < Mod > {
-    return fsPromise.readFile(path.join(hyperspace_path.toString(), 'resources', 'app.asar', 'app', 'data.js'), 'utf8').then((data) => {
-        let jsdata: any = {}
-        eval('jsdata = ' + data.substring(19, data.length - ('gdjs.runtimeGameOptions = {};'.length + 1)));
-        return {
-            metadata: {
-                name: jsdata.properties.name,
-                version: jsdata.properties.version,
-                description: jsdata.properties.description,
-
-            }
-        };
-    });
-}
-
-export async function convertDefualtDataToLoadableModMetaData(hyperspace_path: PathLike): Promise < LoadableModMetaData > {
-    return fsPromise.readFile(path.join(hyperspace_path.toString(), 'resources', 'app.asar', 'app', 'data.js'), 'utf8').then((data) => {
-        let jsdata: any = {}
-        eval('jsdata = ' + data.substring(19, data.length - ('gdjs.runtimeGameOptions = {};'.length + 1)));
-        return {
-            name: jsdata.properties.name,
-            version: jsdata.properties.version,
-            description: jsdata.properties.description,
-            is_default: true,
-            path: hyperspace_path
-        };
-    });
-}

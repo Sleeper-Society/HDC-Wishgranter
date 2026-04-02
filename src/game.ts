@@ -6,7 +6,6 @@ import path from 'node:path';
 import os from 'os';
 import {
     bad_mod,
-    convertDefualtDataToLoadableModMetaData,
     LoadableModMetaData,
     Mod,
     ModLoadInfo,
@@ -14,13 +13,7 @@ import {
     loadMods,
     modLoadInfoToMod
 } from "./mod.ts";
-import {
-    AddCard,
-    AddEncounter,
-    AddStartingDeck,
-    AddKeyword,
-    AddDongle
-} from './mod_menu/parse_code0.ts';
+import { addCardToLootPool, addDongleToLootPool, addEncounter, addStartingDeck, convertDefualtDataToLoadableModMetaData } from "./mod_menu/parse_data.ts";
 import {
     app,
     BrowserWindow,
@@ -45,29 +38,41 @@ const config_path = path.join(os.homedir(), 'HDC', 'config.json')
 export default class Game {
     public modlist: Mod[] = [];
     private game_window: BrowserWindow;
-    private aborts: (() => void)[] = [];
-    public AddCard = AddCard
-    public AddEncounter = AddEncounter
-    public AddStartingDeck = AddStartingDeck
-    public AddKeyword = AddKeyword
-    public AddDongle = AddDongle
+    private temp_directory : string = ''
+    
+    public addEncounter = addEncounter
+    public addStartingDeck = addStartingDeck
+    public addCardToLootPool = addCardToLootPool
+    public addDongleToLootPool = addDongleToLootPool
     
     constructor(get_main_window: () => BrowserWindow) {
         this.setupPreloads()
         this.game_window = get_main_window()
     }
-    loadScript(script_source: fs.PathLike): Promise < void > {
+
+    public loadScript(script_source: fs.PathLike): Promise < void > {
         const promise = new Promise < void > ((resolve) => ipcMain.handleOnce(script_source + '_loaded', () =>
             resolve()));
         this.game_window.webContents.send('add_script', script_source)
         return promise
     }
-    getTempDirectory(): string {
-        return app.getPath('temp')
+    public getTempDirectory() : string{
+        if (!this.temp_directory || !fs.existsSync(this.temp_directory)) {
+            this.temp_directory = path.join(os.tmpdir(), 'HDCWishgranter')
+            fs.mkdirSync(this.temp_directory, {
+                recursive: true
+            })
+        }
+        return this.temp_directory
     }
-    cleanupTempDirectory() {
+    public async tempDirectoryCleanup() {
+        await fs.rmSync(this.getTempDirectory(), {
+            force: true,
+            recursive: true
+        });
+        return this.temp_directory = '';
+    }
 
-    }
     private async startGame(hyperspace_path: PathLike, modlist: ModLoadInfo[]) {
         this.modlist = await Promise.all(modlist.map(modLoadInfoToMod))
         this.runThroughLoadingSequence([{
@@ -95,15 +100,25 @@ export default class Game {
                 function: () => new Promise<void>((resolve) => ipcMain.handleOnce('loading', (_event) => resolve()))
             }}))
     }
+    public async runThroughLoadingSequence(load_sequence: LoadSequenceElement[], hyperspace_path: PathLike) {
+        this.game_window.webContents.send('loading_split', load_sequence.length)
+        for (let element of load_sequence) {
+            this.game_window.webContents.send('loading_status', element.status_text)
+            let sub_sequence = await element.function(path.join(hyperspace_path.toString(), 'resources', 'app.asar', 'app'), this)
+            if (sub_sequence) {
+                await this.runThroughLoadingSequence(sub_sequence, hyperspace_path)
+            }
+            this.game_window.webContents.send('loading_complete')
+        }
+    }
+
     private setupPreloads() {
         this.setupLoadingPreloads()
         this.setupModMenuPreloads()
         this.setupRemoteReplacePreloads()
     }
     private setupLoadingPreloads(){
-        ipcMain.handle('game_loaded', (_event) => {
-            while(this.aborts.length > 0) this.aborts.pop()!();
-        })
+        ipcMain.handle('game_loaded', (_event) => {})
     }
     private setupModMenuPreloads() {
         ipcMain.handle('getHyperspace', (_event) => {
@@ -210,21 +225,5 @@ export default class Game {
         }))
         ipcMain.handle('exists', (_event, file: PathLike) => fs.existsSync(file))
     }
-    public async runThroughLoadingSequence(load_sequence: LoadSequenceElement[], hyperspace_path: PathLike) {
-        const aborter = new Promise<void>((resolve) => this.aborts.push(resolve))
-        this.game_window.webContents.send('loading_split', load_sequence.length)
-        for (let element of load_sequence) {
-            this.game_window.webContents.send('loading_status', element.status_text)
-            let sub_sequence = await Promise.any(
-                [
-                    element.function(path.join(hyperspace_path.toString(), 'resources', 'app.asar', 'app'), this),
-                    aborter
-                ])
-            if (sub_sequence) {
-                await this.runThroughLoadingSequence(sub_sequence, hyperspace_path)
-            }
-            this.game_window.webContents.send('loading_complete')
-        }
-        this.aborts.pop()
-    }
+    
 }
