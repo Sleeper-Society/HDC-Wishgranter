@@ -1,14 +1,15 @@
 import fs from 'fs'
 import { Game } from "./game.ts";
 import {
+    LoadSequenceElement,
     LoadSequenceFunction,
-    LoadSequenceReturns
-} from "./mod_menu/load_sequence.ts";
+} from "./exports.ts";
 import {
     PathLike
 } from "fs";
 import path from "path";
-import { bakeJSONs, convertDefualtDataToMod } from "./mod_menu/parse_data.ts";
+import { convertDefualtDataToMod } from "./mod_menu/parse_data.ts";
+
 
 type RuntimeGame = any
 export interface Mod {
@@ -70,8 +71,8 @@ export async function modLoadInfoToMod(input: ModLoadInfo): Promise < Mod > {
     })
 }
 
-export function loadMods(hyperspace_path: string, game: Game): LoadSequenceReturns {
-    return game.modlist.map((mod) => {
+export const loadMods : LoadSequenceFunction = (hyperspace_path: string, game: Game) => {
+    return game.modlist.map((mod) : LoadSequenceElement => {
         return {
             status_text: "Loading " + mod.metadata.name,
             function: () => {
@@ -84,7 +85,7 @@ export function loadMods(hyperspace_path: string, game: Game): LoadSequenceRetur
         };
     }).concat([{
         status_text: 'Applying Mods',
-        function: bakeJSONs
+        function: (_hyperspace_path : string, game : Game ) => game.bakeJSONs()
     }]);
 }
 
