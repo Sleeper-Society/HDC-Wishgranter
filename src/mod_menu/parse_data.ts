@@ -5,22 +5,19 @@ import { Game, Mod, Card, LoadSequenceFunction, Encounter, StartingDeck, Dongle 
 import { LoadableModMetaData } from "../mod";
 import { getTemporaryReplacedFile } from "./load_wishgranter";
 
-export function replaceData(hyperspace_path: string, game: Game, finsher: (on_finished?: () => void) => void){
-    return getTemporaryReplacedFile(hyperspace_path, game, finsher, 'data.js',
+export const modified_jsons = ['cards','encounters','upgrades','comms','loot_list_up','loot_list_card','unlock_cond']
+export const unmodified_jsons = ['tooltips','tutorials','text_lists','cloud_labels','credits']
+
+export function replaceData(hyperspace_path: string, game: Game){
+    return getTemporaryReplacedFile(hyperspace_path, game, 'data.js',
         [
-            [
-                /(?<="?file"?: ?")([\w/]*)(?=\.(?:(?:png)|(?:wav)|(?:ogg))")/g,
-                path.join(hyperspace_path, '$1')
-            ],
-            [
-                /(?<="?file"?: ?")([\w/]*)(?=\.(?:json)")/g,
-                path.join(game.getTempDirectory(), '$1')
-            ]
+            /(?<="?file"?: ?")([\w/]*)(?=\.(?:(?:png)|(?:wav)|(?:ogg))")/g,
+            path.join(hyperspace_path, '$1')
+        ],
+        [
+            /(?<="?file"?: ?")([\w/]*)(?=\.(?:json)")/g,
+            path.join(game.getTempDirectory(), '$1')
         ]);
-}
-
-export const bakeJSONs : LoadSequenceFunction = async function(hyperspace_path: string, game : Game) {
-
 }
 
 export async function convertDefualtDataToMod(hyperspace_path: PathLike): Promise<Mod> {
@@ -48,17 +45,4 @@ export async function convertDefualtDataToLoadableModMetaData(hyperspace_path: P
             path: hyperspace_path
         };
     });
-}
-
-export function addEncounter(this : Game, encounter : Encounter) {
-
-}
-export function addStartingDeck(this : Game, starting_deck : StartingDeck) {
-
-}
-export function addCardToLootPool(this : Game, loot_pool : string, card : Card){
-
-}
-export function addDongleToLootPool(this : Game, loot_pool : string, dongle : Dongle){
-
 }

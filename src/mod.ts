@@ -1,5 +1,5 @@
 import fs from 'fs'
-import Game from "./game.ts";
+import { Game } from "./game.ts";
 import {
     LoadSequenceFunction,
     LoadSequenceReturns

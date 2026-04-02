@@ -20,13 +20,10 @@ const reimplementaitons: {
     'pixi-renderers/runtimegame-pixi-renderer.js': (hyperspace_path, game, finisher) => getTemporaryReplacedFile(
         hyperspace_path,
         game,
-        finisher,
         'pixi-renderers/runtimegame-pixi-renderer.js',
         [
-            [
-                /this.getElectronRemote ?= ?\(\) ?=> ?{([\s\S]*?)}\s*?;/g,
-                'this.getElectronRemote = () => window.remote_replace;'
-            ]
+            /this.getElectronRemote ?= ?\(\) ?=> ?{([\s\S]*?)}\s*?;/g,
+            'this.getElectronRemote = () => window.remote_replace;'
         ]),
     'Extensions/FileSystem/filesystemtools.js': () => 'dist/renderer/filesystem_reimplementation.js',
 }
@@ -59,12 +56,10 @@ export let loadWishgranter: LoadSequenceFunction = async (hyperspace_path: strin
 
 export async function getTemporaryReplacedFile(hyperspace_path: string,
     game: Game,
-    finisher: (on_finished ? : () => void) => void,
     file_name: string,
-    replacements: [regex: RegExp, replacement: string | ((match : ArrayIterator<RegExpMatchArray | null>) => Iterable<[matched : string, replacement : string | Promise<string>]>)][]
+    ...replacements: [regex: RegExp, replacement: string | ((match : ArrayIterator<RegExpMatchArray | null>) => Iterable<[matched : string, replacement : string | Promise<string>]>)][]
 ): Promise < string | [string, LoadSequenceElement[] ] > {
     const temp_path = path.join(game.getTempDirectory(), 'parsed' + file_name.replaceAll(/\//g, ''))
-    finisher(game.tempDirectoryCleanup)
     let data = await fs.readFile(path.join(hyperspace_path, file_name), 'utf8');
     let output = replacements.map((value, index, array): LoadSequenceElement => {
         return {

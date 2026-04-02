@@ -10,7 +10,7 @@ import {
     Menu
 } from "electron"
 import path from "path"
-import Game from "../game.ts"
+import { Game } from "../game.ts"
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.

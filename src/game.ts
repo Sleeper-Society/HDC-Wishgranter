@@ -7,13 +7,12 @@ import os from 'os';
 import {
     bad_mod,
     LoadableModMetaData,
-    Mod,
     ModLoadInfo,
     ModMetaData,
     loadMods,
     modLoadInfoToMod
 } from "./mod.ts";
-import { addCardToLootPool, addDongleToLootPool, addEncounter, addStartingDeck, convertDefualtDataToLoadableModMetaData } from "./mod_menu/parse_data.ts";
+import { convertDefualtDataToLoadableModMetaData, modified_jsons, unmodified_jsons } from './mod_menu/parse_data.ts';
 import {
     app,
     BrowserWindow,
@@ -24,27 +23,85 @@ import {
     findSteamApp
 } from 'steam-locate';
 import {
-    LoadSequenceElement
-} from './mod_menu/load_sequence.ts';
-import {
+    getTemporaryReplacedFile,
     loadWishgranter
 } from './mod_menu/load_wishgranter.ts';
+import { Mod, Card, CardLootTable, Dongle, Encounter, StartingDeck, LoadSequenceElement } from './exports.ts';
+
+
 
 const config_path = path.join(os.homedir(), 'HDC', 'config.json')
+export type Faction = 'glo' | 'lt' | 'tu' | 'con' | 'flo' | 'et' | string
 
+type GameFunctions = {[Method in keyof Game as (Game[Method] extends (() => void) ? Method : never)]: (() => void)}
 /**
  * Go between class for Main process and mods and the render process and game state.
  */
-export default class Game {
+export class Game {
     public modlist: Mod[] = [];
     private game_window: BrowserWindow;
     private temp_directory : string = ''
     
-    public addEncounter = addEncounter
-    public addStartingDeck = addStartingDeck
-    public addCardToLootPool = addCardToLootPool
-    public addDongleToLootPool = addDongleToLootPool
-    
+    private factions : Faction[] = []
+    private encounters : Map<Faction, Encounter[]> = new Map()
+    private starting_decks : Map<Faction,StartingDeck[]> = new Map()
+    private encounter_reward_dongles: Map<Faction,Dongle[]> = new Map()
+    private store_dongles: Map<Faction,Dongle[]> = new Map()
+    private encounter_start_dongles: Map<Faction, [gen: Dongle[], stat: Dongle[]]> = new Map()
+    private card_loot_table: Map<Faction,CardLootTable> = new Map()
+    private additional_comms : Map<string, string[][]> = new Map()
+
+    public bakeJSONs() : LoadSequenceElement[]{
+        return unmodified_jsons.map((json_name) => {
+            return {
+                status_text: 'Copying ' + json_name + '.json',
+                function: (hyperspace_path : string, game : Game) => {getTemporaryReplacedFile(hyperspace_path, game, json_name + '.json')}
+            }
+        }).concat(modified_jsons.map((json_name) => {
+            return {
+                status_text: 'Baking ' + json_name + '.json',
+                function: this[('bake_' + json_name) as keyof GameFunctions]
+            }
+        }))
+    }
+    private bake_cards() : void{
+         
+    }
+    private bake_encounters() : void{
+
+    }
+    private bake_upgrades() : void {
+
+    }
+    private bake_comms() : void {
+
+    }
+    private bake_loot_list_up() : void {
+
+    }
+    private bake_loot_list_card() : void{
+
+    }
+    private bake_unlock_cond() : void{
+
+    }
+    public addEncounter(encounter : Encounter, faction : Faction){
+
+    }
+    public addStartingDeck(starting_deck : StartingDeck, faction : Faction){
+
+    }
+    public addCardToLootPool(card : Card, loot_pool : keyof CardLootTable, faction : Faction, combo_faction?: Faction){
+        
+    }
+    public addDongleToLootPool(dongle : Dongle, loot_pool : 'encounter_reward_dongles' | 'store_dongles' | 'encounter_start_dongles', faction : Faction){
+
+    }
+    public addUnrefrencedComm(name : string, comm : string[][]){
+
+    }
+
+
     constructor(get_main_window: () => BrowserWindow) {
         this.setupPreloads()
         this.game_window = get_main_window()
