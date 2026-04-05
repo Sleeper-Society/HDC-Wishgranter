@@ -36,10 +36,10 @@
   },
   "types": "./dist/exports.ts",
   "scripts": {
-    "pretty": "js-beautify src/**/*.ts -r",
+    "pretty": "prettier --write src/**/*.ts",
+    "lint": "npx eslint src/**/*.ts",
     "\n========== Building ==========": "",
     "build": "npm run clean && tsc && node dist/renderer/cleaner.js",
-    "watch": "tsc --watch",
     "clean": "shx rm -rf ./dist/*",
     "\n========== Testing ==========": "",
     "test": "npm run build && mocha ",
@@ -72,14 +72,24 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.11.1",
     "@electron-forge/plugin-fuses": "^7.11.1",
     "@electron/fuses": "^1.8.0",
+    "@eslint/js": "^10.0.1",
     "@types/node": "^25.3.0",
     "@types/sinon": "^21.0.0",
     "electron": "41.0.0",
-    "js-beautify": "^1.15.4",
+    "eslint": "^10.2.0",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "mocha": "^11.7.5",
+    "prettier": "^3.8.1",
     "shx": "^0.4.0",
     "sinon": "^21.0.3",
     "source-map-support": "^0.5.21",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.2",
+    "typescript-eslint": "^8.58.0"
+  },
+  "lint-staged": {
+    "*.{ts}": "eslint --cache --fix",
+    "*.{ts,js,css,md}": "prettier --write"
   }
 }

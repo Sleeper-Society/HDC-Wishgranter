@@ -14,9 +14,26 @@
     },
     {
         "command": "npm run debug",
-        "name": "Electron Main",
+        "name": "Electron: Main",
         "request": "launch",
         "type": "node-terminal"
     },
+    {
+      "name": "Electron: Renderer",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223,
+      "webRoot": "${workspaceFolder}",
+      "timeout": 5000
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Electron: All",
+      "configurations": [
+        "Electron: Main",
+        "Electron: Renderer"
+      ]
+    }
   ]
 }
