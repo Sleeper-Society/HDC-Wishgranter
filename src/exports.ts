@@ -1,8 +1,8 @@
+export type { Mod } from "./renderer/mod.ts";
 export type {
-  LesserLoadingSequenceElement as LoadSequenceElement,
-  LesserLoadingSequenceFunction as LoadSequenceFunction,
-  Mod,
-} from "./renderer/mod.ts";
+  LoadSequenceElement,
+  LoadSequenceFunction,
+} from "./renderer/modMenu/loadingBar.ts";
 export type {
   Card,
   Encounter,

@@ -11,12 +11,6 @@ import fsPromise from "fs/promises";
 import os from "os";
 import { findSteamApp } from "steam-locate";
 import type { RemoteReplace, Wishgranter } from "./renderer/preload.ts";
-import {
-  bad_mod,
-  type LoadedModMetaData,
-  type Mod,
-  type ModMetaData,
-} from "./renderer/mod.ts";
 
 const config_path = path.join(os.homedir(), "HDC", "config.json");
 interface Config {
@@ -116,42 +110,12 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
     const response = await findSteamApp("2711190");
     return response.installDir ?? "";
   }
-  async getModsFromLocation(location: PathLike): Promise<LoadedModMetaData[]> {
+  getModsFromLocation(location: PathLike): PathLike[] {
     if (!fs.existsSync(location)) return [];
-    return await Promise.all(
-      (fs.readdirSync(location) as PathLike[])
-        .filter((mod_path: PathLike) => {
-          try {
-            fs.accessSync(
-              path.join(location.toString(), mod_path.toString(), "/index.js"),
-              fs.constants.R_OK,
-            );
-            return true;
-          } catch (error) {
-            console.warn("Unable to load ", mod_path, ". ", error);
-            return false;
-          }
-        })
-        .map(
-          async (mod_path: PathLike): Promise<LoadedModMetaData> =>
-            await import(
-              path.join(location.toString(), mod_path.toString(), "/index.js")
-            )
-              .catch((reason: unknown) => {
-                console.error(reason);
-                return bad_mod;
-              })
-              .then((mod_module: Mod) => {
-                try {
-                  const mod_data: ModMetaData | LoadedModMetaData =
-                    mod_module.metadata;
-                  (mod_data as LoadedModMetaData).path = mod_path;
-                  return mod_data as LoadedModMetaData;
-                } catch (error) {
-                  console.error(error);
-                  return bad_mod;
-                }
-              }),
+    return (fs.readdirSync(location) as PathLike[]).filter(
+      (mod_path: PathLike) =>
+        fs.existsSync(
+          path.join(location.toString(), mod_path.toString(), "/index.js"),
         ),
     );
   }

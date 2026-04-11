@@ -1,9 +1,10 @@
-import type { LoadedModMetaData } from "../mod.ts";
+import type { ModMetaData } from "../mod.ts";
 
 const mod_entry_template = document.getElementsByTagName("template")[0];
 
 export class ModEntry extends HTMLElement {
-  mod?: LoadedModMetaData;
+  mod?: ModMetaData;
+  enabled = true;
   connectedCallback() {
     if (!this.mod) {
       this.remove();

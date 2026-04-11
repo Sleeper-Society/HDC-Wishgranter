@@ -7,7 +7,6 @@ const {
   ipcRenderer: { invoke: (a: string, ...args: unknown[]) => Promise<unknown> };
 };
 import type { PathLike } from "node:fs";
-import type { LoadedModMetaData } from "./mod.ts";
 
 export default interface PreloadedWindow {
   wishgranter: Wishgranter;
@@ -61,9 +60,7 @@ const wishgranter = {
   getSteamGameLocation: () =>
     ipcRenderer.invoke("getSteamGameLocation") as Promise<PathLike>,
   getModsFromLocation: (location: PathLike) =>
-    ipcRenderer.invoke("getModsFromLocation", location) as Promise<
-      LoadedModMetaData[]
-    >,
+    ipcRenderer.invoke("getModsFromLocation", location) as Promise<PathLike[]>,
   askUserForDirectory: (start_directory: string) =>
     ipcRenderer.invoke(
       "askUserForDirectory",

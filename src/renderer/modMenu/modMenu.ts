@@ -1,6 +1,6 @@
 import type PreloadedWindow from "../preload.ts";
 import { startGame, loadHyperspaceLocation } from "../startGame/startGame.ts";
-import { addModLocationToModList } from "../startGame/loadMods.ts";
+import { loadModLocation } from "../startGame/loadMods.ts";
 import { reimportDefaultMod } from "../startGame/loadMods.ts";
 
 const hyperspace_file_location_input = document.getElementById(
@@ -23,19 +23,17 @@ function subscribeFileLocations() {
     loadHyperspaceLocation(
       hyperspace_file_location_input.getAttribute("value") ?? "",
     )
-      .then(() =>
-        { reimportDefaultMod(
+      .then(() => {
+        reimportDefaultMod(
           hyperspace_file_location_input.getAttribute("value") ?? "",
-        ); },
-      )
+        );
+      })
       .catch((error: unknown) => {
         console.log(error);
       });
   });
   mods_file_location_input?.addEventListener("change", () => {
-    addModLocationToModList(
-      mods_file_location_input.getAttribute("value") ?? "",
-    );
+    loadModLocation(mods_file_location_input.getAttribute("value") ?? "");
   });
 }
 
