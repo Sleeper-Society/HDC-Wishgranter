@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Modloader for Sleeper Game's Hyperspace Deck Command",
   "main": "dist/exports.js",
+  "type": "module",
   "mocha": {
     "enable-source-maps": true,
     "spec": "./dist/**/*_test.js",
@@ -37,14 +38,14 @@
   "types": "./dist/exports.ts",
   "scripts": {
     "pretty": "prettier --write src/**/*.ts",
-    "lint": "npx eslint src/**/*.ts",
+    "lint": "npx eslint src --cache --fix",
     "\n========== Building ==========": "",
-    "build": "npm run clean && tsc && node dist/renderer/cleaner.js",
+    "build": "npm run clean && tsc && node dist/cleaner.js",
     "clean": "shx rm -rf ./dist/*",
     "\n========== Testing ==========": "",
     "test": "npm run build && mocha ",
-    "start": "npm run build && electron-forge start --app-path ./dist/mod_menu/index.js",
-    "debug": "npm run build && electron-forge start --app-path ./dist/mod_menu/index.js --vscode",
+    "start": "npm run build && electron-forge start --app-path ./dist/index.js",
+    "debug": "npm run build && electron-forge start --app-path ./dist/index.js --vscode",
     "\n========== Exporting ==========": "",
     "package": "electron-forge package -- --platform=\"win32,linux\"",
     "make": "electron-forge make -- --platform=\"win32,linux\""

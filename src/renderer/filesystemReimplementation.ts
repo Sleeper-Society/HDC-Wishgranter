@@ -1,5 +1,5 @@
 import type { PathLike } from "fs";
-import type PreloadedWindow from "./bridge.ts";
+import type PreloadedWindow from "./preload.ts";
 declare let gdjs: {
   Logger: new (name: string) => { error: (...msg: unknown[]) => void };
 };
@@ -16,7 +16,7 @@ declare let gdjs: {
       file: PathLike,
     ) {
       try {
-        fs.writeFileSync(file, JSON.stringify(variable.toJSObject()), "utf8");
+        fs.writeFileSync(file, JSON.stringify(variable.toJSObject()));
       } catch (error) {
         logger.error(
           "Unable to save the variable to path: '" + file.toString() + "': ",

@@ -1,6 +1,5 @@
-import type PreloadedWindow from "./bridge.ts";
-
-class LoadingBarElement extends HTMLElement {
+import type { PathLike } from "fs";
+export class LoadingBarElement extends HTMLElement {
   split_stack: number[] = [];
   initial_split = 0;
   completion_stack: number[] = [];
@@ -76,14 +75,38 @@ class LoadingBarElement extends HTMLElement {
     this.style.background =
       gradient + ", rgba(var(--background-color), 0) 100%)";
   }
-  connectedCallback() {
-    const loading = (window as unknown as PreloadedWindow).loading;
-    loading.onNewStatus((new_status: string | null) => {
-      this.textContent = new_status;
-    });
-    loading.onSplit(this.split.bind(this));
-    loading.onComplete(this.complete.bind(this));
-  }
 }
 
 customElements.define("loading-bar", LoadingBarElement);
+
+// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+export type LoadSequenceReturns = void | LoadSequenceElement[];
+export type LoadSequenceAsyncReturns = Promise<LoadSequenceReturns>;
+export type LoadSequenceFunction = (
+  hyperspace_path: PathLike,
+) => LoadSequenceReturns | LoadSequenceAsyncReturns;
+export interface LoadSequenceElement {
+  status_text: string;
+  loading_bar_fraction?: number;
+  function: LoadSequenceFunction;
+}
+
+export async function runThroughLoadingSequence(
+  loading_bar: LoadingBarElement,
+  load_sequence: LoadSequenceElement[],
+  hyperspace_path: PathLike,
+) {
+  loading_bar.split(load_sequence.length);
+  for (const element of load_sequence) {
+    loading_bar.textContent = element.status_text;
+    const sub_sequence = await element.function(hyperspace_path);
+    if (sub_sequence) {
+      await runThroughLoadingSequence(
+        loading_bar,
+        sub_sequence,
+        hyperspace_path,
+      );
+    }
+    loading_bar.complete();
+  }
+}

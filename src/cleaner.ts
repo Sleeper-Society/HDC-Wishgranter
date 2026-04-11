@@ -1,13 +1,14 @@
 import fs from "fs";
 
 for (const script of fs
-  .readdirSync(__dirname, {
+  .readdirSync(import.meta.dirname, {
     encoding: "utf8",
     withFileTypes: true,
+    recursive: true,
   })
   .filter(
     (value: fs.Dirent) =>
-      value.name.endsWith(".js") && value.name !== __filename,
+      value.name.endsWith(".js") && value.name !== import.meta.filename,
   )
   .map((value: fs.Dirent) => {
     return value.parentPath + "/" + value.name;

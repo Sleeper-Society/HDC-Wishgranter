@@ -1,62 +1,73 @@
 @font-face {
-    font-family: "Oxanium";
-    src: url('./Oxanium-Hyper.ttf');
+  font-family: "Oxanium";
+  src: url("./Oxanium-Hyper.ttf");
 }
-html{
-    height: 100%;
-    align-content: center;
-    align-items: center;
-    display: flex;
+html {
+  height: 100%;
+  align-content: center;
+  align-items: center;
+  display: flex;
 }
-body{
-    font-family: Oxanium;
-    --background-color: 33, 33, 255;
-    --forground-color: 175, 250, 254;
-    color: rgb(var(--forground-color));
-    background-color: rgb(var(--background-color));
-    align-content: center;
-    align-items: center;
-    width: 100%;
-    display: grid;
-    grid-template-columns: 50% auto 2fr .2fr .2fr;
-    grid-column-gap: 8px;
+body {
+  font-family: Oxanium;
+  --background-color: 33, 33, 255;
+  --forground-color: 175, 250, 254;
+  --highlight-color: #ffda45;
+  color: rgb(var(--forground-color));
+  background-color: rgb(var(--background-color));
+  align-content: center;
+  align-items: center;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 50% auto 2fr 0.2fr 0.2fr;
+  grid-column-gap: 8px;
 }
-body[game_loaded]{
-    background-color : black;
-    transition: background-color 3s linear;
+body[game_loaded] {
+  background-color: black;
+  transition: background-color 3s linear;
 }
-body[game_loaded] *[mod_menu]{
-    opacity: 0;
-    transition: opacity 2.5s linear;
+body[game_loading] *[mod_menu] {
+  opacity: 0;
+  transition: opacity 2.5s linear;
 }
-body:not([game_loaded]) canvas{
-    display: none;
+body[game_loaded] *[mod_menu] {
+  display: none;
 }
-#modlist{
-    grid-column: 1;
-    grid-row: 1 / 5;
-    height: 100%;
-    background-color: #63636380
+body:not([game_loaded]) canvas {
+  display: none;
 }
-label{
-    align-self: center;
-    grid-column: 2
+#modlist {
+  grid-column: 1;
+  grid-row: 1 / 5;
+  height: 100%;
+  background-color: #63636380;
 }
-div:has(img), button:last-of-type, loading-bar{
-    text-align: center;
-    grid-column: 2 / -1;   
+label {
+  align-self: center;
+  grid-column: 2;
 }
-loading-bar{
-    grid-column: 1 / -1;   
-    height: 20px;
-    border: groove;
-    display: block;
-    text-align: center;
-    text-shadow:
-            -2px -2px 0 rgb(var(--background-color)),
-            2px -2px 0 rgb(var(--background-color)),
-            -2px 2px 0 rgb(var(--background-color)),
-            2px 2px 0 rgb(var(--background-color)),
-            -3px 0 0 rgb(var(--background-color)),
-            3px 0 0 rgb(var(--background-color));
+div:has(img),
+button:last-of-type,
+loading-bar {
+  text-align: center;
+  grid-column: 2 / -1;
+}
+body[game_loading] loading-bar {
+  opacity: 1;
+  border-color: var(--highlight-color);
+  transition: border-color 3s linear;
+}
+loading-bar {
+  grid-column: 1 / -1;
+  height: 20px;
+  border: groove;
+  display: block;
+  text-align: center;
+  text-shadow:
+    -2px -2px 0 rgb(var(--background-color)),
+    2px -2px 0 rgb(var(--background-color)),
+    -2px 2px 0 rgb(var(--background-color)),
+    2px 2px 0 rgb(var(--background-color)),
+    -3px 0 0 rgb(var(--background-color)),
+    3px 0 0 rgb(var(--background-color));
 }

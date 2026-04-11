@@ -1,4 +1,8 @@
-import type PreloadedWindow from "./bridge.ts";
+import type { LoadingBarElement } from "./modMenu/loadingBar.ts";
+
+const loading_bar = document.getElementsByTagName(
+  "loading-bar",
+)[0] as LoadingBarElement;
 
 declare let gdjs: { LoadingScreenRenderer: undefined };
 
@@ -19,16 +23,13 @@ declare let gdjs: { LoadingScreenRenderer: undefined };
     }
     setPercent(new_percent: number) {
       for (let i = this.previous_percent; i < new_percent; i++)
-        (
-          window as unknown as PreloadedWindow
-        ).loading.load_game_percent_increase();
+        loading_bar.complete();
       this.previous_percent = new_percent;
     }
     renderIfNeeded() {
       return this.previous_percent < 1.0;
     }
     unload() {
-      (window as unknown as PreloadedWindow).loading.game_loaded();
       document.body.setAttribute("game_loaded", "");
     }
   }

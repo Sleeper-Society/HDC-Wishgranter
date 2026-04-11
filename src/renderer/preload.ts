@@ -1,107 +1,39 @@
-import type { IpcRendererEvent } from "electron";
-import { contextBridge, ipcRenderer } from "electron";
-import type { ModHeader } from "../mod.ts";
-import type PreloadedWindow from "./bridge.ts";
+const {
+  contextBridge,
+  ipcRenderer,
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+} = require("electron") as {
+  contextBridge: { exposeInMainWorld: (a: string, b: unknown) => void };
+  ipcRenderer: { invoke: (a: string, ...args: unknown[]) => Promise<unknown> };
+};
 import type { PathLike } from "node:fs";
+import type { LoadedModMetaData } from "./mod.ts";
 
-const loading: PreloadedWindow["loading"] = {
-  onNewStatus: (callback: (new_status: string) => void) =>
-    ipcRenderer.on(
-      "loading_status",
-      (_event: IpcRendererEvent, new_status: string) => {
-        callback(new_status);
-      },
-    ),
-  onSplit: (callback: (peices: number) => void) =>
-    ipcRenderer.on(
-      "loading_split",
-      (_event: IpcRendererEvent, peices: number) => {
-        callback(peices);
-      },
-    ),
-  onComplete: (callback: () => void) =>
-    ipcRenderer.on("loading_complete", () => {
-      callback();
-    }),
-  onAddScript: (callback: (script_source: string) => Promise<void>) =>
-    ipcRenderer.on(
-      "add_script",
-      (_event: IpcRendererEvent, script_source: string) =>
-        void callback(script_source).then(() =>
-          ipcRenderer.invoke(script_source + "_loaded"),
-        ),
-    ),
-  load_game_percent_increase: () => void ipcRenderer.invoke("loading"),
-  game_loaded: () => void ipcRenderer.invoke("game_loaded"),
-};
-const wishgranter: PreloadedWindow["wishgranter"] = {
-  onGameStart: (
-    callback: (modlist: ((runtime_game: unknown) => void)[]) => void,
-  ) =>
-    ipcRenderer.on(
-      "start_game",
-      (
-        _event: IpcRendererEvent,
-        modlist: ((runtime_game: unknown) => void)[],
-      ) => {
-        callback(modlist);
-      },
-    ),
-  getDefaultHyperspacePath: () => ipcRenderer.invoke("getHyperspace"),
-  getDefaultModsPath: () => ipcRenderer.invoke("getDefaultMods"),
-  getSteamGameLocation: () => ipcRenderer.invoke("getSteam"),
-  getModsFromLocation: (game_location: PathLike, location: PathLike) =>
-    ipcRenderer.invoke("getMods", game_location, location),
-  askUserForDirectory: (start_directory: string) =>
-    ipcRenderer.invoke("askForDirectory", start_directory),
-  startGame: (hyperspace_path: string, modlist: ModHeader[]) =>
-    void ipcRenderer.invoke("startGame", hyperspace_path, modlist),
-};
-const remote_replace: PreloadedWindow["remote_replace"] = {
-  getCurrentWindow: () => {
-    return {
-      focus: () => void ipcRenderer.invoke("focus"),
-      setFullScreen: (set_fullscreen: boolean) =>
-        void ipcRenderer.invoke("fullscreen", set_fullscreen),
-      setContentSize: (width: number, height: number) =>
-        void ipcRenderer.invoke("content_size", width, height),
-      close: () => void ipcRenderer.invoke("close"),
-      setResizable: (resizeable: boolean) =>
-        void ipcRenderer.invoke("resizeable", resizeable),
-      setFullScreenable: (fullscreenable: boolean) =>
-        void ipcRenderer.invoke("fullscreenable", fullscreenable),
-    };
-  },
-  app: {
-    getPath: (path_flag: "documents" | "home") =>
-      path_flag == "documents" ? documents_path : home_path,
-  },
-  path: {
-    sep: () => sep,
-  },
-  fs: {
-    existsSync: (file: PathLike) => cached_files.has(file),
-    unlinkSync: (file: PathLike) => {
-      void ipcRenderer.invoke("deleteFile", file);
-    },
-    writeFileSync: writeFile,
-    readFileSync: (file: PathLike) => cached_files.get(file) ?? "",
-    mkdirSync: (dir: PathLike) => void ipcRenderer.invoke("mkdir", dir),
-  },
-};
+export default interface PreloadedWindow {
+  wishgranter: Wishgranter;
+  remote_replace: RemoteReplace;
+}
+export type Wishgranter = typeof wishgranter;
+export type RemoteReplace = typeof remote_replace;
 
-let sep = "/";
+let sep: string | undefined = "/";
 let documents_path = "";
 let home_path = "";
-const cached_files: Map<PathLike, string | null> = new Map<PathLike, string>();
+let temp_path = "";
+const cached_files: Map<PathLike, string> = new Map<PathLike, string>();
 void ipcRenderer
   .invoke("getPath", "documents")
-  .then((response: string) => (documents_path = response));
+  .then((response: unknown) => (documents_path = response as string));
+void ipcRenderer
+  .invoke("getPath", "temp")
+  .then((response: unknown) => (temp_path = response as string));
 void Promise.all([
   ipcRenderer
     .invoke("getPath", "home")
-    .then((response: string) => (home_path = response)),
-  ipcRenderer.invoke("sep").then((response: string) => (sep = response)),
+    .then((response: unknown) => (home_path = response as string)),
+  ipcRenderer
+    .invoke("sep")
+    .then((response: unknown) => (sep = response as string)),
 ]).then(([home_path, sep]) => {
   const paths_to_check_in_hdc: string[] = [
     "",
@@ -115,15 +47,88 @@ void Promise.all([
   for (const path of paths_to_check_in_hdc.map(
     (value) => home_path + sep + "HDC" + sep + value,
   )) {
-    void ipcRenderer
-      .invoke("readFile", path)
-      .then((data: string | undefined | null) => {
-        if (data != undefined) cached_files.getOrInsert(path, data);
-      });
+    void ipcRenderer.invoke("readFileSync", path).then((data: unknown) => {
+      if (data != "undefined") cached_files.getOrInsert(path, data as string);
+    });
   }
 });
 
-contextBridge.exposeInMainWorld("loading", loading);
+const wishgranter = {
+  getDefaultHyperspacePath: () =>
+    ipcRenderer.invoke("getDefaultHyperspacePath") as Promise<PathLike>,
+  getDefaultModsPath: () =>
+    ipcRenderer.invoke("getDefaultModsPath") as Promise<PathLike>,
+  getSteamGameLocation: () =>
+    ipcRenderer.invoke("getSteamGameLocation") as Promise<PathLike>,
+  getModsFromLocation: (location: PathLike) =>
+    ipcRenderer.invoke("getModsFromLocation", location) as Promise<
+      LoadedModMetaData[]
+    >,
+  askUserForDirectory: (start_directory: string) =>
+    ipcRenderer.invoke(
+      "askUserForDirectory",
+      start_directory,
+    ) as Promise<PathLike>,
+  getHyperspaceScriptTags: (hyperspace_path: PathLike) =>
+    ipcRenderer.invoke("getHyperspaceScriptTags", hyperspace_path) as Promise<
+      PathLike[]
+    >,
+  readHyperspaceFile: (hyperspace_path: PathLike, file_name: PathLike) =>
+    ipcRenderer.invoke(
+      "readHyperspaceFile",
+      hyperspace_path,
+      file_name,
+    ) as Promise<string>,
+  createTemporaryFile: (file_name: PathLike, data: string) =>
+    ipcRenderer.invoke(
+      "createTemporaryFile",
+      file_name,
+      data,
+    ) as Promise<string>,
+};
+const remote_replace = {
+  getCurrentWindow: () => {
+    return {
+      focus: (): void => void ipcRenderer.invoke("focus"),
+      setFullScreen: (set_fullscreen: boolean): void =>
+        void ipcRenderer.invoke("setFullScreen", set_fullscreen),
+      setContentSize: (width: number, height: number): void =>
+        void ipcRenderer.invoke("setContentSize", width, height),
+      close: (): void => void ipcRenderer.invoke("close"),
+      setResizable: (resizeable: boolean): void =>
+        void ipcRenderer.invoke("setResizable", resizeable),
+      setFullScreenable: (fullscreenable: boolean): void =>
+        void ipcRenderer.invoke("setFullScreenable", fullscreenable),
+    };
+  },
+  app: {
+    getPath: (path_flag: "documents" | "home" | "temp") => {
+      switch (path_flag) {
+        case "documents":
+          return documents_path;
+        case "home":
+          return home_path;
+        case "temp":
+          return temp_path;
+      }
+    },
+  },
+  path: {
+    sep: () => sep ?? "/",
+  },
+  fs: {
+    existsSync: (file: PathLike) => cached_files.has(file),
+    unlinkSync: (file: PathLike) => {
+      void ipcRenderer.invoke("deleteFile", file);
+    },
+    writeFileSync: writeFile,
+    readFileSync: (file: PathLike) => cached_files.get(file) ?? "",
+    mkdirSync: (dir: PathLike) => {
+      void ipcRenderer.invoke("mkdirSync", dir);
+    },
+  },
+};
+
 contextBridge.exposeInMainWorld("remote_replace", remote_replace);
 contextBridge.exposeInMainWorld("wishgranter", wishgranter);
 

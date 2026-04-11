@@ -1,15 +1,16 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <title>Hyperspace Deck Command: Wishgranter</title>
     <link href="mod_menu.css" rel="stylesheet" type="text/css" media="all" />
-    <script src="dist/renderer/loading_bar.js"></script>
-    <script src="dist/renderer/mod_menu.js" defer></script>
+    <script src="dist/renderer/modMenu/loadingBar.js" type="module"></script>
+    <script src="dist/renderer/modMenu/modEntry.js" type="module"></script>
+    <script src="dist/renderer/modMenu/modMenu.js" type="module"></script>
   </head>
   <body>
     <template>
-      <img class="icon">
+      <img class="icon" />
       <h2 class="name"></h2>
       <p class="version"></p>
       <p class="description"></p>
@@ -17,15 +18,29 @@
       <button class="move_down">↓</button>
     </template>
     <div mod_menu id="modlist"></div>
-    <div mod_menu><img src="HyperspaceBoxArt.png"></div>
-    <label mod_menu for="hyperspace_file_location_input">Hyperspace Deck Command Installation:</label>
-    <input mod_menu type="text" id="hyperspace_file_location_input"/>
-    <button mod_menu class="steam_button"><img src="steam.svg"></button>
-    <button mod_menu class="file_location_button" for="hyperspace_file_location_input"><img src="folder.svg"></button>
+    <div mod_menu><img src="HyperspaceBoxArt.png" /></div>
+    <label mod_menu for="hyperspace_file_location_input"
+      >Hyperspace Deck Command Installation:</label
+    >
+    <input mod_menu type="text" id="hyperspace_file_location_input" />
+    <button mod_menu class="steam_button"><img src="steam.svg" /></button>
+    <button
+      mod_menu
+      class="file_location_button"
+      for="hyperspace_file_location_input"
+    >
+      <img src="folder.svg" />
+    </button>
     <label mod_menu for="mods_file_location_input">Mods folder:</label>
-    <input mod_menu type="text" id="mods_file_location_input"/>
-    <button mod_menu class="file_location_button" for="mods_file_location_input"><img src="folder.svg"></button>
-    <button mod_menu id="start_game_button">Start Game</button>
+    <input mod_menu type="text" id="mods_file_location_input" />
+    <button
+      mod_menu
+      class="file_location_button"
+      for="mods_file_location_input"
+    >
+      <img src="folder.svg" />
+    </button>
+    <button mod_menu id="start_game_button" disabled>Start Game</button>
     <loading-bar mod_menu id="loading_bar"></loading-bar>
   </body>
 </html>
