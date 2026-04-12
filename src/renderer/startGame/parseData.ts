@@ -22,7 +22,7 @@ export const unmodified_jsons = [
 
 export function replaceData(original_file: string, hyperspace_path: PathLike) {
   return getReplacedFile(original_file, [
-    /(?<="?file"?: ?")([\w/]*)(?=\.(?:(?:png)|(?:wav)|(?:ogg)|(?:json))")/g,
+    /(?<="?file"?: ?")([\w/]*)(?=\.(?:(?:png)|(?:wav)|(?:ogg)|(?:json)|(?:ttf))")/g,
     hyperspace_path.toString() +
       (window as unknown as PreloadedWindow).remote_replace.path.sep() +
       "resources" +
@@ -35,22 +35,40 @@ export function replaceData(original_file: string, hyperspace_path: PathLike) {
   ]);
 }
 
-declare let gdjs: {
+// eslint-disable-next-line no-var
+declare var gdjs: {
   projectData: {
     properties: {
       name: string;
       version: string;
       description: string;
+      platformSpecificAssets: Record<string, string>;
     };
   };
 };
 
-export function convertDefualtDataToMod(): Mod {
+export function convertDefualtDataToMod(hyperspace_path: PathLike): Mod {
   return {
     metadata: {
       name: gdjs.projectData.properties.name,
       version: gdjs.projectData.properties.version,
       description: gdjs.projectData.properties.description,
+      icon:
+        hyperspace_path.toString() +
+        (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+        "resources" +
+        (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+        "app.asar" +
+        (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+        "app" +
+        (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+        gdjs.projectData.properties.platformSpecificAssets[
+          "desktop-icon-512"
+        ].split("/")[
+          gdjs.projectData.properties.platformSpecificAssets[
+            "desktop-icon-512"
+          ].split("/").length - 1
+        ],
     },
   };
 }

@@ -6,13 +6,9 @@ export class LoadingBarElement extends HTMLElement {
   constructor() {
     super();
     this.split_stack = [];
-    this.initial_split = 0;
     this.completion_stack = [];
   }
   split(peices: number) {
-    if (this.split_stack.length == 0 && this.initial_split == 0) {
-      this.initial_split = peices;
-    }
     this.split_stack.push(peices);
     this.completion_stack.push(0);
     this.rerender();

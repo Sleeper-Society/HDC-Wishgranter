@@ -123,11 +123,8 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
     if (!fs.existsSync(location)) return [];
     return fs
       .readdirSync(location)
-      .filter((mod_path: PathLike) =>
-        fs.existsSync(
-          path.join(location.toString(), mod_path.toString(), "/index.js"),
-        ),
-      );
+      .map((mod_path) => path.join(location.toString(), mod_path))
+      .filter((mod_path) => fs.existsSync(path.join(mod_path, "/index.js")));
   }
   async askUserForDirectory(start_directory: string): Promise<string> {
     const { canceled, filePaths } = await dialog.showOpenDialog({
@@ -158,15 +155,16 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
     hyperspace_path: PathLike,
     file_name: PathLike,
   ): Promise<string> {
-    const file_to_read = path.join(
-      hyperspace_path.toString(),
-      "resources",
-      "app.asar",
-      "app",
-      file_name.toString(),
+    return fsPromise.readFile(
+      path.join(
+        hyperspace_path.toString(),
+        "resources",
+        "app.asar",
+        "app",
+        file_name.toString(),
+      ),
+      "utf8",
     );
-    console.log("Reading file ", file_to_read);
-    return fsPromise.readFile(file_to_read, "utf8");
   }
   async createTemporaryFile(
     file_name: PathLike,

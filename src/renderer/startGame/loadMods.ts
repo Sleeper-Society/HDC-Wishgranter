@@ -11,9 +11,9 @@ const modlist: Record<string, [Mod, boolean]> = {};
 // eslint-disable-next-line no-var
 declare var gdjs: { projectData: { properties: { name: string } } };
 
-export function reimportDefaultMod() {
+export function reimportDefaultMod(hyperspace_location: PathLike) {
   modlist[gdjs.projectData.properties.name] = [
-    convertDefualtDataToMod(),
+    convertDefualtDataToMod(hyperspace_location),
     (modlist[gdjs.projectData.properties.name] ?? [true])[1],
   ];
   recreateHTMLModlist();

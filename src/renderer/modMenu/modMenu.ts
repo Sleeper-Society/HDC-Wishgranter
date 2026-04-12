@@ -9,22 +9,31 @@ const hyperspace_file_location_input = document.getElementById(
 const mods_file_location_input = document.getElementById(
   "mods_file_location_input",
 );
+const box_art = document.getElementById(
+  "hyperspace_box_art",
+) as HTMLImageElement;
+const font = document.getElementById("font") as HTMLStyleElement;
 const start_game_button = document.getElementById(
   "start_game_button",
 ) as HTMLButtonElement;
 
 subscribeFileLocations();
-prepopulateFileLocations();
 enableFileLocationButtons();
 enableStartGameButton();
+prepopulateFileLocations();
 
 function subscribeFileLocations() {
   hyperspace_file_location_input?.addEventListener("change", () => {
+    changeStyleToHyperspace(
+      hyperspace_file_location_input.getAttribute("value") ?? "",
+    );
     loadHyperspaceLocation(
       hyperspace_file_location_input.getAttribute("value") ?? "",
     )
       .then(() => {
-        reimportDefaultMod();
+        reimportDefaultMod(
+          hyperspace_file_location_input.getAttribute("value") ?? "",
+        );
       })
       .catch((error: unknown) => {
         console.log(error);
@@ -33,6 +42,30 @@ function subscribeFileLocations() {
   mods_file_location_input?.addEventListener("change", () => {
     loadModLocation(mods_file_location_input.getAttribute("value") ?? "");
   });
+}
+
+function changeStyleToHyperspace(hyperspace_location: string) {
+  box_art.src =
+    hyperspace_location +
+    (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+    "resources" +
+    (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+    "app.asar" +
+    (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+    "app" +
+    (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+    "store_capsule_header.png";
+  font.innerText =
+    '@font-face {font-family: "Oxanium";src: url("' +
+    hyperspace_location +
+    (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+    "resources" +
+    (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+    "app.asar" +
+    (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+    "app" +
+    (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+    '/Oxanium-Hyper.ttf");}';
 }
 
 function prepopulateFileLocations() {

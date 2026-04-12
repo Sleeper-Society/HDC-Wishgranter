@@ -1,6 +1,7 @@
 import type { PathLike } from "node:fs";
 import type {
   LoadSequenceFunction,
+  LoadSequenceElement,
   LoadingBarElement,
 } from "../modMenu/loadingBar.ts";
 import { runThroughLoadingSequence } from "../modMenu/loadingBar.ts";
@@ -71,13 +72,33 @@ export function startGame(hyperspace_path: PathLike) {
       },
       {
         status_text: "Loading Hyperspace Deck Command",
-        function: baseStartGame,
+        function: loadHyperspaceDeckCommand,
       },
     ],
     hyperspace_path,
   ).catch((error: unknown) => {
     console.log(error);
   });
+}
+
+function loadHyperspaceDeckCommand(): LoadSequenceElement[] {
+  return [
+    {
+      status_text: "Starting Game",
+      function: baseStartGame,
+    },
+  ].concat(
+    Array.from({ length: 100 }, () => {
+      return {
+        status_text: "Loading Hyperspace Deck Command",
+        function: () => {
+          return new Promise(() => {
+            return; //Never resolves, handled by loading reimplementaion
+          });
+        },
+      };
+    }),
+  );
 }
 
 export async function loadHyperspaceLocation(hyperspace_path: PathLike) {
