@@ -110,14 +110,16 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
     const response = await findSteamApp("2711190");
     return response.installDir ?? "";
   }
-  getModsFromLocation(location: PathLike): PathLike[] {
+  // @ts-expect-error I don't expect an error but I'm getting one anyway
+  getModsFromLocation(location: PathLike): string[] {
     if (!fs.existsSync(location)) return [];
-    return (fs.readdirSync(location) as PathLike[]).filter(
-      (mod_path: PathLike) =>
+    return fs
+      .readdirSync(location)
+      .filter((mod_path: PathLike) =>
         fs.existsSync(
           path.join(location.toString(), mod_path.toString(), "/index.js"),
         ),
-    );
+      );
   }
   async askUserForDirectory(start_directory: string): Promise<string> {
     const { canceled, filePaths } = await dialog.showOpenDialog({

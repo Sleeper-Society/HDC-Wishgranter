@@ -4,12 +4,9 @@ import type { LoadSequenceElement } from "../modMenu/loadingBar.ts";
 import type PreloadedWindow from "../preload.ts";
 import type { ModEntry } from "../modMenu/modEntry.ts";
 import { convertDefualtDataToMod } from "./parseData.ts";
-import { getWishgranterMod } from "./parseCode0.ts";
 
 const modlist_parent = document.getElementById("modlist");
-const modlist: Record<string, [Mod, boolean]> = {
-  wishgranter: [getWishgranterMod(), true],
-};
+const modlist: Record<string, [Mod, boolean]> = {};
 
 // eslint-disable-next-line no-var
 declare var gdjs: { projectData: { properties: { name: string } } };
@@ -17,7 +14,7 @@ declare var gdjs: { projectData: { properties: { name: string } } };
 export function reimportDefaultMod(hyperspace_location: PathLike) {
   modlist[gdjs.projectData.properties.name] = [
     convertDefualtDataToMod(hyperspace_location),
-    modlist[gdjs.projectData.properties.name][1],
+    (modlist[gdjs.projectData.properties.name] ?? [true])[1],
   ];
   recreateHTMLModlist();
 }

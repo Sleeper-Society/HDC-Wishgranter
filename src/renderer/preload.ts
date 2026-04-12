@@ -60,7 +60,7 @@ const wishgranter = {
   getSteamGameLocation: () =>
     ipcRenderer.invoke("getSteamGameLocation") as Promise<PathLike>,
   getModsFromLocation: (location: PathLike) =>
-    ipcRenderer.invoke("getModsFromLocation", location) as Promise<PathLike[]>,
+    ipcRenderer.invoke("getModsFromLocation", location) as Promise<string[]>,
   askUserForDirectory: (start_directory: string) =>
     ipcRenderer.invoke(
       "askUserForDirectory",
@@ -116,7 +116,7 @@ const remote_replace = {
   fs: {
     existsSync: (file: PathLike) => cached_files.has(file),
     unlinkSync: (file: PathLike) => {
-      void ipcRenderer.invoke("deleteFile", file);
+      void ipcRenderer.invoke("unlinkSync", file);
     },
     writeFileSync: writeFile,
     readFileSync: (file: PathLike) => cached_files.get(file) ?? "",
@@ -131,5 +131,5 @@ contextBridge.exposeInMainWorld("wishgranter", wishgranter);
 
 function writeFile(file: PathLike, data: string) {
   cached_files.set(file, data);
-  void ipcRenderer.invoke("writeFile", file, data);
+  void ipcRenderer.invoke("writeFileSync", file, data);
 }

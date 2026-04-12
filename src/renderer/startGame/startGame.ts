@@ -88,6 +88,7 @@ export async function loadHyperspaceLocation(hyperspace_path: PathLike) {
     [{ status_text: "Loading Wishgranter", function: loadWishgranter }],
     hyperspace_path,
   );
+  loading_bar.textContent = "";
   document.body.classList.add("game_loadable");
   start_game_button.disabled = false;
 }

@@ -1,5 +1,5 @@
 import type { PathLike } from "node:fs";
-import type { LoadedMod } from "../mod.ts";
+import type { Mod } from "../mod.ts";
 import { getReplacedFile } from "./loadWishgranter.ts";
 import type PreloadedWindow from "../preload.ts";
 
@@ -45,13 +45,9 @@ declare let gdjs: {
   };
 };
 
-export function convertDefualtDataToLoadedMod(
-  hyperspace_path: PathLike,
-): LoadedMod {
+export function convertDefualtDataToMod(): Mod {
   return {
     metadata: {
-      path: hyperspace_path,
-      is_default: true,
       name: gdjs.projectData.properties.name,
       version: gdjs.projectData.properties.version,
       description: gdjs.projectData.properties.description,
