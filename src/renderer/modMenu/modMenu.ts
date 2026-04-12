@@ -24,9 +24,7 @@ function subscribeFileLocations() {
       hyperspace_file_location_input.getAttribute("value") ?? "",
     )
       .then(() => {
-        reimportDefaultMod(
-          hyperspace_file_location_input.getAttribute("value") ?? "",
-        );
+        reimportDefaultMod();
       })
       .catch((error: unknown) => {
         console.log(error);

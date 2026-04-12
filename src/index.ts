@@ -71,7 +71,7 @@ function createWindow() {
 }
 
 type AwaitedFuncs<T> = {
-  [Key in keyof T]: T[Key] extends (...args: unknown[]) => unknown
+  [Key in keyof T]: T[Key] extends (...args: never) => unknown
     ? (
         ...args: Parameters<T[Key]>
       ) => Awaited<ReturnType<T[Key]>> | ReturnType<T[Key]>
@@ -79,12 +79,21 @@ type AwaitedFuncs<T> = {
 };
 class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
   constructor() {
-    for (const key of Object.getOwnPropertyNames(this.constructor.prototype)) {
-      if (key == "constructor") continue;
-      ipcMain.handle(key, (_event, ...args) =>
-        // @ts-expect-error Blind Call into class, cannot typecheck
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        this[key as keyof WishgranterPreloadHandler](...args),
+    for (const key of Object.getOwnPropertyNames(
+      this.constructor.prototype,
+    ) as (keyof WishgranterPreloadHandler)[]) {
+      ipcMain.handle(
+        key,
+        (_event, ...args: Parameters<Wishgranter[keyof Wishgranter]>) =>
+          (
+            this[key] as (
+              ...args: Parameters<
+                WishgranterPreloadHandler[keyof WishgranterPreloadHandler]
+              >
+            ) => ReturnType<
+              WishgranterPreloadHandler[keyof WishgranterPreloadHandler]
+            >
+          )(...args),
       );
     }
   }
@@ -110,8 +119,7 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
     const response = await findSteamApp("2711190");
     return response.installDir ?? "";
   }
-  // @ts-expect-error I don't expect an error but I'm getting one anyway
-  getModsFromLocation(location: PathLike): string[] {
+  getModsFromLocation(location: PathLike) {
     if (!fs.existsSync(location)) return [];
     return fs
       .readdirSync(location)
