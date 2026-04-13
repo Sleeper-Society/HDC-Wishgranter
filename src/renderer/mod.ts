@@ -1,11 +1,10 @@
-import type { LoadSequenceElement } from "./modMenu/loadingBar.ts";
+import type { LoadSequenceFunction } from "./modMenu/loadingBar.ts";
+import type { RuntimeGame } from "./gdjs.ts";
 
 export interface Mod {
   metadata: ModMetaData;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onLoad?: (gdjs: any) => LoadSequenceElement[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onGameStart?: (gdgame: any) => void;
+  onLoad?: () => ReturnType<LoadSequenceFunction>;
+  onGameStart?: (gdgame: RuntimeGame) => void;
 }
 export interface ModMetaData {
   name: string;

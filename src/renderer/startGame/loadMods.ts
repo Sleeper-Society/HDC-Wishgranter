@@ -3,18 +3,19 @@ import type { Mod } from "../mod.ts";
 import type { LoadSequenceElement } from "../modMenu/loadingBar.ts";
 import type PreloadedWindow from "../preload.ts";
 import type { ModEntry } from "../modMenu/modEntry.ts";
-import { convertDefualtDataToMod } from "./parseData.ts";
+import { getHyperspaceDeckCommandAsMod } from "./hyperspaceDeckCommandModFactory.ts";
+import type { RuntimeGame } from "../gdjs.ts";
+import { getWishgranterMod } from "./wishgranterModFactory.ts";
 
 const modlist_parent = document.getElementById("modlist");
-const modlist: Record<string, [Mod, boolean]> = {};
-
-// eslint-disable-next-line no-var
-declare var gdjs: { projectData: { properties: { name: string } } };
+const modlist: Record<string, [Mod, boolean]> = {
+  wishgranter: [getWishgranterMod(), true],
+};
 
 export function reimportDefaultMod(hyperspace_location: PathLike) {
   modlist[gdjs.projectData.properties.name] = [
-    convertDefualtDataToMod(hyperspace_location),
-    (modlist[gdjs.projectData.properties.name] ?? [true])[1],
+    getHyperspaceDeckCommandAsMod(hyperspace_location),
+    true,
   ];
   recreateHTMLModlist();
 }
@@ -64,7 +65,7 @@ export function getModCount(): number {
 export function hasOnlyDefaultMods(): boolean {
   return Object.keys(modlist).length == 2;
 }
-export function getModGamestarts(): ((runtime_game: unknown) => void)[] {
+export function getModGamestarts(): ((runtime_game: RuntimeGame) => void)[] {
   return Object.keys(modlist)
     .map((mod) => modlist[mod][0].onGameStart)
     .filter((gamestart) => gamestart != undefined);
@@ -75,10 +76,9 @@ export function getModLoadLoadingElements(): LoadSequenceElement[] {
     .map((mod): LoadSequenceElement => {
       return {
         status_text: "Loading " + mod,
-        function: (hyperspace_location) => {
+        function: () => {
           try {
-            if (modlist[mod][0].onLoad)
-              return modlist[mod][0].onLoad(hyperspace_location);
+            if (modlist[mod][0].onLoad) return modlist[mod][0].onLoad();
           } catch (error) {
             console.error(error);
           }

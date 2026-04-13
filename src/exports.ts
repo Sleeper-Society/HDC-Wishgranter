@@ -1,3 +1,4 @@
+export type { gdjs, RuntimeGame } from "./renderer/gdjs.ts";
 export type { Mod } from "./renderer/mod.ts";
 export type {
   LoadSequenceElement,

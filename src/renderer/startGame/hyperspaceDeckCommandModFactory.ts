@@ -1,6 +1,5 @@
 import type { PathLike } from "node:fs";
 import type { Mod } from "../mod.ts";
-import { getReplacedFile } from "./loadWishgranter.ts";
 import type PreloadedWindow from "../preload.ts";
 
 export const modified_jsons = [
@@ -20,34 +19,7 @@ export const unmodified_jsons = [
   "credits",
 ];
 
-export function replaceData(original_file: string, hyperspace_path: PathLike) {
-  return getReplacedFile(original_file, [
-    /(?<="?file"?: ?")([\w-/]*)(?=\.(?:(?:png)|(?:wav)|(?:ogg)|(?:json)|(?:ttf))")/g,
-    hyperspace_path.toString() +
-      (window as unknown as PreloadedWindow).remote_replace.path.sep() +
-      "resources" +
-      (window as unknown as PreloadedWindow).remote_replace.path.sep() +
-      "app.asar" +
-      (window as unknown as PreloadedWindow).remote_replace.path.sep() +
-      "app" +
-      (window as unknown as PreloadedWindow).remote_replace.path.sep() +
-      "$1",
-  ]);
-}
-
-// eslint-disable-next-line no-var
-declare var gdjs: {
-  projectData: {
-    properties: {
-      name: string;
-      version: string;
-      description: string;
-      platformSpecificAssets: Record<string, string>;
-    };
-  };
-};
-
-export function convertDefualtDataToMod(hyperspace_path: PathLike): Mod {
+export function getHyperspaceDeckCommandAsMod(hyperspace_path: PathLike): Mod {
   return {
     metadata: {
       name: gdjs.projectData.properties.name,
@@ -69,6 +41,20 @@ export function convertDefualtDataToMod(hyperspace_path: PathLike): Mod {
             "desktop-icon-512"
           ].split("/").length - 1
         ],
+    },
+    onLoad: () => {
+      for (const resource of gdjs.projectData.resources.resources) {
+        resource.file =
+          hyperspace_path.toString() +
+          (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+          "resources" +
+          (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+          "app.asar" +
+          (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+          "app" +
+          (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+          resource.file;
+      }
     },
   };
 }

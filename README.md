@@ -65,7 +65,7 @@ If mod callbacks are not defined in the same file as `metadata`, wishgranter wil
 
 These methods will be called by wishgranter at specific times
 
-- `onLoad`: A function for inserting new data into the game. Called with the gdjs namespace as a parameter. This is where calls to [content modifying functions](### Content Modifiers) should occur. Return void, a promise which returns void, or an array of objects with a `status_text` label and `function` callable or a promise that returns such. By returning a callback array, the loading bar will be able to show mod loading progress.
+- `onLoad`: A function for inserting new data into the game. This is where calls to [content modifying functions](### Content Modifiers) should occur. Return void, a promise which returns void, or an array of objects with a `status_text` label and `function` callable or a promise that returns such. By returning a callback array, the loading bar will be able to show mod loading progress.
 - `onGameStart`: A function called after the game is done loading (When the logo appears). This is where any UI changes should occur, since `load` is called before the canvas is created. 
 
 ### Content Modifiers

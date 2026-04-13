@@ -1,12 +1,10 @@
 import type { PathLike } from "fs";
 import type PreloadedWindow from "./preload.ts";
-declare let gdjs: {
-  Logger: new (name: string) => { error: (...msg: unknown[]) => void };
-};
-(function (gdjs: {
-  Logger: new (name: string) => { error: (...msg: unknown[]) => void };
-  fileSystem?: unknown;
-}) {
+import type { gdjs } from "./gdjs.ts";
+declare global {
+  var gdjs: gdjs;
+}
+(function (gdjs: gdjs) {
   //Preloads
   const fs = (window as unknown as PreloadedWindow).remote_replace.fs;
   const logger = new gdjs.Logger("Filesystem");

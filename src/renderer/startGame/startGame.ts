@@ -15,22 +15,6 @@ const start_game_button = document.getElementById(
   "start_game_button",
 ) as HTMLButtonElement;
 
-declare let gdjs: {
-  projectData: unknown;
-  RuntimeGame: new (
-    projectData: typeof gdjs.projectData,
-    something_else: unknown,
-  ) => {
-    getRenderer: () => {
-      createStandardCanvas: (on: HTMLElement) => void;
-      bindStandardEvents: (a: unknown, b: unknown, c: unknown) => void;
-    };
-    getInputManager: () => unknown;
-    loadAllAssets: (callback: () => void) => void;
-    startGameLoop: () => void;
-  };
-};
-
 const baseStartGame: LoadSequenceFunction = () => {
   //Initialization
   const gdgame = new gdjs.RuntimeGame(gdjs.projectData, {});
