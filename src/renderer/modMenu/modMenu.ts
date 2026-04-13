@@ -20,7 +20,12 @@ const start_game_button = document.getElementById(
 subscribeFileLocations();
 enableFileLocationButtons();
 enableStartGameButton();
-prepopulateFileLocations();
+(window as unknown as PreloadedWindow).remote_replace
+  .getPaths()
+  .then(prepopulateFileLocations)
+  .catch((error: unknown) => {
+    console.error(error);
+  });
 
 function subscribeFileLocations() {
   hyperspace_file_location_input?.addEventListener("change", () => {

@@ -22,7 +22,7 @@ export const unmodified_jsons = [
 
 export function replaceData(original_file: string, hyperspace_path: PathLike) {
   return getReplacedFile(original_file, [
-    /(?<="?file"?: ?")([\w/]*)(?=\.(?:(?:png)|(?:wav)|(?:ogg)|(?:json)|(?:ttf))")/g,
+    /(?<="?file"?: ?")([\w-/]*)(?=\.(?:(?:png)|(?:wav)|(?:ogg)|(?:json)|(?:ttf))")/g,
     hyperspace_path.toString() +
       (window as unknown as PreloadedWindow).remote_replace.path.sep() +
       "resources" +

@@ -1,10 +1,11 @@
-const {
-  contextBridge,
-  ipcRenderer,
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-} = require("electron") as {
-  contextBridge: { exposeInMainWorld: (a: string, b: unknown) => void };
-  ipcRenderer: { invoke: (a: string, ...args: unknown[]) => Promise<unknown> };
+import type {
+  contextBridge as contextBridgeType,
+  ipcRenderer as ipcRendererType,
+} from "electron";
+//eslint-disable-next-line @typescript-eslint/no-require-imports
+const { contextBridge, ipcRenderer } = require("electron") as {
+  contextBridge: typeof contextBridgeType;
+  ipcRenderer: typeof ipcRendererType;
 };
 import type { PathLike } from "node:fs";
 
@@ -15,42 +16,11 @@ export default interface PreloadedWindow {
 export type Wishgranter = typeof wishgranter;
 export type RemoteReplace = typeof remote_replace;
 
-let sep: string | undefined = "/";
-let documents_path = "";
-let home_path = "";
-let temp_path = "";
+let sep = "/";
+let documents_path = "~/Documents";
+let home_path = "~";
+let temp_path = "tmp/HDCWishgranter";
 const cached_files: Map<PathLike, string> = new Map<PathLike, string>();
-void ipcRenderer
-  .invoke("getPath", "documents")
-  .then((response: unknown) => (documents_path = response as string));
-void ipcRenderer
-  .invoke("getPath", "temp")
-  .then((response: unknown) => (temp_path = response as string));
-void Promise.all([
-  ipcRenderer
-    .invoke("getPath", "home")
-    .then((response: unknown) => (home_path = response as string)),
-  ipcRenderer
-    .invoke("sep")
-    .then((response: unknown) => (sep = response as string)),
-]).then(([home_path, sep]) => {
-  const paths_to_check_in_hdc: string[] = [
-    "",
-    "config.json",
-    "unlocks.json",
-    "flagships.json",
-    "run_save.json",
-    "run_save_mod.json",
-    "run_save_lp.json",
-  ];
-  for (const path of paths_to_check_in_hdc.map(
-    (value) => home_path + sep + "HDC" + sep + value,
-  )) {
-    void ipcRenderer.invoke("readFileSync", path).then((data: unknown) => {
-      if (data != "undefined") cached_files.getOrInsert(path, data as string);
-    });
-  }
-});
 
 const wishgranter = {
   getDefaultHyperspacePath: () =>
@@ -84,6 +54,7 @@ const wishgranter = {
     ) as Promise<string>,
 };
 const remote_replace = {
+  getPaths: getPaths,
   getCurrentWindow: () => {
     return {
       focus: (): void => void ipcRenderer.invoke("focus"),
@@ -111,7 +82,7 @@ const remote_replace = {
     },
   },
   path: {
-    sep: () => sep ?? "/",
+    sep: () => sep,
   },
   fs: {
     existsSync: (file: PathLike) => cached_files.has(file),
@@ -129,7 +100,43 @@ const remote_replace = {
 contextBridge.exposeInMainWorld("remote_replace", remote_replace);
 contextBridge.exposeInMainWorld("wishgranter", wishgranter);
 
+async function getPaths() {
+  documents_path =
+    (await (ipcRenderer.invoke("getPath", "documents") as Promise<
+      string | undefined
+    >)) ?? documents_path;
+  temp_path =
+    (await (ipcRenderer.invoke("getPath", "temp") as Promise<
+      string | undefined
+    >)) ?? temp_path;
+  home_path =
+    (await (ipcRenderer.invoke("getPath", "home") as Promise<
+      string | undefined
+    >)) ?? home_path;
+  sep =
+    (await (ipcRenderer.invoke("sep") as Promise<string | undefined>)) ?? sep;
+
+  const paths_to_check_in_hdc: string[] = [
+    "",
+    "config.json",
+    "unlocks.json",
+    "flagships.json",
+    "run_save.json",
+    "run_save_mod.json",
+    "run_save_lp.json",
+  ];
+  for (const path of paths_to_check_in_hdc.map(
+    (value) => home_path + sep + "HDC" + sep + value,
+  )) {
+    void ipcRenderer.invoke("readFileSync", path).then((data: unknown) => {
+      if (data != "undefined") cached_files.getOrInsert(path, data as string);
+    });
+  }
+}
+
 function writeFile(file: PathLike, data: string) {
   cached_files.set(file, data);
-  void ipcRenderer.invoke("writeFileSync", file, data);
+  ipcRenderer.invoke("writeFileSync", file, data).catch((error: unknown) => {
+    console.error(error);
+  });
 }

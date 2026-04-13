@@ -211,6 +211,9 @@ class RemoteReplacePreloadHandler implements AwaitedFuncs<
       });
     }
   }
+  getPaths() {
+    return;
+  }
   focus() {
     mainWindow?.focus();
   }
@@ -230,14 +233,18 @@ class RemoteReplacePreloadHandler implements AwaitedFuncs<
     mainWindow?.setFullScreenable(set_fullscreenable);
   }
   getPath(path_flag: "documents" | "home" | "temp") {
+    const out = app.getPath(path_flag);
+    console.log(out);
     if (path_flag == "temp") {
-      this.mkdirSync(path.join(app.getPath(path_flag), "HDCWishgranter"));
-      return path.join(app.getPath(path_flag), "HDCWishgranter");
+      fs.mkdirSync(path.join(app.getPath(path_flag), "HDCWishgranter"));
+      return path.join(out, "HDCWishgranter");
     }
-    return app.getPath(path_flag);
+    return out;
   }
   sep() {
-    return path.sep;
+    const out = path.sep;
+    console.log(out);
+    return out;
   }
   existsSync(file: PathLike) {
     return !file;
