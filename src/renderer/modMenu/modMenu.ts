@@ -1,4 +1,3 @@
-import type PreloadedWindow from "../preload.ts";
 import { startGame, loadHyperspaceLocation } from "../startGame/startGame.ts";
 import { loadModLocation } from "../startGame/loadMods.ts";
 import { reimportDefaultMod } from "../startGame/loadMods.ts";
@@ -20,7 +19,7 @@ const start_game_button = document.getElementById(
 subscribeFileLocations();
 enableFileLocationButtons();
 enableStartGameButton();
-(window as unknown as PreloadedWindow).remote_replace
+window.remote_replace
   .getPaths()
   .then(prepopulateFileLocations)
   .catch((error: unknown) => {
@@ -35,11 +34,11 @@ function subscribeFileLocations() {
     loadHyperspaceLocation(
       hyperspace_file_location_input.getAttribute("value") ?? "",
     )
-      .then(() => {
+      .then(() =>
         reimportDefaultMod(
           hyperspace_file_location_input.getAttribute("value") ?? "",
-        );
-      })
+        ),
+      )
       .catch((error: unknown) => {
         console.log(error);
       });
@@ -52,29 +51,29 @@ function subscribeFileLocations() {
 function changeStyleToHyperspace(hyperspace_location: string) {
   box_art.src =
     hyperspace_location +
-    (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+    window.remote_replace.path.sep() +
     "resources" +
-    (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+    window.remote_replace.path.sep() +
     "app.asar" +
-    (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+    window.remote_replace.path.sep() +
     "app" +
-    (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+    window.remote_replace.path.sep() +
     "store_capsule_header.png";
   font.innerText =
     '@font-face {font-family: "Oxanium";src: url("' +
     hyperspace_location +
-    (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+    window.remote_replace.path.sep() +
     "resources" +
-    (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+    window.remote_replace.path.sep() +
     "app.asar" +
-    (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+    window.remote_replace.path.sep() +
     "app" +
-    (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+    window.remote_replace.path.sep() +
     '/Oxanium-Hyper.ttf");}';
 }
 
 function prepopulateFileLocations() {
-  (window as unknown as PreloadedWindow).wishgranter
+  window.wishgranter
     .getDefaultHyperspacePath()
     .then((value) => {
       hyperspace_file_location_input?.setAttribute("value", value.toString());
@@ -85,7 +84,7 @@ function prepopulateFileLocations() {
     .catch((error: unknown) => {
       console.log(error);
     });
-  (window as unknown as PreloadedWindow).wishgranter
+  window.wishgranter
     .getDefaultModsPath()
     .then((value) => {
       mods_file_location_input?.setAttribute("value", value.toString());
@@ -108,7 +107,7 @@ function enableFileLocationButtons() {
       const default_path = document
         .getElementById(output_id)
         ?.getAttribute("value");
-      (window as unknown as PreloadedWindow).wishgranter
+      window.wishgranter
         .askUserForDirectory(default_path ?? "")
         .then((value) => {
           document
@@ -125,7 +124,7 @@ function enableFileLocationButtons() {
   }
   for (const button of document.getElementsByClassName("steam_button")) {
     button.addEventListener("click", () => {
-      (window as unknown as PreloadedWindow).wishgranter
+      window.wishgranter
         .getSteamGameLocation()
         .then((value) => {
           hyperspace_file_location_input?.setAttribute(

@@ -65,7 +65,7 @@ If mod callbacks are not defined in the same file as `metadata`, wishgranter wil
 
 These methods will be called by wishgranter at specific times
 
-- `onLoad`: A function for inserting new data into the game. This is where calls to [content modifying functions](### Content Modifiers) should occur. Return void, a promise which returns void, or an array of objects with a `status_text` label and `function` callable or a promise that returns such. By returning a callback array, the loading bar will be able to show mod loading progress.
+- `onLoad`: A function for inserting new data into the game. This is where calls to [content modifying functions](#content-modifiers) should occur. Return void, a promise which returns void, or an array of objects with a `status_text` label and `function` callable or a promise that returns such. By returning a callback array, the loading bar will be able to show mod loading progress.
 - `onGameStart`: A function called after the game is done loading (When the logo appears). This is where any UI changes should occur, since `load` is called before the canvas is created. 
 
 ### Content Modifiers
@@ -74,23 +74,25 @@ Wishgranter provides a number of functions in the global scope to aid in adding,
 
 #### Adding Content
 
-- `addFaction(faction name) : faction`
-- `addCardToStores(faction, card, [additional faction])`
-- `addDongleToStores(faction, dongle, [additional faction])`
-- `addCardToEncounterRewards(faction, card)`
-- `addDongleToEncounterRewards(faction, dongle)`
-- `addEncounter(faction, encounter)`
-- `addCardToStartingDecks(faction, card)`
+To add content, first get a faction
+- `getFaction(faction name) : faction`: Returns an existing faction with this name or abreviation, or a new faction if one does not exist
+The faction type has these content modifying functions:
+- `addCardToStores(card, [additional faction])`
+- `addDongleToStores(dongle, [additional faction])`
+- `addCardToEncounterRewards(card)`
+- `addDongleToEncounterRewards(dongle)`
+- `addEncounter(encounter)`
+- `addCardToStartingDecks(card)`
 
 #### Modifying Content
-In order to override existing content, modify the results of these functions and call the appropriate add function
-- `getFaction(faction name) : faction`
+In order to override existing content, modify the results of these functions and call the appropriate add function. The getter functions exist both in the global scope and in the faction type.
+
 - `getCard(card name) : card`
 - `getDongle(dongle name) : dongle`
 - `getEncounters(faction) : readonly encounter[]`
 
 #### Removing content
-Included for use in overhaul mods. We recommend not using these
+Included for use in overhaul mods. We recommend not using these.
 - `removeFaction(faction)`
 - `removeCard(card)`
 - `removeDongle(dongle)`

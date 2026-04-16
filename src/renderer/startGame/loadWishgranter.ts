@@ -3,7 +3,6 @@ import type {
   LoadSequenceFunction,
 } from "../modMenu/loadingBar.ts";
 import type { PathLike } from "fs";
-import type PreloadedWindow from "../preload.ts";
 
 export function unloadWishgranter() {
   document.body.classList.remove("game_loadable");
@@ -17,7 +16,7 @@ export function unloadWishgranter() {
 export const loadWishgranter: LoadSequenceFunction = (
   hyperspace_path: PathLike,
 ) =>
-  (window as unknown as PreloadedWindow).wishgranter
+  window.wishgranter
     .getHyperspaceScriptTags(hyperspace_path)
     .then((script_sources) =>
       script_sources
@@ -39,9 +38,7 @@ function getPossiblyReplacedScriptSource(
     if (script_source.toString() in replacements) {
       return replacements[script_source.toString()];
     } else {
-      const sep: string = (
-        window as unknown as PreloadedWindow
-      ).remote_replace.path.sep();
+      const sep: string = window.remote_replace.path.sep();
       return (
         hyperspace_path.toString() +
         sep +
@@ -60,9 +57,7 @@ function getPossiblyReplacedScriptSource(
 function getAddScriptLoadSequenceElement(
   script_source: PathLike,
 ): LoadSequenceElement {
-  const sep: string = (
-    window as unknown as PreloadedWindow
-  ).remote_replace.path.sep();
+  const sep: string = window.remote_replace.path.sep();
   return {
     status_text:
       "Loading " +

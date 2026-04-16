@@ -1,12 +1,8 @@
 import type { PathLike } from "fs";
-import type PreloadedWindow from "./preload.ts";
 import type { gdjs } from "./gdjs.ts";
-declare global {
-  var gdjs: gdjs;
-}
 (function (gdjs: gdjs) {
   //Preloads
-  const fs = (window as unknown as PreloadedWindow).remote_replace.fs;
+  const fs = window.remote_replace.fs;
   const logger = new gdjs.Logger("Filesystem");
   gdjs.fileSystem = {
     saveVariableToJSONFile(
@@ -36,18 +32,10 @@ declare global {
       return fs.existsSync(file);
     },
     getUserHomePath(): string {
-      return (
-        (window as unknown as PreloadedWindow).remote_replace.app.getPath(
-          "home",
-        ) || ""
-      );
+      return window.remote_replace.app.getPath("home") || "";
     },
     getDocumentsPath(): string {
-      return (
-        (window as unknown as PreloadedWindow).remote_replace.app.getPath(
-          "documents",
-        ) || ""
-      );
+      return window.remote_replace.app.getPath("documents") || "";
     },
     loadVariableFromJSONFile(
       variable: { fromJSON: (path: PathLike) => void },
@@ -82,7 +70,7 @@ declare global {
       }
     },
     getPathDelimiter(): string {
-      return (window as unknown as PreloadedWindow).remote_replace.path.sep();
+      return window.remote_replace.path.sep();
     },
   };
 })(gdjs);

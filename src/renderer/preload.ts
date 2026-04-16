@@ -9,10 +9,13 @@ const { contextBridge, ipcRenderer } = require("electron") as {
 };
 import type { PathLike } from "node:fs";
 
-export default interface PreloadedWindow {
-  wishgranter: Wishgranter;
-  remote_replace: RemoteReplace;
+declare global {
+  interface Window {
+    wishgranter: Wishgranter;
+    remote_replace: RemoteReplace;
+  }
 }
+
 export type Wishgranter = typeof wishgranter;
 export type RemoteReplace = typeof remote_replace;
 

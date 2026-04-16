@@ -1,23 +1,6 @@
 import type { PathLike } from "node:fs";
 import type { Mod } from "../mod.ts";
-import type PreloadedWindow from "../preload.ts";
-
-export const modified_jsons = [
-  "cards",
-  "encounters",
-  "upgrades",
-  "comms",
-  "loot_list_up",
-  "loot_list_card",
-  "unlock_cond",
-];
-export const unmodified_jsons = [
-  "tooltips",
-  "tutorials",
-  "text_lists",
-  "cloud_lables",
-  "credits",
-];
+import { original_data } from "./wishgranterModFactory.ts";
 
 export function getHyperspaceDeckCommandAsMod(hyperspace_path: PathLike): Mod {
   return {
@@ -27,13 +10,13 @@ export function getHyperspaceDeckCommandAsMod(hyperspace_path: PathLike): Mod {
       description: gdjs.projectData.properties.description,
       icon:
         hyperspace_path.toString() +
-        (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+        window.remote_replace.path.sep() +
         "resources" +
-        (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+        window.remote_replace.path.sep() +
         "app.asar" +
-        (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+        window.remote_replace.path.sep() +
         "app" +
-        (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+        window.remote_replace.path.sep() +
         gdjs.projectData.properties.platformSpecificAssets[
           "desktop-icon-512"
         ].split("/")[
@@ -43,16 +26,17 @@ export function getHyperspaceDeckCommandAsMod(hyperspace_path: PathLike): Mod {
         ],
     },
     onLoad: () => {
-      for (const resource of gdjs.projectData.resources.resources) {
+      for (const resource of original_data?.project_data.resources.resources ??
+        []) {
         resource.file =
           hyperspace_path.toString() +
-          (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+          window.remote_replace.path.sep() +
           "resources" +
-          (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+          window.remote_replace.path.sep() +
           "app.asar" +
-          (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+          window.remote_replace.path.sep() +
           "app" +
-          (window as unknown as PreloadedWindow).remote_replace.path.sep() +
+          window.remote_replace.path.sep() +
           resource.file;
       }
     },

@@ -13,7 +13,15 @@ export interface gdjs {
   RuntimeGame: RuntimeGameClass;
   copyArray: (from: unknown[], to: unknown[]) => void;
   evtsExt__GetPropertiesData__ReturnGameVersion: {
-    func: (runtime: RuntimeGame, other: unknown) => string;
+    func: (runtime: RuntimeScene, other: null) => string;
+  };
+  evtsExt__JSONResourceLoader__LoadJSONToScene: {
+    func: (
+      runtime: RuntimeScene,
+      resource_name: string,
+      variable: Variable,
+      other: null,
+    ) => void;
   };
 }
 
@@ -25,13 +33,61 @@ interface projectData {
     platformSpecificAssets: Record<string, string>;
   };
   resources: {
-    resources: { file: string }[];
+    resources: {
+      file: string;
+      kind: string;
+      metadata: string;
+      name: string;
+      smoothed: boolean;
+      userAdded: boolean;
+    }[];
   };
+  layouts: {
+    objects: {
+      animations: Animation[];
+    }[];
+  }[];
 }
+
 type RuntimeGameClass = new (
   projectData: projectData,
   something_else: unknown,
 ) => RuntimeGame;
+
+export interface Animation {
+  name: string;
+  useMultipleDirections: boolean;
+  directions: {
+    looping: boolean;
+    timeBetweenFrames: number;
+    sprites: AnimationFrame[];
+  }[];
+}
+
+export interface AnimationFrame {
+  hasCustomCollisionMask: boolean;
+  image: string;
+  points: {
+    name: string;
+    x: number;
+    y: number;
+  }[];
+  originPoint: {
+    name: string;
+    x: number;
+    y: number;
+  };
+  centerPoint: {
+    automatic: boolean;
+    name: string;
+    x: number;
+    y: number;
+  };
+  customCollisionMask: {
+    x: number;
+    y: number;
+  }[][];
+}
 
 export interface RuntimeGame {
   getRenderer: () => {
@@ -41,4 +97,11 @@ export interface RuntimeGame {
   getInputManager: () => unknown;
   loadAllAssets: (callback: () => void) => void;
   startGameLoop: () => void;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface RuntimeScene {}
+
+export interface Variable {
+  fromJSObject: (object: object) => void;
 }
