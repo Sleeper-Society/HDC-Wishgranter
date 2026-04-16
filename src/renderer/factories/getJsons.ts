@@ -1,0 +1,11 @@
+export function getCardsJSON(): object {}
+export function getCommsJSON(): object {}
+export function getEncountersJSON(): object {}
+export function getLootListUpJSON(): object {}
+export function getTooltipsJSON(): object {}
+export function getUnlockCondJSON(): object {}
+export function getCloudLabelsJSON(): object {}
+export function getCreditsJSON(): object {}
+export function getLootListCardJSON(): object {}
+export function getTextListsJSON(): object {}
+export function getUpgradesJSON(): object {}

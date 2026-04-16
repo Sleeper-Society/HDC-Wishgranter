@@ -1,4 +1,4 @@
-import type { LoadingBarElement } from "./modMenu/loadingBar.ts";
+import type { LoadingBarElement } from "../modMenu/loadingBar.ts";
 
 const loading_bar = document.getElementsByTagName(
   "loading-bar",

@@ -1,4 +1,4 @@
-import type { LoadSequenceFunction } from "./modMenu/loadingBar.ts";
+import type { LoadSequenceFunction } from "../modMenu/loadingBar.ts";
 import type { RuntimeGame } from "./gdjs.ts";
 
 export interface Mod {

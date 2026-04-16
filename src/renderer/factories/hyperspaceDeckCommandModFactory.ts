@@ -1,5 +1,5 @@
 import type { PathLike } from "node:fs";
-import type { Mod } from "../mod.ts";
+import type { Mod } from "../HDCTypes/mod.ts";
 import { original_data } from "./wishgranterModFactory.ts";
 
 export function getHyperspaceDeckCommandAsMod(hyperspace_path: PathLike): Mod {
