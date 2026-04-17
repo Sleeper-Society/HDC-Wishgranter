@@ -44,15 +44,12 @@ interface projectData {
   };
   layouts: {
     objects: {
+      name: string;
       animations: Animation[];
     }[];
+    usedResources: { name: string }[];
   }[];
 }
-
-type RuntimeGameClass = new (
-  projectData: projectData,
-  something_else: unknown,
-) => RuntimeGame;
 
 export interface Animation {
   name: string;
@@ -88,6 +85,11 @@ export interface AnimationFrame {
     y: number;
   }[][];
 }
+
+type RuntimeGameClass = new (
+  projectData: projectData,
+  something_else: unknown,
+) => RuntimeGame;
 
 export interface RuntimeGame {
   getRenderer: () => {

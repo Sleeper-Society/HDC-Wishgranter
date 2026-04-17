@@ -5,7 +5,8 @@ import type { Faction } from "../HDCTypes/faction.ts";
 
 export function addFaction(faction_name: string): Faction {}
 
-export function getFaction(faction: string): Faction {}
+//**@param faction Full name of new or existing faction or short name of existing faction*/
+export function getFaction(faction: string, create_new = true): Faction {}
 export function getFactions(): Faction[] {}
 export function getCard(card: string): Card {}
 export function getDongle(dongle: string): Dongle {}

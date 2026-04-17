@@ -2,8 +2,9 @@ import type { Mod } from "../HDCTypes/mod.ts";
 import type { RuntimeGame } from "../HDCTypes/gdjs.ts";
 import type { PathLike } from "fs";
 import { hasOnlyDefaultMods, getModCount } from "../startGame/loadMods.ts";
-import * as JsonFactory from "./getJsons.ts";
-import { getFactions } from "../factories/content_helpers.ts";
+import * as JsonFactory from "./jsonResultFactory.ts";
+import { getFactions } from "./contentFactory.ts";
+import { Sprite } from "../HDCTypes/sprite.ts";
 
 type CamelToSnakeCase<S extends string> = S extends `${infer T}${infer U}`
   ? `${T extends Capitalize<T> ? "_" : ""}${Lowercase<T>}${CamelToSnakeCase<U>}`
@@ -28,33 +29,31 @@ export async function getWishgranterMod(
   hyperspace_location: PathLike,
 ): Promise<Mod> {
   original_data = {
-    project_data: gdjs.projectData,
+    project_data: structuredClone(gdjs.projectData),
     ...(Object.fromEntries(
       await Promise.all(
-        Object.getOwnPropertyNames(JsonFactory)
-          .map(
-            (name) =>
-              name
-                .substring("get".length, name.length - "JSON".length)
-                .replace(
-                  /[A-Z]/g,
-                  (letter) => `_${letter.toLowerCase()}`,
-                ) as JsonListElement,
-          )
-          .map(async (json) => [
+        Object.getOwnPropertyNames(JsonFactory).map(async (name) => {
+          const json = name
+            .substring("get".length, name.length - "JSON".length)
+            .replace(
+              /[A-Z]/g,
+              (letter) => `_${letter.toLowerCase()}`,
+            ) as JsonListElement;
+          return [
             json,
-            await window.wishgranter.readHyperspaceFile(
-              hyperspace_location,
-              json + ".json",
-            ),
-          ]),
-      ).then((json_list) =>
-        json_list.map((key_value_pair) => [
-          key_value_pair[0],
-          JSON.parse(key_value_pair[1]),
-        ]),
+            JSON.parse(
+              await window.wishgranter.readHyperspaceFile(
+                hyperspace_location,
+                json + ".json",
+              ),
+            ) as ReturnType<(typeof JsonFactory)[keyof typeof JsonFactory]>,
+          ];
+        }),
       ),
-    ) as Record<JsonListElement, object>),
+    ) as Record<
+      JsonListElement,
+      ReturnType<(typeof JsonFactory)[keyof typeof JsonFactory]>
+    >),
   };
   return {
     metadata: {
@@ -69,17 +68,25 @@ export async function getWishgranterMod(
 function onLoad() {
   return [
     {
-      status_text: "Add Version Text",
-      function: addVersionText,
+      status_text: "Replace Version Text",
+      function: replaceVersionText,
     },
     {
-      status_text: "Replace Content Injection Sites",
-      function: replaceContentInjectionSites,
+      status_text: "Replace Jsons",
+      function: replaceJsons,
+    },
+    {
+      status_text: "Replace Resources",
+      function: replaceResources,
+    },
+    {
+      status_text: "Replace Animations",
+      function: replaceAnimations,
     },
   ];
 }
 
-function addVersionText() {
+function replaceVersionText() {
   for (const code in gdjs.CommandCode) {
     if (typeof gdjs.CommandCode[code] != "function") continue;
     const match =
@@ -111,24 +118,6 @@ function addVersionText() {
     return;
   }
 }
-
-function replaceContentInjectionSites() {
-  return [
-    {
-      status_text: "Replace Jsons",
-      function: replaceJsons,
-    },
-    {
-      status_text: "Replace Resources",
-      function: replaceResources,
-    },
-    {
-      status_text: "Replace Animations",
-      function: replaceAnimations,
-    },
-  ];
-}
-
 function replaceJsons() {
   gdjs.evtsExt__JSONResourceLoader__LoadJSONToScene.func = (
     runtime,
@@ -159,7 +148,7 @@ function replaceJsons() {
       );
   };
 }
-function replaceResources() {
+function replaceResources(hyperspace_path: PathLike) {
   gdjs.projectData.resources = {
     get resources() {
       return getFactions()
@@ -175,25 +164,77 @@ function replaceResources() {
         )
         .flat()
         .concat(
-          original_data?.project_data.resources.resources.filter((resource) =>
-            Object.keys(original_data?.cards ?? {}).includes(
-              resource.file.substring(
-                0,
-                resource.file.length - "_0_0.png".length,
+          original_data?.project_data.resources.resources
+            .filter((resource) =>
+              Object.keys(original_data?.cards ?? {}).includes(
+                resource.file.substring(
+                  0,
+                  resource.file.length - "_0_0.png".length,
+                ),
               ),
-            ),
+            )
+            .map((resource) => {
+              return {
+                ...resource,
+                file:
+                  hyperspace_path.toString() +
+                  window.remote_replace.path.sep() +
+                  "resources" +
+                  window.remote_replace.path.sep() +
+                  "app.asar" +
+                  window.remote_replace.path.sep() +
+                  "app" +
+                  window.remote_replace.path.sep() +
+                  resource.file,
+              };
+            }) ?? [],
+        );
+    },
+  };
+  gdjs.projectData.layouts[0] = {
+    ...gdjs.projectData.layouts[0],
+    get usedResources() {
+      return getFactions()
+        .map((faction) =>
+          faction
+            .getCards()
+            .map((card) =>
+              card.sprites.map((_sprite, index) => {
+                return { name: Sprite.getId(card, index) };
+              }),
+            )
+            .flat(),
+        )
+        .flat()
+        .concat(
+          original_data?.project_data.layouts[0].usedResources.filter(
+            (resource) =>
+              Object.keys(original_data?.cards ?? {}).includes(
+                resource.name.substring(
+                  "pixels/units/".length,
+                  resource.name.length - "_0_0.png".length,
+                ),
+              ),
           ) ?? [],
         );
     },
   };
 }
 function replaceAnimations() {
-  gdjs.projectData.layouts[0].objects[0] = {
-    ...gdjs.projectData.layouts[0].objects[0],
-    get animations() {
+  const base_unit_object: (typeof gdjs)["projectData"]["layouts"][0]["objects"][0] =
+    gdjs.projectData.layouts[0].objects.find((value) =>
+      value.name.startsWith("obj_unit_"),
+    ) ?? { name: "error", animations: [] };
+  gdjs.projectData.layouts[0] = {
+    ...gdjs.projectData.layouts[0],
+    get objects() {
       return getFactions()
-        .map((faction) => faction.getCards().map((card) => card.getAnimation()))
-        .flat();
+        .map((faction) => faction.getUnitObject(base_unit_object))
+        .concat(
+          gdjs.projectData.layouts[0].objects.filter(
+            (value) => !value.name.startsWith("obj_unit_"),
+          ),
+        );
     },
   };
 }
