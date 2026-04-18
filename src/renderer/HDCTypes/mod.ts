@@ -11,7 +11,6 @@ export interface ModMetaData {
   version: string;
   descr?: string;
   description?: string;
-
   icon?: string;
   dependencies?: [string, string][];
   seealso?: [string, string][];

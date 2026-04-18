@@ -20,13 +20,17 @@ export class Faction {
   addEncounter(encounter: Encounter) {}
   addCardToStartingDecks(card: Card) {}
 
-  getCard(card: string): Card {}
-  getDongle(dongle: string): Dongle {}
-  getEncounter(encounter: string): Encounter {}
+  getCard(card: string): Card | undefined {}
+  getDongle(dongle: string): Dongle | undefined {}
+  getEncounter(encounter: string): Encounter | undefined {}
 
   getCards(): Card[] {}
   getDongles(): Dongle[] {}
   getEncounters(): Encounter[] {}
+
+  removeCard(card: Card) {}
+  removeDongle(dongle: Dongle) {}
+  removeEncounter(encounter: Encounter) {}
 
   getUnitObject(
     example: gdjs["projectData"]["layouts"][0]["objects"][0],
@@ -34,7 +38,7 @@ export class Faction {
     const output = structuredClone(example);
     output.name = "obj_unit_" + this.short_name;
     output.animations = this.getCards()
-      .map((card) => card.getAnimation())
+      .map((card) => card.getAnimation(this))
       .flat();
     return output;
   }

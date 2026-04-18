@@ -1,11 +1,20 @@
-export function getCardsJSON(): object {}
-export function getCommsJSON(): object {}
-export function getEncountersJSON(): object {}
-export function getLootListUpJSON(): object {}
-export function getTooltipsJSON(): object {}
-export function getUnlockCondJSON(): object {}
-export function getCloudLabelsJSON(): object {}
-export function getCreditsJSON(): object {}
-export function getLootListCardJSON(): object {}
-export function getTextListsJSON(): object {}
-export function getUpgradesJSON(): object {}
+import type { BaseGameCard } from "../HDCTypes/card.ts";
+import { getFactions } from "./contentFactory.ts";
+
+export function getCardsJSON() {
+  return Object.fromEntries(
+    getFactions()
+      .map((faction) =>
+        faction
+          .getCards()
+          .map(
+            (card) =>
+              [card.getId(faction), card.asBaseGameCard(faction)] as [
+                string,
+                BaseGameCard,
+              ],
+          ),
+      )
+      .flat(),
+  );
+}

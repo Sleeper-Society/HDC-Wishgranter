@@ -1,6 +1,11 @@
 import type { PathLike } from "node:fs";
 import type { Mod } from "../HDCTypes/mod.ts";
-import { original_data } from "./wishgranterModFactory.ts";
+import {
+  Card,
+  Unit,
+  type BaseGameCard,
+  type BaseGameCardEffect,
+} from "../HDCTypes/card.ts";
 
 export function getHyperspaceDeckCommandAsMod(hyperspace_path: PathLike): Mod {
   return {
@@ -26,19 +31,26 @@ export function getHyperspaceDeckCommandAsMod(hyperspace_path: PathLike): Mod {
         ],
     },
     onLoad: () => {
-      for (const resource of original_data?.project_data.resources.resources ??
-        []) {
-        resource.file =
-          hyperspace_path.toString() +
-          window.remote_replace.path.sep() +
-          "resources" +
-          window.remote_replace.path.sep() +
-          "app.asar" +
-          window.remote_replace.path.sep() +
-          "app" +
-          window.remote_replace.path.sep() +
-          resource.file;
-      }
+      return;
     },
   };
+}
+
+function baseGameCardToCard(base_game_card: BaseGameCard): Card {
+  const effects: BaseGameCardEffect[] = (
+    Object.getOwnPropertyNames(base_game_card).filter((key) =>
+      /^effect_\d+/.exec(key),
+    ) as `effect_${number}`[]
+  ).map((key: `effect_${number}`) => base_game_card[key]);
+  return base_game_card.type == 2
+    ? new Unit(
+        base_game_card.name,
+        [],
+        base_game_card.dmg,
+        base_game_card.hp ?? 0,
+        base_game_card.timer ?? 10,
+        base_game_card.size ?? 1,
+        effects,
+      )
+    : new Card(base_game_card.name, [], base_game_card.dmg, effects);
 }

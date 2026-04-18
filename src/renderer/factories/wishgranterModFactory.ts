@@ -157,7 +157,7 @@ function replaceResources(hyperspace_path: PathLike) {
             .getCards()
             .map((card) =>
               card.sprites.map((sprite, index) =>
-                sprite.getResource(card, index),
+                sprite.getResource(faction, card, index),
               ),
             )
             .flat(),
@@ -200,7 +200,7 @@ function replaceResources(hyperspace_path: PathLike) {
             .getCards()
             .map((card) =>
               card.sprites.map((_sprite, index) => {
-                return { name: Sprite.getId(card, index) };
+                return { name: Sprite.getId(faction, card, index) };
               }),
             )
             .flat(),

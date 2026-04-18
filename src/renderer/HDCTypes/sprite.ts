@@ -1,5 +1,6 @@
 import type { AnimationFrame } from "./gdjs.ts";
 import type { Card } from "./card.ts";
+import type { Faction } from "./faction.ts";
 interface Point {
   x: number;
   y: number;
@@ -56,25 +57,33 @@ export class Sprite {
     this.height = height;
     this.origin_point = { x: width / 2, y: width / 2 };
   }
-  getResource(card: Card, sprite_index: number) {
+  getResource(faction: Faction, card: Card, sprite_index: number) {
     return {
       file: this.file_path,
       kind: "image",
       metadata: "",
-      name: Sprite.getId(card, sprite_index),
+      name: Sprite.getId(faction, card, sprite_index),
       smoothed: false,
       userAdded: true,
     };
   }
-  static getId(card: Card, sprite_index: number) {
+  static getId(faction: Faction, card: Card, sprite_index: number) {
     return (
-      "pixels/units/" + card.getId() + "_" + sprite_index.toString() + "_0.png"
+      "pixels/units/" +
+      card.getId(faction) +
+      "_" +
+      sprite_index.toString() +
+      "_0.png"
     );
   }
-  getAnimationFrame(card: Card, sprite_index: number): AnimationFrame {
+  getAnimationFrame(
+    faction: Faction,
+    card: Card,
+    sprite_index: number,
+  ): AnimationFrame {
     return {
       hasCustomCollisionMask: true,
-      image: Sprite.getId(card, sprite_index),
+      image: Sprite.getId(faction, card, sprite_index),
       points: Object.keys(this.points).map((key) => {
         return { name: key, x: this.points[key].x, y: this.points[key].y };
       }),
