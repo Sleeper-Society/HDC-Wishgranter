@@ -1,4 +1,5 @@
 import type { Card } from "./card.ts";
+import type { Faction } from "./faction.ts";
 
 export class Encounter {
   name: string;
@@ -7,10 +8,13 @@ export class Encounter {
     this.name = name;
     this.waves = waves;
   }
+  getId(faction: Faction) {
+    return `enc_${faction.short_name}_${this.name}`;
+  }
 }
 export class Wave {
   varaiants: [orbit_3: Card[], orbit_2: Card[], orbit_1: Card[]][] = [];
-  music?: string;
+  music?: number;
   screen_text: string;
   constructor(
     title: string,
@@ -27,5 +31,14 @@ export class Wave {
       return;
     }
     this.varaiants = [[enemies as Card[], [], []]];
+  }
+  *getUsedCards() {
+    for (const varaiant of this.varaiants) {
+      for (const orbit of varaiant) {
+        for (const card of orbit) {
+          yield card;
+        }
+      }
+    }
   }
 }

@@ -21,6 +21,7 @@
     "forceConsistentCasingInFileNames": true ,
     "allowImportingTsExtensions": true,
     "strict": true ,
+    "strictBuiltInIteratorReturn" : true,
     "skipLibCheck": true ,
     "typeRoots": ["node_modules/@types","GDJSDeclaration"]
   },

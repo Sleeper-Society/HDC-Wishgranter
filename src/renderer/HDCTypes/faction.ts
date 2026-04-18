@@ -24,9 +24,9 @@ export class Faction {
   getDongle(dongle: string): Dongle | undefined {}
   getEncounter(encounter: string): Encounter | undefined {}
 
-  getCards(): Card[] {}
-  getDongles(): Dongle[] {}
-  getEncounters(): Encounter[] {}
+  getCards(): Iterable<Card> {}
+  getDongles(): Iterable<Dongle> {}
+  getEncounters(): Iterable<Encounter> {}
 
   removeCard(card: Card) {}
   removeDongle(dongle: Dongle) {}

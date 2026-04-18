@@ -24,7 +24,7 @@ export function getFaction(
   if (!create_new || existing_faction) return existing_faction;
   return addFaction(faction_name);
 }
-export function getFactions(): Faction[] {
+export function getFactions(): Iterable<Faction> {
   return factions;
 }
 export function getCard(card_name: string): Card | undefined {

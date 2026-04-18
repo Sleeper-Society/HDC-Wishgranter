@@ -19,7 +19,7 @@ export {
   removeDongle,
   removeEncounter,
   addCredit,
-} from "./renderer/factories/content_helpers.ts";
+} from "./renderer/factories/contentFactory.ts";
 export type { Faction } from "./renderer/HDCTypes/faction.ts";
 export type { Card } from "./renderer/HDCTypes/card.ts";
 export type { Sprite } from "./renderer/HDCTypes/sprite.ts";
