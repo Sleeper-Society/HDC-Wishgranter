@@ -2,7 +2,7 @@ import type { Card } from "../HDCTypes/card.ts";
 import type { Dongle } from "../HDCTypes/dongle.ts";
 import type { Encounter, Wave } from "../HDCTypes/encounter.ts";
 import type { Faction } from "../HDCTypes/faction.ts";
-import { getFactions } from "./contentFactory.ts";
+import { getFactions, getCredits } from "./contentFactory.ts";
 
 function recordMappedCards<T>(
   name_mapping_function: (faction: Faction, card: Card) => string,
@@ -111,13 +111,6 @@ export interface BaseGameCardEffect {
   effect_status_target?: number;
 }
 
-export function getCommsJSON(): Record<
-  string,
-  Record<`txt_${number}`, string[]>
-> {
-  return {};
-}
-
 function recordMappedEncounters<T>(
   name_mapping_function: (faction: Faction, encounter: Encounter) => string,
   mapping_function: (faction: Faction, encounter: Encounter) => T | undefined,
@@ -214,14 +207,6 @@ interface BaseGameWave extends Record<
   wave_screen_text?: string;
 }
 
-export function getLootListUpJSON() {}
-export function getTooltipsJSON() {}
-export function getUnlockCondJSON() {}
-export function getCloudLabelsJSON() {}
-export function getCreditsJSON() {}
-export function getLootListCardJSON() {}
-export function getTextListsJSON() {}
-
 function recordMappedDongles<T>(
   name_mapping_function: (faction: Faction, dongle: Dongle) => string,
   mapping_function: (faction: Faction, dongle: Dongle) => T | undefined,
@@ -249,6 +234,7 @@ function* mappedDongles<T>(
     }
   }
 }
+
 export function getUpgradesJSON(): Record<string, BaseGameDongle> {
   return recordMappedDongles(
     (_faction, dongle) => dongle.id,
@@ -266,4 +252,32 @@ interface BaseGameDongle {
   header: string;
   txt: string;
   txt_equip: string;
+}
+
+export function getCommsJSON(): Record<
+  string,
+  Record<`txt_${number}`, string[]>
+> {
+  return {};
+}
+export function getLootListUpJSON() {}
+export function getUnlockCondJSON() {}
+export function getLootListCardJSON() {}
+export function getCreditsJSON(): Record<
+  number,
+  { txt: string[]; size: number }
+> {
+  const credits = getCredits();
+  const out = Object.keys(credits)
+    .map((key) => [
+      { txt: [key], size: 40 },
+      { txt: credits[key], size: 30 },
+    ])
+    .flat();
+  // A few exceptions to the size rule
+  out[1].size = 80; //Title
+  out[2].size = 60; //The Game
+  out[4].size = 60; //The Music
+  out.push({ txt: ["Thank you for playing!"], size: 60 });
+  return out;
 }

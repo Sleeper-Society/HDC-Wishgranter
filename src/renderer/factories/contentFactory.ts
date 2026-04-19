@@ -4,7 +4,9 @@ import type { Encounter } from "../HDCTypes/encounter.ts";
 import { Faction } from "../HDCTypes/faction.ts";
 
 const factions: Faction[] = [];
-const credits: Record<string, string[]> = {};
+const credits: Record<string, string[]> = {
+  "": ["Hyperspace Deck Command", "by Sleeper Games"],
+};
 
 export function addFaction(faction_name: string): Faction {
   const faction = new Faction(faction_name);
@@ -68,4 +70,8 @@ export function removeEncounter(encounter: Encounter) {
 export function addCredit(catagory: string, credit: string) {
   if (!Object.keys(credits).includes(catagory)) credits[catagory] = [];
   credits[catagory].push(credit);
+}
+
+export function getCredits() {
+  return credits;
 }
