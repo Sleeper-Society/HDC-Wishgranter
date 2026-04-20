@@ -4,6 +4,9 @@ import type { Encounter } from "../HDCTypes/encounter.ts";
 import { Faction } from "../HDCTypes/faction.ts";
 
 const factions: Faction[] = [];
+const boss_reward_dongles: Dongle[] = [];
+const global_reward_dongles: Dongle[] = [];
+const gloabl_dongles: Dongle[] = [];
 const credits: Record<string, string[]> = {
   "": ["Hyperspace Deck Command", "by Sleeper Games"],
 };
@@ -14,7 +17,18 @@ export function addFaction(faction_name: string): Faction {
   return faction;
 }
 
-//**@param faction_name Full name of new or existing faction or short name of existing faction*/
+export function addBossRewardDongle(dongle: Dongle) {
+  boss_reward_dongles.push(dongle);
+}
+
+export function addGlobalRewardDongle(dongle: Dongle) {
+  global_reward_dongles.push(dongle);
+}
+
+export function addGlobalDongle(dongle: Dongle) {
+  gloabl_dongles.push(dongle);
+}
+
 export function getFaction(
   faction_name: string,
   create_new = true,
@@ -60,6 +74,8 @@ export function removeDongle(dongle: Dongle) {
   factions.forEach((faction) => {
     faction.removeDongle(dongle);
   });
+  if (boss_reward_dongles.includes(dongle))
+    boss_reward_dongles.splice(boss_reward_dongles.indexOf(dongle), 1);
 }
 export function removeEncounter(encounter: Encounter) {
   factions.forEach((faction) => {
@@ -74,4 +90,14 @@ export function addCredit(catagory: string, credit: string) {
 
 export function getCredits() {
   return credits;
+}
+
+export function getBossRewardFleetUpgradeDongles() {
+  return boss_reward_dongles;
+}
+export function getGlobalFleetUpgradeDongles() {
+  return global_reward_dongles;
+}
+export function getGlobalDongles() {
+  return gloabl_dongles;
 }

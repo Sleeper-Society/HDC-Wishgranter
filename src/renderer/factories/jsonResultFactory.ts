@@ -2,7 +2,24 @@ import type { Card } from "../HDCTypes/card.ts";
 import type { Dongle } from "../HDCTypes/dongle.ts";
 import type { Encounter, Wave } from "../HDCTypes/encounter.ts";
 import type { Faction } from "../HDCTypes/faction.ts";
-import { getFactions, getCredits } from "./contentFactory.ts";
+import {
+  getFactions,
+  getCredits,
+  getBossRewardFleetUpgradeDongles,
+  getGlobalFleetUpgradeDongles,
+  getGlobalDongles,
+} from "./contentFactory.ts";
+
+function factionMap<T>(
+  mapping_function: (faction: Faction) => T,
+): Record<string, T> {
+  return Object.fromEntries(
+    Array.from(getFactions()).map((faction) => [
+      faction.short_name,
+      mapping_function(faction),
+    ]),
+  );
+}
 
 function recordMappedCards<T>(
   name_mapping_function: (faction: Faction, card: Card) => string,
@@ -51,7 +68,10 @@ function cardToBaseGameCard(faction: Faction, card: Card): BaseGameCard {
   return out;
 }
 
-interface BaseGameCard extends Record<`effect_${number}`, BaseGameCardEffect> {
+export interface BaseGameCard extends Record<
+  `effect_${number}`,
+  BaseGameCardEffect
+> {
   name: string;
   type: 1 | 2;
   data: string;
@@ -260,9 +280,65 @@ export function getCommsJSON(): Record<
 > {
   return {};
 }
-export function getLootListUpJSON() {}
-export function getUnlockCondJSON() {}
-export function getLootListCardJSON() {}
+export function getLootListUpJSON() {
+  return {
+    fleet: {
+      boss: getBossRewardFleetUpgradeDongles().map((dongle) => dongle.id),
+      glo: getGlobalFleetUpgradeDongles().map((dongle) => dongle.id),
+      ...factionMap((faction) =>
+        faction.getEncounterRewardDongles().map((dongle) => dongle.id),
+      ),
+    },
+    up: {
+      glo: getGlobalDongles().map((dongle) => dongle.id),
+      ...factionMap((faction) =>
+        Array.from(faction.getDongles()).map((dongle) => dongle.id),
+      ),
+    },
+    start: factionMap((faction) => {
+      return {
+        gen: Array.from(faction.getStartingGeneralDongles()).map(
+          (dongle) => dongle.id,
+        ),
+        stat: Array.from(faction.getStartingStatDongles()).map(
+          (dongle) => dongle.id,
+        ),
+      };
+    }),
+  };
+}
+export function getUnlockCondJSON(): Record<
+  string,
+  { cond: string; unlock: string }
+> {}
+export function getLootListCardJSON() {
+  return {
+    start: { defense: [], damage: [], buff: [], control: [], const: [] },
+    ...Object.fromEntries(
+      Array.from(getFactions()).map((faction) => [
+        faction.short_name,
+        { shp: [], shp_combo: {}, str: [], tch: [], tch_combo: {}, use: [] },
+      ]),
+    ),
+  };
+}
+export function getTextListsJSON(): {
+  shop_loc: { [key: string]: string[] };
+  con_insult: {
+    adj: string[];
+    noun: string[];
+  };
+  gp: {
+    corp_1: string[];
+    corp_2: string[];
+    leg: string[];
+  };
+} {}
+
+export function getCloudLabelsJSON(): Record<
+  string,
+  { txt: string; size: number }
+> {}
 export function getCreditsJSON(): Record<
   number,
   { txt: string[]; size: number }
@@ -279,5 +355,7 @@ export function getCreditsJSON(): Record<
   out[2].size = 60; //The Game
   out[4].size = 60; //The Music
   out.push({ txt: ["Thank you for playing!"], size: 60 });
-  return out;
+  return Object.fromEntries(
+    [{ txt: [""], size: 0 }].concat(out).map((value, index) => [index, value]),
+  );
 }

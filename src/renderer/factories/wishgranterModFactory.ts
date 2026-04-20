@@ -3,25 +3,28 @@ import type { RuntimeGame } from "../HDCTypes/gdjs.ts";
 import type { PathLike } from "fs";
 import { hasOnlyDefaultMods, getModCount } from "../startGame/loadMods.ts";
 import * as JsonFactory from "./jsonResultFactory.ts";
-import { getFactions } from "./contentFactory.ts";
+import { addCredit, getFactions } from "./contentFactory.ts";
 import { Sprite } from "../HDCTypes/sprite.ts";
 
 type CamelToSnakeCase<S extends string> = S extends `${infer T}${infer U}`
   ? `${T extends Capitalize<T> ? "_" : ""}${Lowercase<T>}${CamelToSnakeCase<U>}`
   : S;
-/** Name of every json there is a converter for*/
-type JsonListElement = {
-  [P in keyof typeof JsonFactory]: P extends `get${infer K}JSON`
+type SnakeToCamelCase<S extends string> = S extends `${infer T}_${infer U}`
+  ? `${Capitalize<T>}${SnakeToCamelCase<U>}`
+  : Capitalize<S>;
+type JsonListElementRecord = {
+  [P in keyof typeof JsonFactory extends `get${infer K}JSON`
     ? CamelToSnakeCase<Uncapitalize<K>>
+    : never]: `get${Capitalize<SnakeToCamelCase<P>>}JSON` extends keyof typeof JsonFactory
+    ? ReturnType<
+        (typeof JsonFactory)[`get${Capitalize<SnakeToCamelCase<P>>}JSON`]
+      >
     : never;
-}[keyof typeof JsonFactory];
+};
 
 /**Base game data for later reformating by hyperspaceDeckCommandModFactory*/
 export let original_data:
-  | ({ project_data: typeof gdjs.projectData } & Record<
-      JsonListElement,
-      ReturnType<(typeof JsonFactory)[keyof typeof JsonFactory]>
-    >)
+  | ({ project_data: typeof gdjs.projectData } & JsonListElementRecord)
   | undefined;
 
 /**@returns Mod that creates content helper functions. Should not be disableable. */
@@ -35,10 +38,7 @@ export async function getWishgranterMod(
         Object.getOwnPropertyNames(JsonFactory).map(async (name) => {
           const json = name
             .substring("get".length, name.length - "JSON".length)
-            .replace(
-              /[A-Z]/g,
-              (letter) => `_${letter.toLowerCase()}`,
-            ) as JsonListElement;
+            .replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
           return [
             json,
             JSON.parse(
@@ -46,14 +46,14 @@ export async function getWishgranterMod(
                 hyperspace_location,
                 json + ".json",
               ),
-            ) as ReturnType<(typeof JsonFactory)[keyof typeof JsonFactory]>,
+            ),
+          ] as [
+            keyof JsonListElementRecord,
+            JsonListElementRecord[keyof JsonListElementRecord],
           ];
         }),
       ),
-    ) as Record<
-      JsonListElement,
-      ReturnType<(typeof JsonFactory)[keyof typeof JsonFactory]>
-    >),
+    ) as JsonListElementRecord),
   };
   return {
     metadata: {
@@ -147,14 +147,21 @@ function replaceJsons() {
         other,
       );
   };
+  const original_credits = Object.keys(original_data?.credits ?? {}).map(
+    (key) => original_data?.credits[key as unknown as number],
+  );
+  for (let index = 2; index < original_credits.length; index += 2) {
+    for (const credit of original_credits[index]?.txt ?? []) {
+      addCredit(original_credits[index - 1]?.txt[0] ?? "*error*", credit);
+    }
+  }
 }
 function replaceResources(hyperspace_path: PathLike) {
   gdjs.projectData.resources = {
     get resources() {
-      return getFactions()
+      return Array.from(getFactions())
         .map((faction) =>
-          faction
-            .getCards()
+          Array.from(faction.getCards())
             .map((card) =>
               card.sprites.map((sprite, index) =>
                 sprite.getResource(faction, card, index),
@@ -194,10 +201,9 @@ function replaceResources(hyperspace_path: PathLike) {
   gdjs.projectData.layouts[0] = {
     ...gdjs.projectData.layouts[0],
     get usedResources() {
-      return getFactions()
+      return Array.from(getFactions())
         .map((faction) =>
-          faction
-            .getCards()
+          Array.from(faction.getCards())
             .map((card) =>
               card.sprites.map((_sprite, index) => {
                 return { name: Sprite.getId(faction, card, index) };
@@ -228,7 +234,7 @@ function replaceAnimations() {
   gdjs.projectData.layouts[0] = {
     ...gdjs.projectData.layouts[0],
     get objects() {
-      return getFactions()
+      return Array.from(getFactions())
         .map((faction) => faction.getUnitObject(base_unit_object))
         .concat(
           gdjs.projectData.layouts[0].objects.filter(
