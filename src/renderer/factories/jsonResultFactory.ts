@@ -1,4 +1,4 @@
-import type { Card } from "../HDCTypes/card.ts";
+import { Ability, Unit, type Card } from "../HDCTypes/card.ts";
 import type { Dongle } from "../HDCTypes/dongle.ts";
 import type { Encounter, Wave } from "../HDCTypes/encounter.ts";
 import type { Faction } from "../HDCTypes/faction.ts";
@@ -9,6 +9,7 @@ import {
   getGlobalFleetUpgradeDongles,
   getGlobalDongles,
 } from "./contentFactory.ts";
+import { original_data } from "./wishgranterModFactory.ts";
 
 function factionMap<T>(
   mapping_function: (faction: Faction) => T,
@@ -60,11 +61,17 @@ function cardToBaseGameCard(faction: Faction, card: Card): BaseGameCard {
   const out: BaseGameCard = {
     name: card.name,
     type: 2,
-    data: card.datacloud ?? "0",
+    data: card.datacloud_entry_text ?? "0",
     dmg: card.damage,
     faction: faction.short_name,
     por_obj: `obj_unit_${faction.short_name}`,
   };
+  if (card instanceof Unit) {
+    out.type = 1;
+  } else if (card instanceof Ability) {
+    out.type = 2;
+  }
+
   return out;
 }
 
@@ -307,38 +314,63 @@ export function getLootListUpJSON() {
     }),
   };
 }
-export function getUnlockCondJSON(): Record<
-  string,
-  { cond: string; unlock: string }
-> {}
 export function getLootListCardJSON() {
   return {
     start: { defense: [], damage: [], buff: [], control: [], const: [] },
+    ...factionMap((faction) => {
+      return {
+        shp: Array.from(faction.getSoldShips()).map((card) =>
+          card.getId(faction),
+        ),
+        shp_combo: Object.fromEntries(
+          faction
+            .getSoldShipCombos()
+            .entries()
+            .map(([sub_faction, card]) => [
+              sub_faction.short_name,
+              card.getId(faction),
+            ]),
+        ),
+        str: Array.from(faction.getSoldStructures()).map((card) =>
+          card.getId(faction),
+        ),
+        tch: Array.from(faction.getSoldTechs()).map((card) =>
+          card.getId(faction),
+        ),
+        tch_combo: Object.fromEntries(
+          faction
+            .getSoldTechCombos()
+            .entries()
+            .map(([sub_faction, card]) => [
+              sub_faction.short_name,
+              card.getId(faction),
+            ]),
+        ),
+        use: Array.from(faction.getSoldUsables()).map((card) =>
+          card.getId(faction),
+        ),
+      };
+    }),
+  };
+}
+
+export function getCloudLablesJSON(): Record<
+  string,
+  { txt: string; size: number }
+> {
+  return {
+    ...original_data?.cloud_lables,
     ...Object.fromEntries(
       Array.from(getFactions()).map((faction) => [
-        faction.short_name,
-        { shp: [], shp_combo: {}, str: [], tch: [], tch_combo: {}, use: [] },
+        `txt_${faction.short_name}`,
+        {
+          txt: `${faction.name} ${faction.getNotableStatusEffectString()}`,
+          size: 80,
+        },
       ]),
     ),
   };
 }
-export function getTextListsJSON(): {
-  shop_loc: { [key: string]: string[] };
-  con_insult: {
-    adj: string[];
-    noun: string[];
-  };
-  gp: {
-    corp_1: string[];
-    corp_2: string[];
-    leg: string[];
-  };
-} {}
-
-export function getCloudLabelsJSON(): Record<
-  string,
-  { txt: string; size: number }
-> {}
 export function getCreditsJSON(): Record<
   number,
   { txt: string[]; size: number }

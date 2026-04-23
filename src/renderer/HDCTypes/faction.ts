@@ -1,4 +1,4 @@
-import type { Card } from "./card.ts";
+import { type Card, Unit, type Ability } from "./card.ts";
 import type { Dongle } from "./dongle.ts";
 import type { Encounter } from "./encounter.ts";
 import type { gdjs } from "./gdjs.ts";
@@ -8,11 +8,16 @@ export class Faction {
   short_name: string;
 
   encounters: Encounter[] = [];
-  starting_decks: Card[] = [];
+
   encounter_reward_dongles: Dongle[] = [];
+  sold_dongles: Dongle[] = [];
+  starting_dongles: Dongle[] = [];
+
   encounter_reward_cards: Card[] = [];
-  sold_cards = new Map<Faction, Card[]>();
-  sold_dongles = new Map<Faction, Dongle[]>();
+  sold_cards: Card[] = [];
+  sold_ship_combos = new Map<Faction, Unit>();
+  sold_tech_combos = new Map<Faction, Ability>();
+  starting_cards: Card[] = [];
 
   constructor(name: string, short_name?: string) {
     this.name = name;
@@ -21,10 +26,15 @@ export class Faction {
   }
 
   addCardToStores(card: Card, additional_faction?: Faction) {
-    this.sold_cards.getOrInsert(additional_faction ?? this, []).push(card);
+    if (additional_faction)
+      (card instanceof Unit
+        ? this.sold_ship_combos
+        : this.sold_tech_combos
+      ).set(additional_faction, card as Ability & Unit);
+    else this.sold_cards.push(card);
   }
-  addDongleToStores(dongle: Dongle, additional_faction?: Faction) {
-    this.sold_dongles.getOrInsert(additional_faction ?? this, []).push(dongle);
+  addDongleToStores(dongle: Dongle) {
+    this.sold_dongles.push(dongle);
   }
   addCardToEncounterRewards(card: Card) {
     this.encounter_reward_cards.push(card);
@@ -36,7 +46,10 @@ export class Faction {
     this.encounters.push(encounter);
   }
   addCardToStartingDecks(card: Card) {
-    this.starting_decks.push(card);
+    this.starting_cards.push(card);
+  }
+  addDongleToStartingDecks(dongle: Dongle) {
+    this.starting_dongles.push(dongle);
   }
 
   getCard(card_name: string): Card | undefined {
@@ -55,42 +68,81 @@ export class Faction {
     );
   }
 
-  *getCards(): Iterable<Card> {
-    for (const card of this.encounter_reward_cards) yield card;
-    for (const cards of this.sold_cards.values())
-      for (const card of cards) yield card;
+  getCards(): Iterable<Card> {
+    return this.encounter_reward_cards
+      .concat(Array.from(this.sold_ship_combos.values()))
+      .concat(Array.from(this.sold_tech_combos.values()))
+      .concat(this.sold_cards)
+      .concat(this.starting_cards);
   }
-  getSoldShips(): Iterable<Card> {}
-  getSoldTechs(): Iterable<Card> {}
-  getSoldShipCombos(): Map<Faction, Iterable<Card>> {}
-  getSoldTechCombos(): Map<Faction, Iterable<Card>> {}
-  getSoldConsumables(): Iterable<Card> {}
-  getSoldBuffs(): Iterable<Card> {}
-  *getDongles(): Iterable<Dongle> {
-    for (const dongle of this.encounter_reward_dongles) yield dongle;
-    for (const dongles of this.sold_dongles.values())
-      for (const dongle of dongles) yield dongle;
+  getSoldShips(): Iterable<Card> {
+    return this.sold_cards.filter((card) => card.getType() == "ship");
+  }
+  getSoldTechs(): Iterable<Card> {
+    return this.sold_cards.filter((card) => card.getType() == "tech");
+  }
+  getSoldShipCombos(): Map<Faction, Card> {
+    return this.sold_ship_combos;
+  }
+  getSoldTechCombos(): Map<Faction, Card> {
+    return this.sold_tech_combos;
+  }
+  getSoldUsables(): Iterable<Card> {
+    return this.sold_cards.filter((card) => card.getType() == "useable");
+  }
+  getSoldStructures(): Iterable<Card> {
+    return this.sold_cards.filter((card) => card.getType() == "structure");
+  }
+  getDongles(): Iterable<Dongle> {
+    return this.encounter_reward_dongles
+      .concat(this.sold_dongles)
+      .concat(this.starting_dongles);
   }
   getEncounterRewardDongles() {
     return this.encounter_reward_dongles;
   }
-  getStartingGeneralDongles(): Iterable<Dongle> {}
-  getStartingStatDongles(): Iterable<Dongle> {}
+  getStartingGeneralDongles(): Iterable<Dongle> {
+    return this.starting_dongles.filter((dongle) => dongle.as_dongle);
+  }
+  getStartingStatDongles(): Iterable<Dongle> {
+    return this.starting_dongles.filter((dongle) => !dongle.as_dongle);
+  }
   getEncounters(): Iterable<Encounter> {
     return this.encounters;
   }
+  getNotableStatusEffectString(): string {
+    return "";
+  }
 
   removeCard(card: Card) {
-    for (const cards of Array.from(this.sold_cards.values()).concat(
-      this.encounter_reward_cards,
-    ))
-      if (cards.includes(card)) cards.splice(cards.indexOf(card), 1);
+    if (this.encounter_reward_cards.includes(card))
+      this.encounter_reward_cards.splice(
+        this.encounter_reward_cards.indexOf(card),
+        1,
+      );
+    if (this.sold_cards.includes(card))
+      this.sold_cards.splice(this.sold_cards.indexOf(card), 1);
+    if (this.starting_cards.includes(card))
+      this.starting_cards.splice(this.starting_cards.indexOf(card), 1);
+    for (const key of this.sold_ship_combos.keys()) {
+      if (this.sold_ship_combos.get(key) == card)
+        this.sold_ship_combos.delete(key);
+    }
+    for (const key of this.sold_tech_combos.keys()) {
+      if (this.sold_tech_combos.get(key) == card)
+        this.sold_tech_combos.delete(key);
+    }
   }
   removeDongle(dongle: Dongle) {
-    for (const dongles of Array.from(this.sold_dongles.values()).concat(
-      this.encounter_reward_dongles,
-    ))
-      if (dongles.includes(dongle)) dongles.splice(dongles.indexOf(dongle), 1);
+    if (this.encounter_reward_dongles.includes(dongle))
+      this.encounter_reward_dongles.splice(
+        this.encounter_reward_dongles.indexOf(dongle),
+        1,
+      );
+    if (this.sold_dongles.includes(dongle))
+      this.sold_dongles.splice(this.sold_dongles.indexOf(dongle), 1);
+    if (this.starting_dongles.includes(dongle))
+      this.starting_dongles.splice(this.starting_dongles.indexOf(dongle), 1);
   }
   removeEncounter(encounter: Encounter) {
     if (this.encounters.includes(encounter))

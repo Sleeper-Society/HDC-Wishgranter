@@ -2,6 +2,7 @@ import type { Card } from "./card.ts";
 
 export class Dongle {
   id: string;
+  as_dongle = true;
   header: string;
   text: string;
   text_on_equip: string;

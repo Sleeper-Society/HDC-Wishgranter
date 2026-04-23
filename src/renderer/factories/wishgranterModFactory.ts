@@ -38,7 +38,8 @@ export async function getWishgranterMod(
         Object.getOwnPropertyNames(JsonFactory).map(async (name) => {
           const json = name
             .substring("get".length, name.length - "JSON".length)
-            .replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+            .replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
+            .slice(1);
           return [
             json,
             JSON.parse(
@@ -119,6 +120,7 @@ function replaceVersionText() {
   }
 }
 function replaceJsons() {
+  const old_func = gdjs.evtsExt__JSONResourceLoader__LoadJSONToScene.func;
   gdjs.evtsExt__JSONResourceLoader__LoadJSONToScene.func = (
     runtime,
     resource_name,
@@ -139,13 +141,7 @@ function replaceJsons() {
       "JSON") as keyof typeof JsonFactory;
     if (Object.hasOwn(JsonFactory, json_func_name))
       variable.fromJSObject(JsonFactory[json_func_name]());
-    else
-      gdjs.evtsExt__JSONResourceLoader__LoadJSONToScene.func(
-        runtime,
-        resource_name,
-        variable,
-        other,
-      );
+    else old_func(runtime, resource_name, variable, other);
   };
   const original_credits = Object.keys(original_data?.credits ?? {}).map(
     (key) => original_data?.credits[key as unknown as number],
@@ -172,13 +168,14 @@ function replaceResources(hyperspace_path: PathLike) {
         .flat()
         .concat(
           original_data?.project_data.resources.resources
-            .filter((resource) =>
-              Object.keys(original_data?.cards ?? {}).includes(
-                resource.file.substring(
-                  0,
-                  resource.file.length - "_0_0.png".length,
+            .filter(
+              (resource) =>
+                !Object.keys(original_data?.cards ?? {}).includes(
+                  resource.file.substring(
+                    0,
+                    resource.file.length - "_0_0.png".length,
+                  ),
                 ),
-              ),
             )
             .map((resource) => {
               return {
@@ -215,7 +212,7 @@ function replaceResources(hyperspace_path: PathLike) {
         .concat(
           original_data?.project_data.layouts[0].usedResources.filter(
             (resource) =>
-              Object.keys(original_data?.cards ?? {}).includes(
+              !Object.keys(original_data?.cards ?? {}).includes(
                 resource.name.substring(
                   "pixels/units/".length,
                   resource.name.length - "_0_0.png".length,
@@ -237,9 +234,9 @@ function replaceAnimations() {
       return Array.from(getFactions())
         .map((faction) => faction.getUnitObject(base_unit_object))
         .concat(
-          gdjs.projectData.layouts[0].objects.filter(
+          original_data?.project_data.layouts[0].objects.filter(
             (value) => !value.name.startsWith("obj_unit_"),
-          ),
+          ) ?? [],
         );
     },
   };

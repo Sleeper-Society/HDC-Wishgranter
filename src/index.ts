@@ -234,7 +234,6 @@ class RemoteReplacePreloadHandler implements AwaitedFuncs<
   }
   getPath(path_flag: "documents" | "home" | "temp") {
     const out = app.getPath(path_flag);
-    console.log(out);
     if (path_flag == "temp") {
       fs.mkdirSync(path.join(app.getPath(path_flag), "HDCWishgranter"));
       return path.join(out, "HDCWishgranter");
@@ -243,7 +242,6 @@ class RemoteReplacePreloadHandler implements AwaitedFuncs<
   }
   sep() {
     const out = path.sep;
-    console.log(out);
     return out;
   }
   existsSync(file: PathLike) {

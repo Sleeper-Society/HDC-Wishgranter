@@ -26,9 +26,9 @@ export const loadWishgranter: LoadSequenceFunction = (
 
 const replacements: Record<string, PathLike> = {
   "pixi-renderers/loadingscreen-pixi-renderer.js":
-    "dist/renderer/loadingReimplementation.js",
+    "dist/renderer/factories/loadingReimplementation.js",
   "Extensions/FileSystem/filesystemtools.js":
-    "dist/renderer/filesystemReimplementation.js",
+    "dist/renderer/factories/filesystemReimplementation.js",
 };
 
 function getPossiblyReplacedScriptSource(

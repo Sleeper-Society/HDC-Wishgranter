@@ -49,6 +49,7 @@ interface projectData {
     }[];
     usedResources: { name: string }[];
   }[];
+  usedResources: { name: string }[];
 }
 
 export interface Animation {

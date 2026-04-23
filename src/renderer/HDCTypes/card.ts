@@ -4,29 +4,37 @@ import type { Animation } from "./gdjs.ts";
 import type { Faction } from "./faction.ts";
 import type { BaseGameCardEffect } from "../factories/jsonResultFactory.ts"; //TODO Custom card effects
 
-export class Card {
+export abstract class Card {
   name: string;
   damage: number;
   sprites: Sprite[];
+  background_sprite: Sprite;
   sprite_angle? = 0;
   sprite_rotation? = 0;
-  sprite_scale? = 1;
+  sprite_scale = 1;
+  sprite_repos_rate?: number;
+  sprite_repos_range?: number;
   effects: BaseGameCardEffect[];
+  multistrike?: true;
   comms?: string[][];
-  datacloud?: string;
+  datacloud_entry_text?: string;
   datacloud_unlock_condition?: unknown;
+  endless_mode_upgrade?: Dongle;
+  endless_mode_name?: string;
+  srm_drop?: number;
+
   constructor(
     name: string,
     sprites: Sprite[],
+    background_sprite: Sprite,
     damage: number,
-    effects: BaseGameCardEffect[],
-    additional?: Partial<Card>,
+    ...effects: BaseGameCardEffect[]
   ) {
     this.name = name;
     this.sprites = sprites;
+    this.background_sprite = background_sprite;
     this.damage = damage;
     this.effects = effects;
-    Object.assign(this, additional);
   }
   getId(faction: Faction): string {
     return `${faction.short_name}_${this.name.replace(/ /g, "_").toLowerCase()}`;
@@ -53,6 +61,7 @@ export class Card {
       ],
     };
   }
+  abstract getType(): "structure" | "tech" | "useable" | "ship";
 }
 
 export class Unit extends Card {
@@ -62,22 +71,40 @@ export class Unit extends Card {
   deck_group?: "megaship" | "aux" | "construct";
   death_effect_power = 1;
   boss_upgrade?: Dongle;
+  jump_fx?: 1 | 2 | 3 | 4;
+  gun_mounts?: number;
+  death_fx_power?: 1 | 2 | 3 | 4 | 5;
+  death_time_max?: number;
   constructor(
     name: string,
     sprites: Sprite[],
+    background_sprite: Sprite,
     damage: number,
     hull: number,
     timer: number,
     orbital_size: 1 | 2 | 3,
-    effects: BaseGameCardEffect[],
-    additional?: Partial<Unit>,
+    ...effects: BaseGameCardEffect[]
   ) {
-    super(name, sprites, damage, effects, additional);
-    this.name = name;
-    this.sprites = sprites;
+    super(name, sprites, background_sprite, damage, ...effects);
     this.hull = hull;
     this.timer = timer;
     this.orbital_size = orbital_size;
-    this.effects = effects;
+  }
+  getType() {
+    return this.damage != -1 ? "ship" : "structure";
+  }
+}
+
+export class Ability extends Card {
+  delayed_effect_time?: number;
+  target_update_delay?: number;
+  attach_mount_type?: number;
+  attach_animation?: string;
+  type?: number;
+  target?: number;
+  comms_player?: string[][];
+  comms_ally?: string[][];
+  getType() {
+    return this.damage != -1 ? "useable" : "tech";
   }
 }
