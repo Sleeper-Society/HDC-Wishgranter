@@ -6,6 +6,7 @@ import type { gdjs } from "./gdjs.ts";
 export class Faction {
   name: string;
   short_name: string;
+  color: [number, number, number] = [0, 0, 0];
 
   encounters: Encounter[] = [];
 

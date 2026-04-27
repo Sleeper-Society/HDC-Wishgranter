@@ -22,7 +22,7 @@ export type RemoteReplace = typeof remote_replace;
 let sep = "/";
 let documents_path = "~/Documents";
 let home_path = "~";
-let temp_path = "tmp/HDCWishgranter";
+let temp_path = "tmp/Wishgranter";
 const cached_files: Map<PathLike, string> = new Map<PathLike, string>();
 
 const wishgranter = {

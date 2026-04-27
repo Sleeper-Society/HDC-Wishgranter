@@ -22,12 +22,12 @@ type JsonListElementRecord = {
     : never;
 };
 
-/**Base game data for later reformating by hyperspaceDeckCommandModFactory*/
+/**Base game data for later reformatting by hyperspaceDeckCommandModFactory*/
 export let original_data:
   | ({ project_data: typeof gdjs.projectData } & JsonListElementRecord)
   | undefined;
 
-/**@returns Mod that creates content helper functions. Should not be disableable. */
+/**@returns Mod that creates content helper functions. Should not be disable-able. */
 export async function getWishgranterMod(
   hyperspace_location: PathLike,
 ): Promise<Mod> {

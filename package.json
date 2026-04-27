@@ -90,7 +90,7 @@
     "typescript-eslint": "^8.58.0"
   },
   "lint-staged": {
-    "*.{ts}": "eslint --cache --fix",
+    "*.ts": "eslint --cache --fix",
     "*.{ts,js,css,md}": "prettier --write"
   }
 }

@@ -25,7 +25,7 @@ export interface gdjs {
   };
 }
 
-interface projectData {
+export interface projectData {
   properties: {
     name: string;
     version: string;
@@ -47,10 +47,29 @@ interface projectData {
       name: string;
       animations: Animation[];
     }[];
+    variables: UnloadedVariable[];
     usedResources: { name: string }[];
   }[];
-  usedResources: { name: string }[];
 }
+
+export type UnloadedVariable =
+  | { folded?: true; name: string; type: "number"; value: number }
+  | { folded?: true; name: string; type: "string"; value: string }
+  | {
+      folded?: true;
+      name: string;
+      type: "array";
+      children: (
+        | { type: "number"; value: number }
+        | { type: "string"; value: string }
+      )[];
+    }
+  | {
+      folded?: true;
+      name: string;
+      type: "structure";
+      children: UnloadedVariable[];
+    };
 
 export interface Animation {
   name: string;

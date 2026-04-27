@@ -56,11 +56,11 @@ function createWindow() {
 
   // Emitted when the window is closed.
   mainWindow.on("closed", function () {
-    // Dereference the window object, usually you would store windows
+    // De-reference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
     mainWindow = null;
-    fs.rmSync(path.join(app.getPath("temp"), "HDCWishgranter"), {
+    fs.rmSync(path.join(app.getPath("temp"), "Wishgranter"), {
       force: true,
       recursive: true,
     });
@@ -81,6 +81,8 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
   constructor() {
     for (const key of Object.getOwnPropertyNames(
       this.constructor.prototype,
+    ).filter(
+      (key) => key != "constructor",
     ) as (keyof WishgranterPreloadHandler)[]) {
       ipcMain.handle(
         key,
@@ -171,12 +173,12 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
     data: string,
   ): Promise<string> {
     const sep_file_name = file_name.toString().split(path.sep);
-    await fsPromise.mkdir(path.join(app.getPath("temp"), "HDCWishgranter"), {
+    await fsPromise.mkdir(path.join(app.getPath("temp"), "Wishgranter"), {
       recursive: true,
     });
     const temp_path = path.join(
       app.getPath("temp"),
-      "HDCWishgranter",
+      "Wishgranter",
       sep_file_name[sep_file_name.length - 1],
     );
     await fsPromise.writeFile(temp_path, data, { flag: "w" });
@@ -202,13 +204,29 @@ class RemoteReplacePreloadHandler implements AwaitedFuncs<
   Flatten<RemoteReplace>
 > {
   constructor() {
-    for (const key of Object.getOwnPropertyNames(this.constructor.prototype)) {
-      if (key == "constructor") continue;
-      ipcMain.handle(key, (_event, ...args) => {
-        // @ts-expect-error Blind Call into class, cannot typecheck
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        this[key as keyof RemoteReplacePreloadHandler](...args);
-      });
+    for (const key of Object.getOwnPropertyNames(
+      this.constructor.prototype,
+    ).filter(
+      (key) => key != "constructor",
+    ) as (keyof RemoteReplacePreloadHandler)[]) {
+      ipcMain.handle(
+        key,
+        (
+          _event,
+          ...args: Parameters<
+            Flatten<RemoteReplace>[keyof Flatten<RemoteReplace>]
+          >
+        ) =>
+          (
+            this[key] as (
+              ...args: Parameters<
+                RemoteReplacePreloadHandler[keyof RemoteReplacePreloadHandler]
+              >
+            ) => ReturnType<
+              RemoteReplacePreloadHandler[keyof RemoteReplacePreloadHandler]
+            >
+          )(...args),
+      );
     }
   }
   getPaths() {
@@ -235,14 +253,13 @@ class RemoteReplacePreloadHandler implements AwaitedFuncs<
   getPath(path_flag: "documents" | "home" | "temp") {
     const out = app.getPath(path_flag);
     if (path_flag == "temp") {
-      fs.mkdirSync(path.join(app.getPath(path_flag), "HDCWishgranter"));
-      return path.join(out, "HDCWishgranter");
+      fs.mkdirSync(path.join(app.getPath(path_flag), "Wishgranter"));
+      return path.join(out, "Wishgranter");
     }
     return out;
   }
   sep() {
-    const out = path.sep;
-    return out;
+    return path.sep;
   }
   existsSync(file: PathLike) {
     return !file;
@@ -251,6 +268,16 @@ class RemoteReplacePreloadHandler implements AwaitedFuncs<
     return;
   }
   writeFileSync(file: PathLike, data: string) {
+    const file_path = file.toString().split(path.sep);
+    for (let i = 1; i < file_path.length; i++) {
+      const sub_file_path = file_path
+        .toSpliced(i)
+        .reduce((prev, current) => prev + path.sep + current, "");
+      if (!fs.existsSync(sub_file_path)) {
+        console.warn(sub_file_path, " does not exist");
+        return;
+      }
+    }
     fs.writeFileSync(file, data, { flag: "w", encoding: "utf8" });
   }
   readFileSync(file: PathLike) {
