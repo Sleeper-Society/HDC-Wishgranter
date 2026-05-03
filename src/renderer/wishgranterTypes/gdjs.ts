@@ -8,12 +8,34 @@ export interface gdjs {
   projectData: projectData;
   CommandCode: Record<
     string,
-    unknown[] | ((runtime_game: RuntimeGame) => void)
+    | unknown[]
+    | ((runtime_game: RuntimeGame) => void)
+    | ((runtime_scene: RuntimeScene) => void)
+    | null
   >;
   RuntimeGame: RuntimeGameClass;
   copyArray: (from: unknown[], to: unknown[]) => void;
+  evtTools: {
+    variable: {
+      getVariableNumber: (variable: Variable) => number;
+    };
+    sound: {
+      stopMusicOnChannel: (
+        runtime_scene: RuntimeScene,
+        channel: number,
+      ) => void;
+      playMusicOnChannel: (
+        runtime_scene: RuntimeScene,
+        music_name: string,
+        channel: number,
+        truth: true,
+        zero: 0,
+        one: 1,
+      ) => void;
+    };
+  };
   evtsExt__GetPropertiesData__ReturnGameVersion: {
-    func: (runtime: RuntimeScene, other: null) => string;
+    func: (runtime: RuntimeGame, other: null) => string;
   };
   evtsExt__JSONResourceLoader__LoadJSONToScene: {
     func: (
@@ -121,8 +143,12 @@ export interface RuntimeGame {
   startGameLoop: () => void;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface RuntimeScene {}
+export interface RuntimeScene {
+  getScene: () => RuntimeScene;
+  getVariables: () => {
+    getFromIndex: (index: number) => Variable;
+  };
+}
 
 export interface Variable {
   fromJSObject: (object: object) => void;

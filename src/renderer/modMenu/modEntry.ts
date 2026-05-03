@@ -1,4 +1,4 @@
-import type { ModMetaData } from "../HDCTypes/mod.ts";
+import type { ModMetaData } from "../wishgranterTypes/mod.ts";
 
 const mod_entry_template = document.getElementsByTagName("template")[0];
 

@@ -1,5 +1,5 @@
 {
-  "name": "wish-granter",
+  "name": "wishgranter",
   "version": "0.0.1",
   "description": "Modloader for Sleeper Game's Hyperspace Deck Command",
   "main": "dist/exports.js",

@@ -1,10 +1,11 @@
-import type { Mod } from "../HDCTypes/mod.ts";
-import type { RuntimeGame } from "../HDCTypes/gdjs.ts";
+import type { Mod } from "../../wishgranterTypes/mod.ts";
+import type { RuntimeGame, RuntimeScene } from "../../wishgranterTypes/gdjs.ts";
 import type { PathLike } from "fs";
-import { hasOnlyDefaultMods, getModCount } from "../startGame/loadMods.ts";
-import * as JsonFactory from "./jsonResultFactory.ts";
-import { addCredit, getFactions } from "./contentFactory.ts";
-import { Sprite } from "../HDCTypes/sprite.ts";
+import { hasOnlyDefaultMods, getModCount } from "../../startGame/loadMods.ts";
+import * as JsonFactory from "../jsonResultFactory.ts";
+import { addCredit, getFactions } from "../contentFactory.ts";
+import { AnimatedSprite } from "../spriteFactory.ts";
+import { music_map } from "../hdcTypeFactories/encounterFactory.ts";
 
 type CamelToSnakeCase<S extends string> = S extends `${infer T}${infer U}`
   ? `${T extends Capitalize<T> ? "_" : ""}${Lowercase<T>}${CamelToSnakeCase<U>}`
@@ -24,7 +25,10 @@ type JsonListElementRecord = {
 
 /**Base game data for later reformatting by hyperspaceDeckCommandModFactory*/
 export let original_data:
-  | ({ project_data: typeof gdjs.projectData } & JsonListElementRecord)
+  | ({
+      project_data: typeof gdjs.projectData;
+      music: Record<number, [PathLike, PathLike | undefined]>;
+    } & JsonListElementRecord)
   | undefined;
 
 /**@returns Mod that creates content helper functions. Should not be disable-able. */
@@ -33,6 +37,7 @@ export async function getWishgranterMod(
 ): Promise<Mod> {
   original_data = {
     project_data: structuredClone(gdjs.projectData),
+    music: getMusic(),
     ...(Object.fromEntries(
       await Promise.all(
         Object.getOwnPropertyNames(JsonFactory).map(async (name) => {
@@ -66,6 +71,25 @@ export async function getWishgranterMod(
   };
 }
 
+function getMusic(): Record<number, [PathLike, PathLike | undefined]> {
+  const out: Record<number, [PathLike, PathLike | undefined]> = {};
+  for (const code in gdjs.CommandCode) {
+    if (!gdjs.CommandCode[code] || typeof gdjs.CommandCode[code] != "function")
+      continue;
+    for (const match of gdjs.CommandCode[code]
+      .toString()
+      .matchAll(
+        /(?<=getFromIndex\(\d+\) ?== ?(\d+)[\s\S]*?)soft_and_furious([\w_])\.ogg[\s\S]*?(soft_and_furious\2_lp\.oog)?/g,
+      )) {
+      out[Number.parseInt(match[1])] = [
+        `soft_and_furious${match[2]}.ogg`,
+        match[3],
+      ];
+    }
+  }
+  return out;
+}
+
 function onLoad() {
   return [
     {
@@ -83,6 +107,10 @@ function onLoad() {
     {
       status_text: "Replace Animations",
       function: replaceAnimations,
+    },
+    {
+      status_text: "Replace Music",
+      function: replaceMusic,
     },
   ];
 }
@@ -203,7 +231,7 @@ function replaceResources(hyperspace_path: PathLike) {
           Array.from(faction.getCards())
             .map((card) =>
               card.sprites.map((_sprite, index) => {
-                return { name: Sprite.getId(faction, card, index) };
+                return { name: AnimatedSprite.getId(faction, card, index) };
               }),
             )
             .flat(),
@@ -240,4 +268,44 @@ function replaceAnimations() {
         );
     },
   };
+}
+function replaceMusic() {
+  for (const code in gdjs.CommandCode) {
+    const regex =
+      /(?<=getFromIndex\((\d+)\) ?== ?(\d+)[\s\S]*?)soft_and_furious([\w_])\.ogg[\s\S]*?(soft_and_furious\3_lp\.oog)?/g;
+    const match = gdjs.CommandCode[code]?.toString().match(regex);
+    if (typeof gdjs.CommandCode[code] != "function" || !match) continue;
+    const index = Number.parseInt(match[1]);
+    gdjs.CommandCode[code] = (runtimeScene: RuntimeScene) => {
+      const wave_music_index = gdjs.evtTools.variable.getVariableNumber(
+        runtimeScene.getScene().getVariables().getFromIndex(index),
+      );
+      if (wave_music_index == 0) {
+        gdjs.evtTools.sound.stopMusicOnChannel(runtimeScene, 0);
+        gdjs.evtTools.sound.stopMusicOnChannel(runtimeScene, 1);
+      } else if (
+        wave_music_index > 0 &&
+        music_map[wave_music_index] != undefined
+      ) {
+        gdjs.evtTools.sound.playMusicOnChannel(
+          runtimeScene,
+          `sounds/music/${music_map[wave_music_index][0].toString()}`,
+          0,
+          true,
+          0,
+          1,
+        );
+        if (music_map[wave_music_index][1] != undefined) {
+          gdjs.evtTools.sound.playMusicOnChannel(
+            runtimeScene,
+            `sounds/music/${music_map[wave_music_index][1].toString()}`,
+            0,
+            true,
+            0,
+            1,
+          );
+        }
+      }
+    };
+  }
 }

@@ -1,13 +1,21 @@
-import type { AnimationFrame } from "./gdjs.ts";
-import type { Card } from "./card.ts";
-import type { Faction } from "./faction.ts";
+import type { Card, Faction } from "wishgranter";
+import type { AnimationFrame, projectData } from "../wishgranterTypes/gdjs.ts";
+import type { PathLike } from "fs";
+import type { Card as TrueCard } from "./hdcTypeFactories/cardFactory.ts";
+
+export class Sprite {
+  file_path: string;
+  constructor(file_path: PathLike) {
+    this.file_path = file_path.toString();
+  }
+}
+
 interface Point {
   x: number;
   y: number;
 }
 
-export class Sprite {
-  file_path: string;
+export class AnimatedSprite extends Sprite {
   width: number;
   height: number;
   origin_point: Point;
@@ -52,22 +60,22 @@ export class Sprite {
   }
 
   constructor(file_name: string, width: number, height: number) {
-    this.file_path = file_name;
+    super(file_name);
     this.width = width;
     this.height = height;
     this.origin_point = { x: width / 2, y: width / 2 };
   }
-  getResource(faction: Faction, card: Card, sprite_index: number) {
+  getResource(faction: Faction, card: TrueCard, sprite_index: number) {
     return {
       file: this.file_path,
       kind: "image",
       metadata: "",
-      name: Sprite.getId(faction, card, sprite_index),
+      name: AnimatedSprite.getId(faction, card, sprite_index),
       smoothed: false,
       userAdded: true,
     };
   }
-  static getId(faction: Faction, card: Card, sprite_index: number) {
+  static getId(faction: Faction, card: TrueCard, sprite_index: number) {
     return (
       "pixels/units/" +
       card.getId(faction) +
@@ -78,12 +86,12 @@ export class Sprite {
   }
   getAnimationFrame(
     faction: Faction,
-    card: Card,
+    card: TrueCard,
     sprite_index: number,
   ): AnimationFrame {
     return {
       hasCustomCollisionMask: true,
-      image: Sprite.getId(faction, card, sprite_index),
+      image: AnimatedSprite.getId(faction, card, sprite_index),
       points: Object.keys(this.points).map((key) => {
         return { name: key, x: this.points[key].x, y: this.points[key].y };
       }),
@@ -99,4 +107,35 @@ export class Sprite {
       ],
     };
   }
+}
+
+export function getCardSprites(
+  card_id: ReturnType<Card["getId"]>,
+  hyperspace_deck_command_location: PathLike,
+  resources: projectData["resources"]["resources"],
+): AnimatedSprite[] {
+  return resources
+    .filter((resource) =>
+      new RegExp(
+        `${card_id.startsWith("ab") ? "ab" : "unit"}_${card_id}_\\d+\\.png`,
+      ).test(resource.file),
+    )
+    .map((resource) => {
+      const path = `${hyperspace_deck_command_location.toString()}${window.remote_replace.path.sep()}resources${window.remote_replace.path.sep()}app.asar${window.remote_replace.path.sep()}app${window.remote_replace.path.sep()}${resource.file}`;
+      const image = new Image();
+      image.src = path;
+
+      return new AnimatedSprite(path, image.width, image.height);
+    });
+}
+export function getBackgroundSprite(
+  background_id: `cp_${string}`,
+  hyperspace_deck_command_location: PathLike,
+): Sprite {
+  return new Sprite(
+    `${hyperspace_deck_command_location.toString()}${window.remote_replace.path.sep()}resources${window.remote_replace.path.sep()}app.asar${window.remote_replace.path.sep()}app${window.remote_replace.path.sep()}${background_id.substring(2)}`,
+  );
+}
+export function backgroundSpriteToId(sprite: Sprite): string {
+  return `cp_${sprite.file_path}`;
 }

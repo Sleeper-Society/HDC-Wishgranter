@@ -1,8 +1,8 @@
 import type { PathLike } from "fs";
-import type { Mod } from "../HDCTypes/mod.ts";
+import type { Mod } from "../wishgranterTypes/mod.ts";
 import type { ModEntry } from "../modMenu/modEntry.ts";
-import { getHyperspaceDeckCommandAsMod } from "../factories/hyperspaceDeckCommandModFactory.ts";
-import { getWishgranterMod } from "../factories/wishgranterModFactory.ts";
+import { getHyperspaceDeckCommandAsMod } from "../factories/modFactories/hyperspaceDeckCommandModFactory.ts";
+import { getWishgranterMod } from "../factories/modFactories/wishgranterModFactory.ts";
 
 const modlist_parent = document.getElementById("modlist");
 let modlist: Mod[] = [];
