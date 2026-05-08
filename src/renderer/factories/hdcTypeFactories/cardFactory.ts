@@ -70,15 +70,35 @@ export abstract class Card {
           )
             .flat()
             .map((index) =>
+              // @ts-expect-error Only used by an implementation, obviously, but I can't tell ts that
               this.sprites[index].getAnimationFrame(faction, this, index),
             ),
         },
       ],
     };
   }
-  abstract getComms(
+  *getComms(
     faction?: Faction,
-  ): Iterable<[string, Record<`text_${number}`, string[]>]>;
+  ): Iterable<[string, Record<`text_${number}`, string[]> | string]> {
+    for (const name of Object.getOwnPropertyNames(this).filter(
+      (name) => name.endsWith("_bark") && this[name as keyof typeof this],
+    ) as (keyof Faction)[]) {
+      yield [
+        `${this.getId(faction)}_${name.substring(0, name.length - "_bark".length)}`,
+        Object.fromEntries(
+          (
+            this[name as `${string}_bark` & keyof typeof this] as string[][]
+          ).map(
+            (comm, index) =>
+              [`text_${index.toString()}`, comm] as [
+                `text_${number}`,
+                string[],
+              ],
+          ),
+        ),
+      ];
+    }
+  }
   abstract getType(): "construct" | "tech" | "depletable" | "ship";
 }
 export abstract class Unit extends Card {
@@ -90,7 +110,13 @@ export abstract class Unit extends Card {
   gun_mounts?: number;
   death_fx_power?: 1 | 2 | 3 | 4 | 5;
   death_time_max?: number;
-  comms?: string[][];
+  deploy_bark?: string[][];
+  orbit_bark?: string[][];
+  target_bark?: string[][];
+  attack_bark?: string[][];
+  minor_damage_bark?: string[][];
+  major_damage_bark?: string[][];
+  death_bark?: string[][];
   srm_drop?: number;
   constructor(
     name: string,
@@ -110,19 +136,6 @@ export abstract class Unit extends Card {
   getId(faction?: Faction): `${string}_${string}` {
     return `${faction?.short_name ?? "heg"}_${super.getId(faction)}`;
   }
-  getComms(faction?: Faction) {
-    return [
-      [
-        this.getId(faction),
-        Object.fromEntries(
-          this.comms?.map((comm, index) => [
-            `text_${index.toString()}`,
-            comm,
-          ]) ?? [],
-        ),
-      ] as [string, Record<`text_${number}`, string[]>],
-    ];
-  }
   getType() {
     return this.damage != -1 ? "ship" : "construct";
   }
@@ -140,13 +153,11 @@ export class EnemyUnit extends Unit {
   boss_upgrade?: Dongle;
   endless_mode_upgrade?: Dongle;
   endless_mode_name?: string;
-  getId(faction?: Faction): `hos_${string}_${string}` {
-    return `hos_${super.getId(faction)}`;
-  }
 }
 export class PlayerUnit extends Unit implements PlayerCard {
   store_location: string[];
   deck_priority = Infinity;
+  select_bark?: string[][];
   constructor(
     name: string,
     sprites: AnimatedSprite[],
@@ -184,9 +195,9 @@ export class Ability extends Card implements PlayerCard {
   attach_animation?: string; //TODO Switch from id to object
   type?: number;
   target: number;
-  comms_player?: string[][];
-  comms_ally?: string[][];
-  comms_hos?: string[][];
+  pl_bark?: string[][];
+  ally_bark?: string[][];
+  hos_bark?: string[][];
   speaker?: string;
   store_location: string[];
   deck_priority = Infinity;
@@ -206,46 +217,21 @@ export class Ability extends Card implements PlayerCard {
   getId(faction?: Faction): `ab_${string}` {
     return `ab_${super.getId(faction)}`;
   }
-  *getComms(
-    faction?: Faction,
-  ): Iterable<[string, Record<`text_${number}`, string[]>]> {
-    if (this.comms_ally)
-      yield [
-        `${this.getId(faction)}_ally`,
-        Object.fromEntries(
-          this.comms_ally.map((comm, index) => [
-            `text_${index.toString()}`,
-            comm,
-          ]),
-        ) as Record<`text_\${number}`, string[]>,
-      ];
-    if (this.comms_hos)
-      yield [
-        `${this.getId(faction)}_hos`,
-        Object.fromEntries(
-          this.comms_hos.map((comm, index) => [
-            `text_${index.toString()}`,
-            comm,
-          ]),
-        ) as Record<`text_\${number}`, string[]>,
-      ];
-    if (this.comms_player)
-      yield [
-        `${this.getId(faction)}_pl`,
-        Object.fromEntries(
-          this.comms_player.map((comm, index) => [
-            `text_${index.toString()}`,
-            comm,
-          ]),
-        ) as Record<`text_\${number}`, string[]>,
-      ];
-  }
   getType() {
     return this.damage != -1 ? "depletable" : "tech";
   }
 }
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface Commander extends Ability {} //TODO Constrain Commander
+export class Commander extends Ability {
+  effect_bark?: string[][];
+  deploy_bark?: string[][];
+  orbit_bark?: string[][];
+  target_bark?: string[][];
+  attack_bark?: string[][];
+  minor_damage_bark?: string[][];
+  major_damage_bark?: string[][];
+  death_bark?: string[][];
+  callsign?: string;
+} //TODO Constrain Commander
 
 interface BaseGameCard extends Record<`effect_${number}`, BaseGameCardEffect> {
   name: string;
@@ -295,9 +281,9 @@ interface BaseGameAbility extends BaseGamePlayerCard {
   ab_type?: number;
   ab_attach_mount_type?: number;
   ab_attach_anim?: string;
-  ab_comms_hos?: string;
-  ab_comms_ally?: string;
-  ab_comms_pl?: string;
+  ab_comms_hos?: `ab_${string}_hos`;
+  ab_comms_ally?: `ab_${string}_ally`;
+  ab_comms_pl?: `ab_${string}_pl`;
   speaker?: string;
 }
 
@@ -388,11 +374,9 @@ export function cardToBaseGameCard(
       ab_target: card.target,
       ab_attach_anim: card.attach_animation,
       ab_attach_mount_type: card.attach_mount_type,
-      ab_comms_ally: card.comms_ally
-        ? `${card.getId(faction)}_ally`
-        : undefined,
-      ab_comms_hos: card.comms_hos ? `${card.getId(faction)}_hos` : undefined,
-      ab_comms_pl: card.comms_player ? `${card.getId(faction)}_pl` : undefined,
+      ab_comms_ally: card.ally_bark ? `${card.getId(faction)}_ally` : undefined,
+      ab_comms_hos: card.hos_bark ? `${card.getId(faction)}_hos` : undefined,
+      ab_comms_pl: card.pl_bark ? `${card.getId(faction)}_pl` : undefined,
       speaker: card.speaker,
     } as BaseGameAbility;
   } else {
@@ -403,7 +387,11 @@ export function cardToBaseGameCard(
       timer: card.timer,
       size: card.orbital_size,
       por_obj: `obj_unit_${(faction?.short_name ?? card instanceof EnemyUnit) ? "hos" : "universal"}`,
-      comms: card.comms ? card.getId(faction) : undefined,
+      comms:
+        Object.getOwnPropertyNames(card).filter((name) => name.endsWith("bark"))
+          .length > 0
+          ? card.getId(faction)
+          : undefined,
       srm_drop: card.srm_drop,
       jump_fx: card.jump_fx,
       gun_mounts: card.gun_mounts,
@@ -483,31 +471,33 @@ function abilityFromBaseGameAbility(
   out.type = ability.ab_type;
   out.target = ability.ab_target;
 
-  if (ability.ab_comms_ally)
-    out.comms_ally = Object.getOwnPropertyNames(
-      comms[ability.ab_comms_ally],
-    ).map(
+  if (ability.ab_comms_ally && comms[ability.ab_comms_ally]) {
+    const comms_ally = ability.ab_comms_ally;
+    out.ally_bark = Object.getOwnPropertyNames(comms[comms_ally]).map(
       (name) =>
-        (comms[ability.ab_comms_ally ?? ""] ?? { [name]: [""] })[
+        (comms[comms_ally] as Record<`text_${string}`, string[]>)[
           name as `text_${number}`
         ],
     );
-  if (ability.ab_comms_hos)
-    out.comms_hos = Object.getOwnPropertyNames(comms[ability.ab_comms_hos]).map(
+  }
+  if (ability.ab_comms_hos && comms[ability.ab_comms_hos]) {
+    const comms_hos = ability.ab_comms_hos;
+    out.ally_bark = Object.getOwnPropertyNames(comms[comms_hos]).map(
       (name) =>
-        (comms[ability.ab_comms_hos ?? ""] ?? { [name]: [""] })[
+        (comms[comms_hos] as Record<`text_${string}`, string[]>)[
           name as `text_${number}`
         ],
     );
-  if (ability.ab_comms_pl)
-    out.comms_player = Object.getOwnPropertyNames(
-      comms[ability.ab_comms_pl],
-    ).map(
+  }
+  if (ability.ab_comms_pl && comms[ability.ab_comms_pl]) {
+    const comms_pl = ability.ab_comms_pl;
+    out.ally_bark = Object.getOwnPropertyNames(comms[comms_pl]).map(
       (name) =>
-        (comms[ability.ab_comms_pl ?? ""] ?? { [name]: [""] })[
+        (comms[comms_pl] as Record<`text_${string}`, string[]>)[
           name as `text_${number}`
         ],
     );
+  }
 
   out.speaker = ability.speaker;
   out.store_location = getStoreLocation(ability.store_loc) ?? [];
@@ -539,7 +529,7 @@ function playerUnitFromBaseGamePlayerUnit(
   return out;
 }
 function enemyUnitFromBaseGameEnemeyUnit(
-  id: `hos_${string}_${string}`,
+  id: ReturnType<EnemyUnit["getId"]>,
   hyperspace_deck_command_location: PathLike,
   enemey_unit: BaseGameEnemeyUnit,
   upgrades: ReturnType<typeof getUpgradesJSON>,
@@ -560,11 +550,19 @@ function enemyUnitFromBaseGameEnemeyUnit(
   );
   out.boss_upgrade = enemey_unit.boss_up
     ? (getDongle(enemey_unit.boss_up) ??
-      dongleFromBaseGame(enemey_unit.boss_up, upgrades[enemey_unit.boss_up]))
+      dongleFromBaseGame(
+        enemey_unit.boss_up,
+        upgrades[enemey_unit.boss_up],
+        hyperspace_deck_command_location,
+      ))
     : undefined;
   out.endless_mode_upgrade = enemey_unit.up_gp
     ? (getDongle(enemey_unit.up_gp) ??
-      dongleFromBaseGame(enemey_unit.up_gp, upgrades[enemey_unit.up_gp]))
+      dongleFromBaseGame(
+        enemey_unit.up_gp,
+        upgrades[enemey_unit.up_gp],
+        hyperspace_deck_command_location,
+      ))
     : undefined;
   out.endless_mode_name = enemey_unit.name_gp;
   return out;
@@ -597,11 +595,20 @@ function unitFromBaseGameUnit(
   out.death_time_max = unit.death_time_max;
   out.srm_drop = unit.srm_drop;
   out.gun_mounts = unit.gun_mounts;
-  if (unit.comms)
-    out.comms = Object.getOwnPropertyNames(comms[unit.comms]).map(
-      (name) =>
-        (comms[unit.comms ?? ""] ?? { [name]: [""] })[name as `text_${number}`],
-    );
+  if (unit.comms) {
+    const unit_comms = unit.comms;
+    Object.getOwnPropertyNames(comms)
+      .filter((name) => name.startsWith(unit_comms))
+      .forEach((name) => {
+        out[
+          `${name.substring(unit_comms.length + 1)}_bark` as keyof typeof out &
+            `${string}_bark`
+        ] = (Object.getOwnPropertyNames(comms[name]) as `text_${number}`[]).map(
+          (text_label) =>
+            (comms[name] as Record<`text_${number}`, string[]>)[text_label],
+        );
+      });
+  }
 
   return out;
 }

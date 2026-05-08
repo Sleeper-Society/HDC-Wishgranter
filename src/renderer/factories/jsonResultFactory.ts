@@ -148,7 +148,7 @@ export function getCloudLablesJSON(): Record<
 }
 export function getCommsJSON(): Record<
   string,
-  Record<`text_${number}`, string[]>
+  Record<`text_${number}`, string[]> | string
 > {
   return {
     ...Object.fromEntries(

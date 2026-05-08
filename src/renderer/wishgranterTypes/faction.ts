@@ -26,6 +26,16 @@ export class Faction {
   holo_unit_border: Sprite;
   holo_ability_border: Sprite;
 
+  boarders_breach_bark?: string[][];
+  boarders_success?: string[][];
+  boarders_fight_bark?: string[][];
+  boarders_win_bark?: string[][];
+
+  security_arrive_bark?: string[][];
+  security_success_bark?: string[][];
+  security_fight_bark?: string[][];
+  security_win_bark?: string[][];
+
   private encounters: Encounter[] = [];
 
   private fleet_upgrades: FleetUpgrade[] = [];
@@ -232,6 +242,29 @@ export class Faction {
       (card) => !Array.isArray(card) && card.getType() == "construct",
     ) as IteratorObject<Construct>;
   }
+  *getComms(): Iterable<[string, Record<`text_${number}`, string[]> | string]> {
+    yield* (this.getCards()[Symbol.iterator]() as IteratorObject<Card>).flatMap(
+      (card) => card.getComms(this),
+    );
+    for (const name of Object.getOwnPropertyNames(this).filter((name) =>
+      name.endsWith("_bark"),
+    )) {
+      yield [
+        `${name.substring(0, name.length - "_bark".length)}_${this.short_name}`,
+        Object.fromEntries(
+          (
+            this[name as `${string}_bark` & keyof typeof this] as string[][]
+          ).map(
+            (comm, index) =>
+              [`text_${index.toString()}`, comm] as [
+                `text_${number}`,
+                string[],
+              ],
+          ),
+        ),
+      ];
+    }
+  }
 
   removeEncounter(encounter: Encounter) {
     if (this.encounters.includes(encounter))
@@ -333,7 +366,7 @@ export class Faction {
     example: gdjs["projectData"]["layouts"][0]["objects"][0],
   ): gdjs["projectData"]["layouts"][0]["objects"][0] {
     const output = structuredClone(example);
-    output.name = "obj_unit_" + this.short_name;
+    output.name = "obj_unit_" + this.short_name.toLowerCase();
     output.animations = Array.from(this.getCards())
       .map((card) => card.getAnimation(this))
       .flat();

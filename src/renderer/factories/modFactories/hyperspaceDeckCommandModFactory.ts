@@ -46,7 +46,11 @@ function onLoad(hyperspace_deck_command_locaiton: PathLike) {
       original_data.project_data.resources.resources,
       original_data.upgrades,
     );
-    applyDongles(original_data.loot_list_up, original_data.upgrades);
+    applyDongles(
+      original_data.loot_list_up,
+      original_data.upgrades,
+      hyperspace_deck_command_locaiton,
+    );
     applyFleetUpgrades(original_data.loot_list_up, original_data.upgrades);
     applyEncountersJson(
       hyperspace_deck_command_locaiton,
@@ -109,6 +113,7 @@ function getFactions() {
           number,
         ],
         [],
+        "",
         "",
         "",
         key,

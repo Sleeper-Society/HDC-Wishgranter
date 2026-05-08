@@ -72,7 +72,7 @@ export function applyLootListUpJson(
     .filter((name) => !["boss", "glo"].includes(name))
     .forEach((faction_name) => {
       getFaction(faction_name)?.addFleetUpgrades(
-        ...Object.getOwnPropertyNames(loot_list_up.fleet[faction_name])
+        ...loot_list_up.fleet[faction_name]
           .map((id) =>
             fleetUpgradeFromBaseGame(id, upgrades[id] as BaseGameFleetUpgrade),
           )

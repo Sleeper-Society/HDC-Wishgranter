@@ -1,12 +1,21 @@
-import type { Card, Faction } from "wishgranter";
+import { Ability, type Card, type Faction } from "wishgranter";
 import type { AnimationFrame, projectData } from "../wishgranterTypes/gdjs.ts";
 import type { PathLike } from "fs";
-import type { Card as TrueCard } from "./hdcTypeFactories/cardFactory.ts";
 
 export class Sprite {
   file_path: string;
   constructor(file_path: PathLike) {
     this.file_path = file_path.toString();
+  }
+  getResource(name_prefix = "") {
+    return {
+      file: this.file_path,
+      kind: "image",
+      metadata: "",
+      name: `pixels/${name_prefix}/${this.file_path.split("/")[this.file_path.split("/").length - 1]}`,
+      smoothed: false,
+      userAdded: true,
+    };
   }
 }
 
@@ -65,28 +74,15 @@ export class AnimatedSprite extends Sprite {
     this.height = height;
     this.origin_point = { x: width / 2, y: width / 2 };
   }
-  getResource(faction: Faction, card: TrueCard, sprite_index: number) {
-    return {
-      file: this.file_path,
-      kind: "image",
-      metadata: "",
-      name: AnimatedSprite.getId(faction, card, sprite_index),
-      smoothed: false,
-      userAdded: true,
-    };
+  getResource() {
+    return super.getResource("units");
   }
-  static getId(faction: Faction, card: TrueCard, sprite_index: number) {
-    return (
-      "pixels/units/" +
-      card.getId(faction) +
-      "_" +
-      sprite_index.toString() +
-      "_0.png"
-    );
+  static getId(faction: Faction, card: Card, sprite_index: number) {
+    return `pixels/${card instanceof Ability ? "abilities" : "units"}/${card.getId(faction)}_0${sprite_index.toString()}.png`;
   }
   getAnimationFrame(
     faction: Faction,
-    card: TrueCard,
+    card: Card,
     sprite_index: number,
   ): AnimationFrame {
     return {

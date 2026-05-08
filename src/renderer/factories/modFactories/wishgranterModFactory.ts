@@ -3,8 +3,14 @@ import type { RuntimeGame, RuntimeScene } from "../../wishgranterTypes/gdjs.ts";
 import type { PathLike } from "fs";
 import { hasOnlyDefaultMods, getModCount } from "../../startGame/loadMods.ts";
 import * as JsonFactory from "../jsonResultFactory.ts";
-import { addCredit, getFactions } from "../contentFactory.ts";
-import { AnimatedSprite } from "../spriteFactory.ts";
+import {
+  AnimatedSprite,
+  type Dongle,
+  addCredit,
+  getFactions,
+  type Card,
+  type Faction,
+} from "wishgranter";
 import { music_map } from "../hdcTypeFactories/encounterFactory.ts";
 
 type CamelToSnakeCase<S extends string> = S extends `${infer T}${infer U}`
@@ -183,71 +189,64 @@ function replaceJsons() {
 function replaceResources(hyperspace_path: PathLike) {
   gdjs.projectData.resources = {
     get resources() {
-      return Array.from(getFactions())
-        .map((faction) =>
-          Array.from(faction.getCards())
-            .map((card) =>
-              card.sprites.map((sprite, index) =>
-                sprite.getResource(faction, card, index),
-              ),
-            )
-            .flat(),
-        )
-        .flat()
-        .concat(
-          original_data?.project_data.resources.resources
-            .filter(
-              (resource) =>
-                !Object.keys(original_data?.cards ?? {}).includes(
-                  resource.file.substring(
-                    0,
-                    resource.file.length - "_0_0.png".length,
-                  ),
-                ),
-            )
-            .map((resource) => {
-              return {
-                ...resource,
-                file:
-                  hyperspace_path.toString() +
-                  window.remote_replace.path.sep() +
-                  "resources" +
-                  window.remote_replace.path.sep() +
-                  "app.asar" +
-                  window.remote_replace.path.sep() +
-                  "app" +
-                  window.remote_replace.path.sep() +
-                  resource.file,
-              };
-            }) ?? [],
-        );
+      return Array.from(
+        (getFactions()[Symbol.iterator]() as IteratorObject<Faction>).flatMap(
+          function* (faction) {
+            yield* (
+              faction.getCards()[Symbol.iterator]() as IteratorObject<Card>
+            ).flatMap((card) =>
+              card.sprites.map((sprite) => sprite.getResource()),
+            );
+            yield* (
+              faction.getDongles()[Symbol.iterator]() as IteratorObject<Dongle>
+            ).map((dongle) => dongle.icon.getResource("upgrades"));
+          },
+        ),
+      ).concat(
+        original_data?.project_data.resources.resources
+          .filter(
+            (resource) =>
+              !resource.name.startsWith("pixels/units") &&
+              !resource.name.startsWith("pixels/upgrades"),
+          )
+          .map((resource) => {
+            return {
+              ...resource,
+              file: `${hyperspace_path.toString()}${window.remote_replace.path.sep()}resources${window.remote_replace.path.sep()}app.asar${window.remote_replace.path.sep()}app${window.remote_replace.path.sep()}${resource.file}`,
+            };
+          }) ?? [],
+      );
     },
   };
   gdjs.projectData.layouts[0] = {
     ...gdjs.projectData.layouts[0],
     get usedResources() {
-      return Array.from(getFactions())
-        .map((faction) =>
-          Array.from(faction.getCards())
-            .map((card) =>
+      return Array.from(
+        (getFactions()[Symbol.iterator]() as IteratorObject<Faction>).flatMap(
+          function* (faction) {
+            yield* (
+              faction.getCards()[Symbol.iterator]() as IteratorObject<Card>
+            ).flatMap((card) =>
               card.sprites.map((_sprite, index) => {
                 return { name: AnimatedSprite.getId(faction, card, index) };
               }),
-            )
-            .flat(),
-        )
-        .flat()
-        .concat(
-          original_data?.project_data.layouts[0].usedResources.filter(
-            (resource) =>
-              !Object.keys(original_data?.cards ?? {}).includes(
-                resource.name.substring(
-                  "pixels/units/".length,
-                  resource.name.length - "_0_0.png".length,
-                ),
-              ),
-          ) ?? [],
-        );
+            );
+            yield* (
+              faction.getDongles()[Symbol.iterator]() as IteratorObject<Dongle>
+            ).map((dongle) => {
+              return {
+                name: `pixels/upgrades/${dongle.icon.file_path.split("/")[dongle.icon.file_path.split("/").length - 1]}`,
+              };
+            });
+          },
+        ),
+      ).concat(
+        original_data?.project_data.layouts[0].usedResources.filter(
+          (resource) =>
+            !resource.name.startsWith("pixels/units") &&
+            !resource.name.startsWith("pixels/upgrades"),
+        ) ?? [],
+      );
     },
   };
 }
@@ -263,7 +262,9 @@ function replaceAnimations() {
         .map((faction) => faction.getUnitObject(base_unit_object))
         .concat(
           original_data?.project_data.layouts[0].objects.filter(
-            (value) => !value.name.startsWith("obj_unit_"),
+            (value) =>
+              !value.name.startsWith("obj_unit_") ||
+              ["obj_unit_attachment"].includes(value.name),
           ) ?? [],
         );
     },
