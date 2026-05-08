@@ -35,9 +35,9 @@ function subscribeFileLocations() {
       hyperspace_file_location_input.getAttribute("value") ?? "",
     )
       .then(() =>
-        reimportDefaultMod(
+        { reimportDefaultMod(
           hyperspace_file_location_input.getAttribute("value") ?? "",
-        ),
+        ); },
       )
       .catch((error: unknown) => {
         console.log(error);
@@ -131,6 +131,9 @@ function enableFileLocationButtons() {
             "value",
             value.toString(),
           );
+          hyperspace_file_location_input?.dispatchEvent(
+            new Event("change", { bubbles: true }),
+          );
         })
         .catch((error: unknown) => {
           console.log(error);
@@ -148,6 +151,17 @@ function enableStartGameButton() {
         }
       },
     );
-    startGame(hyperspace_file_location_input?.getAttribute("value") ?? "");
+    startGame(
+      hyperspace_file_location_input?.getAttribute("value") ?? "",
+    ).catch((err: unknown) => {
+      console.error(err);
+      Array.from(document.body.getElementsByClassName("mod_menu")).forEach(
+        (element) => {
+          if ("disabled" in element) {
+            element.disabled = false;
+          }
+        },
+      );
+    });
   });
 }

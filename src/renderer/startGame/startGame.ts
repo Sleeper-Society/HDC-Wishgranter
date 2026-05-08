@@ -4,7 +4,6 @@ import type {
   LoadSequenceElement,
   LoadingBarElement,
 } from "../modMenu/loadingBar.ts";
-import { runThroughLoadingSequence } from "../modMenu/loadingBar.ts";
 import { loadWishgranter, unloadWishgranter } from "./loadWishgranter.ts";
 import { getModLoadLoadingElements, getModGamestarts } from "./loadMods.ts";
 
@@ -45,10 +44,10 @@ const baseStartGame: LoadSequenceFunction = () => {
     }
   });
 };
-export function startGame(hyperspace_path: PathLike) {
+export async function startGame(hyperspace_path: PathLike) {
+  start_game_button.disabled = true;
   document.body.classList.add("game_loading");
-  runThroughLoadingSequence(
-    loading_bar,
+  await loading_bar.runThroughLoadingSequence(
     [
       {
         status_text: "Loading Mods",
@@ -60,9 +59,9 @@ export function startGame(hyperspace_path: PathLike) {
       },
     ],
     hyperspace_path,
-  ).catch((error: unknown) => {
-    console.log(error);
-  });
+  );
+  document.body.classList.remove("game_loading");
+  document.body.classList.add("game_loaded");
 }
 
 function loadHyperspaceDeckCommand(): LoadSequenceElement[] {
@@ -71,29 +70,16 @@ function loadHyperspaceDeckCommand(): LoadSequenceElement[] {
       status_text: "Starting Game",
       function: baseStartGame,
     },
-  ].concat(
-    Array.from({ length: 100 }, () => {
-      return {
-        status_text: "Loading Hyperspace Deck Command",
-        function: () => {
-          return new Promise(() => {
-            return; //Never resolves, handled by loading reimplementaion
-          });
-        },
-      };
-    }),
-  );
+  ].concat(gdjs.LoadingScreenRenderer?.getLoadingElements() ?? []);
 }
 
 export async function loadHyperspaceLocation(hyperspace_path: PathLike) {
   start_game_button.disabled = true;
   unloadWishgranter();
-  await runThroughLoadingSequence(
-    loading_bar,
-    [{ status_text: "Loading Wishgranter", function: loadWishgranter }],
+  await loading_bar.runThroughLoadingSequence(
+    await loadWishgranter(hyperspace_path),
     hyperspace_path,
   );
-  loading_bar.textContent = "";
   document.body.classList.add("game_loadable");
   start_game_button.disabled = false;
 }

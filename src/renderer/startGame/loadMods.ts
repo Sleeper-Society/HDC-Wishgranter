@@ -7,9 +7,9 @@ import { getWishgranterMod } from "../factories/modFactories/wishgranterModFacto
 const modlist_parent = document.getElementById("modlist");
 let modlist: Mod[] = [];
 
-export async function reimportDefaultMod(hyperspace_location: PathLike) {
+export function reimportDefaultMod(hyperspace_location: PathLike) {
   modlist = [
-    await getWishgranterMod(hyperspace_location),
+    getWishgranterMod(),
     getHyperspaceDeckCommandAsMod(hyperspace_location),
   ].concat(
     modlist.filter(
@@ -68,8 +68,8 @@ export function getModGamestarts() {
     .map((mod) => mod.onGameStart)
     .filter((gamestart) => gamestart != undefined);
 }
-export function getModLoadLoadingElements() {
-  return modlist.map((mod) => {
+export function* getModLoadLoadingElements() {
+  yield* modlist[Symbol.iterator]().map((mod) => {
     return {
       status_text: "Loading " + mod.metadata.name,
       function: () => {

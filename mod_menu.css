@@ -6,11 +6,11 @@ html {
 }
 body {
   font-family: Oxanium;
-  --background-color: 33, 33, 255;
+  --background-color: rgb(33, 33, 255);
   --forground-color: 175, 250, 254;
   --highlight-color: #ffda45;
   color: rgb(var(--forground-color));
-  background-color: rgb(var(--background-color));
+  background-color: var(--background-color);
   align-content: center;
   align-items: center;
   width: 100%;
@@ -63,15 +63,35 @@ loading-bar {
   grid-column: 1 / -1;
   height: 20px;
   border: groove;
-  display: block;
+  display: flex;
   text-align: center;
   text-shadow:
-    -2px -2px 0 rgb(var(--background-color)),
-    2px -2px 0 rgb(var(--background-color)),
-    -2px 2px 0 rgb(var(--background-color)),
-    2px 2px 0 rgb(var(--background-color)),
-    -3px 0 0 rgb(var(--background-color)),
-    3px 0 0 rgb(var(--background-color));
+    -2px -2px 0 var(--background-color),
+    2px -2px 0 var(--background-color),
+    -2px 2px 0 var(--background-color),
+    2px 2px 0 var(--background-color),
+    -3px 0 0 var(--background-color),
+    3px 0 0 var(--background-color);
+}
+loading-bar p {
+  position: absolute;
+}
+loading-bar *:not(p) {
+  flex-grow: 1;
+  display: flex;
+}
+loading-bar .loaded {
+  background-color: rgb(var(--forground-color));
+}
+loading-bar .loading:empty {
+  background-color: rgba(var(--forground-color), 0.5);
+}
+loading-bar .loading {
+  background-color: rgba(var(--forground-color), 0.25);
+}
+loading-bar .unknown_length {
+  border-color: var(--highlight-color);
+  border: groove;
 }
 mod-entry {
   display: grid;

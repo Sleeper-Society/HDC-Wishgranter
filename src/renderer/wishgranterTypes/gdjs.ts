@@ -1,3 +1,5 @@
+import type { LoadSequenceElement } from "wishgranter";
+
 declare global {
   var gdjs: gdjs;
 }
@@ -5,6 +7,10 @@ declare global {
 export interface gdjs {
   Logger: new (name: string) => { error: (...msg: unknown[]) => void };
   fileSystem?: unknown;
+  LoadingScreenRenderer?: {
+    new (): unknown;
+    getLoadingElements: () => LoadSequenceElement[];
+  };
   projectData: projectData;
   CommandCode: Record<
     string,

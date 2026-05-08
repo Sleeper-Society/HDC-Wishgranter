@@ -1,14 +1,9 @@
-import type { LoadingBarElement } from "../modMenu/loadingBar.ts";
-
-const loading_bar = document.getElementsByTagName(
-  "loading-bar",
-)[0] as LoadingBarElement;
-
-declare let gdjs: { LoadingScreenRenderer: undefined };
+import type { LoadSequenceElement } from "wishgranter";
 
 (function (gdjs: { LoadingScreenRenderer?: unknown }) {
   class LoadingReimplementiation {
     private previous_percent = 0;
+    private static load_sequence_element_resolvers: (() => void)[] = [];
     constructor(
       renderer: { getPIXIRenderer: () => { background: { color: unknown } } },
       _imagemanager: unknown,
@@ -22,8 +17,11 @@ declare let gdjs: { LoadingScreenRenderer: undefined };
         loadingscreenproperties.backgroundColor;
     }
     setPercent(new_percent: number) {
-      for (let i = this.previous_percent; i < new_percent; i++)
-        loading_bar.complete();
+      for (let i = this.previous_percent; i < new_percent; i++) {
+        const resolver =
+          LoadingReimplementiation.load_sequence_element_resolvers.shift();
+        if (resolver) resolver();
+      }
       this.previous_percent = new_percent;
     }
     renderIfNeeded() {
@@ -31,6 +29,18 @@ declare let gdjs: { LoadingScreenRenderer: undefined };
     }
     unload() {
       document.body.setAttribute("game_loaded", "");
+    }
+    static getLoadingElements(): LoadSequenceElement[] {
+      return Array.from({ length: 100 }, () => {
+        return {
+          status_text: "Loading Hyperspace Deck Command",
+          function: () => {
+            return new Promise<void>((resolve) => {
+              this.load_sequence_element_resolvers.push(resolve); //Never resolves, handled by loading reimplementaion
+            });
+          },
+        };
+      });
     }
   }
   gdjs.LoadingScreenRenderer = LoadingReimplementiation;

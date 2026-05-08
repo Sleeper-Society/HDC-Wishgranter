@@ -1,7 +1,4 @@
-import type {
-  LoadSequenceElement,
-  LoadSequenceFunction,
-} from "../modMenu/loadingBar.ts";
+import type { LoadSequenceElement } from "../modMenu/loadingBar.ts";
 import type { PathLike } from "fs";
 
 export function unloadWishgranter() {
@@ -13,16 +10,15 @@ export function unloadWishgranter() {
   }
 }
 
-export const loadWishgranter: LoadSequenceFunction = (
-  hyperspace_path: PathLike,
-) =>
-  window.wishgranter
+export async function loadWishgranter(hyperspace_path: PathLike) {
+  return await window.wishgranter
     .getHyperspaceScriptTags(hyperspace_path)
     .then((script_sources) =>
       script_sources
         .map(getPossiblyReplacedScriptSource(hyperspace_path))
         .map(getAddScriptLoadSequenceElement),
     );
+}
 
 const replacements: Record<string, PathLike> = {
   "pixi-renderers/loadingscreen-pixi-renderer.js":

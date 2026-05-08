@@ -10,6 +10,7 @@ import {
   getFactions,
   type Card,
   type Faction,
+  type LoadSequenceElement,
 } from "wishgranter";
 import { music_map } from "../hdcTypeFactories/encounterFactory.ts";
 
@@ -38,35 +39,7 @@ export let original_data:
   | undefined;
 
 /**@returns Mod that creates content helper functions. Should not be disable-able. */
-export async function getWishgranterMod(
-  hyperspace_location: PathLike,
-): Promise<Mod> {
-  original_data = {
-    project_data: structuredClone(gdjs.projectData),
-    music: getMusic(),
-    ...(Object.fromEntries(
-      await Promise.all(
-        Object.getOwnPropertyNames(JsonFactory).map(async (name) => {
-          const json = name
-            .substring("get".length, name.length - "JSON".length)
-            .replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
-            .slice(1);
-          return [
-            json,
-            JSON.parse(
-              await window.wishgranter.readHyperspaceFile(
-                hyperspace_location,
-                json + ".json",
-              ),
-            ),
-          ] as [
-            keyof JsonListElementRecord,
-            JsonListElementRecord[keyof JsonListElementRecord],
-          ];
-        }),
-      ),
-    ) as JsonListElementRecord),
-  };
+export function getWishgranterMod(): Mod {
   return {
     metadata: {
       name: "Wishgranter",
@@ -96,31 +69,65 @@ function getMusic(): Record<number, [PathLike, PathLike | undefined]> {
   return out;
 }
 
-function onLoad() {
+function onLoad(): LoadSequenceElement[] {
   return [
     {
-      status_text: "Replace Version Text",
+      status_text: "Extracting Original Data",
+      function: extractOriginalData,
+    },
+    {
+      status_text: "Replacing Version Text",
+      estimated_loading_time_multiplier: 3,
       function: replaceVersionText,
     },
     {
-      status_text: "Replace Jsons",
+      status_text: "Replacing Jsons",
       function: replaceJsons,
     },
     {
-      status_text: "Replace Resources",
+      status_text: "Replacing Resources",
       function: replaceResources,
     },
     {
-      status_text: "Replace Animations",
+      status_text: "Replacing Animations",
       function: replaceAnimations,
     },
     {
-      status_text: "Replace Music",
+      status_text: "Replacing Music",
+      estimated_loading_time_multiplier: 3,
       function: replaceMusic,
     },
   ];
 }
 
+async function extractOriginalData(hyperspace_location: PathLike) {
+  original_data = {
+    project_data: structuredClone(gdjs.projectData),
+    music: getMusic(),
+    ...(Object.fromEntries(
+      await Promise.all(
+        Object.getOwnPropertyNames(JsonFactory).map(async (name) => {
+          const json = name
+            .substring("get".length, name.length - "JSON".length)
+            .replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`)
+            .slice(1);
+          return [
+            json,
+            JSON.parse(
+              await window.wishgranter.readHyperspaceFile(
+                hyperspace_location,
+                json + ".json",
+              ),
+            ),
+          ] as [
+            keyof JsonListElementRecord,
+            JsonListElementRecord[keyof JsonListElementRecord],
+          ];
+        }),
+      ),
+    ) as JsonListElementRecord),
+  };
+}
 function replaceVersionText() {
   for (const code in gdjs.CommandCode) {
     if (typeof gdjs.CommandCode[code] != "function") continue;
