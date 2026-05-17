@@ -94,58 +94,41 @@ addCards(
 ```
 
 If your mod throws an unhandled exception none of the content modification functions will apply, even if they happened before the exception was thrown.
-### 
-`addCards(faction : Faction, additional_faction? : Faction, ...cards : Card[])`
+### `addCards(faction : Faction, additional_faction? : Faction, ...cards : Card[])`
 
 Cards added by `addCards` will appear as rewards before encounters start, and in shops if they have `shop_loc` or `shop_location` set. 
 
 Cards with the `flagship` effect will remove any other previous cards with the `flagship` effect from the faction. These will not appear as rewards or in shops, but as starting cards.
 
 Cards with the `commander` effect will not appear in shops.
-### `addStartingCommanders`
-`addStartingCommanders(faction : Faction, commander : Card, cards : Card[], dongles : Dongle[])`
+### `addStartingCommanders(faction : Faction, commander : Card, cards : Card[], dongles : Dongle[])`
 
  For clairity, more than one commander can be added at once: `addStartingCommanders(faction : Faction, ...commanders : {commander : Commander, cards : Card[], dongles : Dongle[]}[])`
-### `addStartingFlagshipDongles`
-`addStartingFlagshipDongles(faction?: Faction, ...dongles : Dongle[])`
-### `addStartingAuxiliaries`
-`addStartingAuxiliaries(faction : Faction, auxiliaries : Card[])`
-### `addEncounters`
-`addEncounters(encounter_pool : number, ...encounters : Encounter[])`
-
+### `addStartingFlagshipDongles(faction?: Faction, ...dongles : Dongle[])`
+### `addStartingAuxiliaries(faction : Faction, auxiliaries : Card[])`
+### `addEncounters(encounter_pool : number, ...encounters : Encounter[])`
 Encounters in `encounter_pool` 1 have an equally likely chance to be the first encounter
-### `addCoordinates`
-`addCoordinates(...coordianates : Coordinate[])`
-### `addDongles`
-`addDongles(faction?: Faction, ...dongles : Dongle[])`
-
+### `addCoordinates(...coordianates : Coordinate[])`
+### `addDongles(faction?: Faction, ...dongles : Dongle[])`
 Dongles added by `addDongles` will appear as rewards before encounters start, and in shops.
-### `addFleetUpgrades`
-`addFleetUpgrades(faction?: Faction, ...fleet_upgrades : FleetUpgrades[])`
-### `addBossRewardFleetUpgrades`
-`addBossRewardFleetUpgrades(...fleet_upgrades : FleetUpgrade[])`
-### `addTextList`
-`addTextList(list_name : string, ...elements : string[])`
-`addTextList(list_name : string, ...elements : {subkey : string, element : string[])`
+### `addFleetUpgrades(faction?: Faction, ...fleet_upgrades : FleetUpgrades[])`
+### `addBossRewardFleetUpgrades(...fleet_upgrades : FleetUpgrade[])`
+### `addTextList(list_name : string, ...elements : string[])`
 Edge case: Since subkeys are not a disticnt type from elements, subkey must be spesified within a js object.
-### `addToTextList`
-`addToTextList(list_name : string, ...elements : string[])`
-`addToTextList(list_name : string, ...elements : {subkey : string, element : string[])`
-Edge case - It's kind of hard to add elements to an existing array with this set up, so theres an extra function to do so. Additionally, here are some helper functions for text lists that exist in the base game:
-### `addToContemperInsultAdjectives`
-`addToContemperInsultAdjectives(...insults : string[])`
-### `addToContemperInsultNouns`
-`addToContemperInsultNouns(...insults : string[])`
-### `addToStoreLocations`
-`addToStoreLocations(store_location : string, ...location_names : string[])`
-### `addToCredits`
-`addToCredits(catagory : string, ...credits : string[])`
-### `addToComms`
-`addToComms(speaker : Faction | Card, event : string, ...comms : (string | string[])[])`
-`addToComms(speaker_type : string, event : string, ...comms (string | string[])[])`
 
+`addTextList(list_name : string, ...elements : {subkey : string, element : string[])`
+### `addToTextList(list_name : string, ...elements : string[])`
+Edge case: It's not possible to add elements to an existing array with this set up, so theres an extra function to do so.
+
+`addToTextList(list_name : string, ...elements : {subkey : string, element : string[])` 
+
+Additionally, here are some helper functions for text lists that exist in the base game:
+#### `addToContemperInsultAdjectives(...insults : string[])`
+#### `addToContemperInsultNouns(...insults : string[])`
+#### `addToStoreLocations(store_location : string, ...location_names : string[])`
+#### `addToCredits(catagory : string, ...credits : string[])`
+#### ``addToComms(speaker : Faction | Card | string, event : string, ...comms : (string | string[])[])`
 For Factions, base game comm events include boarders_breach, boarders_success, boarders_fight, boarders_win, security_arrive, security_success, security_fight, and security_win. For units, base game comm events include deploy, orbit, target, attack, minor_damage, major_damage, select, and death. For Abilities, base game comm events include pl, hos, and ally.
-
 ## Types
 Any field to another type can be filled with the specified type or an id.
 
