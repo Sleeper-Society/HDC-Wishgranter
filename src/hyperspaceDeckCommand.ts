@@ -4,6 +4,7 @@ import { tmpdir } from "os";
 import { join as constructPath } from "path";
 import { rmSync } from "fs";
 import type { projectData, RuntimeScene } from "./gdjs.ts";
+import { commentCode0 } from "./code0Commenter.ts";
 
 export const tmpdir_name = "HDCWishgranter";
 
@@ -81,57 +82,16 @@ export async function constructCode0(
     );
 }
 
-export function commentCode0(
-  code0: string,
-  hyperspace_data: projectData,
-): string {
-  code0 = code0.replaceAll(
-    // Comment scene Variables
-    // Finds *all* calls of runtimeScene.getScene().getVariables().getFromIndex, includeing those that have already had this function called on them.
-    /(?<=runtimeScene\s*.getScene\(\)\s*.getVariables\(\)\s*.getFromIndex\()(\d+)(?: \/\* [\w]* \*\/)?\)(\n|(?: \/\/[\w]+\n))?/g,
-    (_substring: string, ...capture_groups: string[]) => {
-      const variable_name =
-        hyperspace_data.layouts[0].variables[Number.parseInt(capture_groups[0])]
-          .name;
-      return capture_groups[1] == ""
-        ? `${capture_groups[0]} /* ${variable_name} */)`
-        : `${capture_groups[0]}) //${variable_name}\n`;
-    },
-  );
-  hyperspace_data.layouts[0].objects.forEach((obj) => {
-    const hashtable_regex = new RegExp(
-      `(?<=${obj.name}:\\s*)[\\w\\d_\\.]+(?=,|(?:\\s*}))`,
-      "g",
-    );
-    const copy_array_regex = new RegExp(
-      `(?<=copyArray\\(\\s*runtimeScene\\.getObjects\\("${obj.name}"\\),\\s*)[\\w\\.]+(?=,?\\s*\\))`,
-      "g",
-    );
-    const mapper = (match: RegExpExecArray) =>
-      new RegExp(
-        `(?<=${match[0]}\\[\\w\\]\\s*\\.getVariables\\(\\)\\s*\\.getFromIndex\\()(d+)(?: \\/\\* [\\w\\d_]* \\*\\/)?\\)(\\n|(?: \\/\\/[\\w]+\\n))?`,
-        "g",
-      );
-    const for_eacher = (regex: RegExp) =>
-      (code0 = code0.replace(
-        regex,
-        (_substring: string, ...capture_groups: string[]) => {
-          const variable_name =
-            obj.variables[Number.parseInt(capture_groups[0])].name;
-          return capture_groups[1] == ""
-            ? `${capture_groups[0]} /* ${variable_name} */)`
-            : `${capture_groups[0]}) //${variable_name}\n`;
-        },
-      ));
-    code0.matchAll(hashtable_regex).map(mapper).forEach(for_eacher);
-    code0.matchAll(copy_array_regex).map(mapper).forEach(for_eacher);
-  });
-  return code0;
-}
-
 export class HyperspaceDeckCommand {
   constructor(
     data: projectData,
     code: ((runtimeScene: RuntimeScene) => void)[],
   ) {}
+  mods: Mod[] = [getBaseGameMod()];
+  addMod(mod: Mod) {
+    throw new Error("Method not implemented.");
+  }
+  load() {
+    throw new Error("Method not implemented.");
+  }
 }

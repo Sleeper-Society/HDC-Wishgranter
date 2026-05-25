@@ -9,7 +9,7 @@ import {
   getFaction,
   getStoreLocation,
 } from "wishgranter";
-import type { Animation, projectData } from "../../wishgranterTypes/gdjs.ts";
+import type { Animation, projectData } from "../../../gdjs.ts";
 import { getGlobalEncounters } from "./encounterFactory.ts";
 import { getStoreLocationId } from "../contentFactory.ts";
 import {

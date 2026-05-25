@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "lib": [
-      "ESNext",
-      "ES2021",
-      "DOM"
-    ],
+    "lib": ["ESNext", "ES2021", "DOM"],
     "module": "nodenext",
     "rootDir": "src",
     "moduleResolution": "nodenext",
@@ -23,11 +19,7 @@
     "strict": true,
     "strictBuiltinIteratorReturn": true,
     "skipLibCheck": true,
-    "types": [
-      "node"
-    ]
+    "types": ["node"]
   },
-  "include": [
-    "./src"
-  ]
+  "include": ["./src"]
 }

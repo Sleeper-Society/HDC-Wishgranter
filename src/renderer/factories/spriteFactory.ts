@@ -1,5 +1,5 @@
 import { Ability, type Card, type Faction } from "wishgranter";
-import type { AnimationFrame, projectData } from "../wishgranterTypes/gdjs.ts";
+import type { AnimationFrame, projectData } from "../../gdjs.ts";
 import type { PathLike } from "fs";
 
 export class Sprite {

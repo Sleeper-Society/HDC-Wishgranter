@@ -1,4 +1,4 @@
-import type { Mod, ModMetaData } from "./renderer/wishgranterTypes/mod.ts";
+import type { Mod, ModMetaData } from "./mod.ts";
 type onLoad = Required<Mod>["onLoad"];
 type onGameStart = Required<Mod>["onGameStart"];
 export type { onLoad, onGameStart, ModMetaData };
@@ -60,3 +60,7 @@ export {
   removeEncounter,
 } from "./renderer/factories/hdcTypeFactories/encounterFactory.ts";
 export type { BaseGameCardEffect } from "./renderer/factories/hdcTypeFactories/cardEffectFactory.ts";
+export {
+  getFromPath as getHyperspaceDeckCommandInstanceFromPath,
+  type HyperspaceDeckCommand,
+} from "./hyperspaceDeckCommand.ts";

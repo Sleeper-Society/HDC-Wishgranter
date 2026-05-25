@@ -16,7 +16,7 @@ import {
   type BaseGamePlayerUnit,
   cardFromBaseGameCard,
 } from "./cardFactory.ts";
-import type { projectData } from "../../wishgranterTypes/gdjs.ts";
+import type { projectData } from "../../../gdjs.ts";
 
 export class Encounter {
   name: string;

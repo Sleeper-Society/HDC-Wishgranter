@@ -1,5 +1,5 @@
 import type { Mod } from "../../wishgranterTypes/mod.ts";
-import type { RuntimeGame, RuntimeScene } from "../../wishgranterTypes/gdjs.ts";
+import type { RuntimeGame, RuntimeScene } from "../../../gdjs.ts";
 import type { PathLike } from "fs";
 import { hasOnlyDefaultMods, getModCount } from "../../startGame/loadMods.ts";
 import * as JsonFactory from "../jsonResultFactory.ts";

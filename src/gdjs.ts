@@ -72,6 +72,7 @@ export interface projectData {
   };
   layouts: {
     objects: {
+      variables: UnloadedVariable[];
       name: string;
       animations: Animation[];
     }[];

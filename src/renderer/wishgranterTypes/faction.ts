@@ -14,7 +14,7 @@ import {
   type Depletable,
   type Construct,
 } from "wishgranter";
-import type { gdjs } from "../wishgranterTypes/gdjs.ts";
+import type { gdjs } from "../../gdjs.ts";
 import type { PathLike } from "node:fs";
 
 export class Faction {
