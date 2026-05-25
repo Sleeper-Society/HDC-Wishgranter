@@ -1,5 +1,6 @@
-import { readFile, writeFile } from "node:fs";
+import { readFile, writeFileSync } from "node:fs";
 import path from "node:path";
+import { commentCode0 } from "./hyperspaceDeckCommand.ts";
 
 const code0_path = process.argv[2];
 const datajs_path = process.argv[3];
@@ -10,23 +11,8 @@ globalThis.gdjs = {};
 import(path.join(process.cwd(), datajs_path))
   .then(() => {
     readFile(path.join(process.cwd(), code0_path), "utf8", (_err, file) => {
-      writeFile(
-        path.join(process.cwd(), code0_path),
-        file.replaceAll(
-          /(?<=runtimeScene\s*.getScene\(\)\s*.getVariables\(\)\s*).getFromIndex\((\d+)(?: \/\* [\w\d_]* \*\/)?\)(\n|(?: \/\/[\w\d]+\n))?/g,
-          (_substring: string, ...args: string[]) => {
-            const variable_name =
-              gdjs.projectData.layouts[0].variables[Number.parseInt(args[0])]
-                .name;
-            return args[1] == ""
-              ? `.getFromIndex(${args[0]} /* ${variable_name} */)`
-              : `.getFromIndex(${args[0]}) //${variable_name}\n`;
-          },
-        ),
-        () => {
-          return;
-        },
-      );
+      file = commentCode0(file, gdjs.projectData);
+      writeFileSync(path.join(process.cwd(), code0_path), file);
     });
   })
   .catch((err: unknown) => {

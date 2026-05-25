@@ -285,3 +285,29 @@ Either an array of Unit[] where element 0 appears on orbit 3, 1 on orbit 2 and s
 ### Coordinate
 
 ### UnlockConditon
+
+$ : :hdc_srm:
+■ : :hdc_hp:
+▶ : :hdc_damage:
+◔ : :hdc_timer:
+◇ : :hdc_multistrike:/:hdc_multistrike_tmp:
+▵ : fast-deploy
+▲ : elite/boss marker two arrows pointing up
+► : strike icon
+▱ : cargo icon
+▽ : :hdc_emp:
+◆ : :hdc_shield:/:hdc_containment:
+◭ : :hdc_am_ammo:/:hdc_am_seeded:
+◎ : :hdc_crit_attack:/:hdc_crit_target:
+▴ : :hdc_fuel_overdrive:/:hdc_fuel_cascade:
+◕ : :hdc_dazzle_flares:/:hdc_dazzle_chaff:
+▢ : :hdc_troop_security:/:hdc_troop_boarder:
+▣ : :hdc_hull:
+◥ : :hdc_mines_defense:/:hdc_mines_intercept:
+□ : :hdc_bot_repair:/:hdc_bot_salvage:
+◹ : :hdc_bomber_escort:/:hdc_bomber_target:
+◿ : :hdc_fighter_escort:/:hdc_fighter_target:
+◬ : :hdc_rad:
+● : :hdc_hypershield:/:hdc_hypercontainment:
+▻ : :hdc_optimize:/:hdc_hack:
+▪ : :hdc_size:
