@@ -5,11 +5,11 @@ import {
   constructCode0,
   constructData,
   tmpdir_name,
-} from "../hyperspaceDeckCommand.ts";
+} from "./hyperspaceDeckCommand.ts";
 import { tmpdir } from "os";
 import { rmSync } from "fs";
-import type { projectData, RuntimeScene } from "../gdjs.ts";
-import type { Mod } from "../mod.ts";
+import type { projectData, RuntimeScene } from "./gdjs.ts";
+import type { Mod } from "./modFactory.ts";
 
 export async function getFromPath(
   hyperspace_path: string,
@@ -48,7 +48,7 @@ export class HyperspaceDeckCommandGUI implements HyperspaceDeckCommand {
     code: ((runtimeScene: RuntimeScene) => void)[],
     resources_path: string,
   ) {}
-  mods: Mod[];
+  mods: Mod[] = [];
   addMod(mod: Mod): void {
     throw new Error("Method not implemented.");
   }

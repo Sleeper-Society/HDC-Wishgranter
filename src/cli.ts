@@ -3,8 +3,8 @@
 import { findSteamApp } from "steam-locate";
 import {
   getFromPath as getHyperspaceDeckCommandGUIFromPath,
-  type HyperspaceDeckCommandGUI,
-} from "./renderer/hyperspaceDeckCommandGUI.ts";
+  type HyperspaceDeckCommandGUI as HyperspaceDeckCommand,
+} from "./hyperspaceDeckCommandGUI.ts";
 import { readdirSync } from "node:fs";
 import path from "path";
 import { pathToMod } from "./modFactory.ts";
@@ -43,7 +43,7 @@ function displayHelp() {
   );
 }
 
-function doArguments(hyperspace: HyperspaceDeckCommandGUI) {
+function doArguments(hyperspace: HyperspaceDeckCommand) {
   const flag_iterator = process.argv[Symbol.iterator]().drop(2);
   for (
     let flag = flag_iterator.next();

@@ -1,4 +1,4 @@
-import type { Mod } from "../../wishgranterTypes/mod.ts";
+import type { Mod } from "../../../modFactory.ts";
 import type { RuntimeGame, RuntimeScene } from "../../../gdjs.ts";
 import type { PathLike } from "fs";
 import { hasOnlyDefaultMods, getModCount } from "../../startGame/loadMods.ts";
