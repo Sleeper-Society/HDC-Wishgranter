@@ -33,75 +33,63 @@
   },
   "files": [
     "src/**/*.ts",
+    "!src/forge.config.ts",
     "dist/**/*.js",
     "dist/**/*.js.map",
     "dist/**/*.d.ts",
-    "dist/**/*.d.ts.map",
-    "!src/tests/",
-    "!src/**/*_test.ts",
-    "!dist/tests/",
-    "!dist/**/*_test.js",
-    "!dist/**/*_test.js.map",
-    "!dist/**/*_test.d.ts",
-    "!dist/**/*_test.d.ts.map"
+    "dist/**/*.d.ts.map"
   ],
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/exports.d.ts",
-        "default": "./dist/exports.js"
-      }
-    }
-  },
-  "bin": "./dist/cli.js",
-  "man": "./man.1",
   "type": "module",
-  "types": "./dist/exports.ts",
+  "main": "dist/index.js",
   "scripts": {
     "prepare": "npm run pretty && npm run build",
-    "prelint": "npm run prety",
+    "prelint": "npm run pretty",
     "lint": "eslint src --cache --fix",
     "\n========== Building ==========": "",
     "prebuild": "npm run clean",
     "build": "tsc",
     "clean": "shx rm -rf ./dist/*",
     "pretty": "prettier --write src/**/*.ts",
-    "\n========== Testing ==========": "",
-    "pretest": "npm run build",
-    "test": "mocha ",
     "\n========== Exporting ========": "",
-    "run": "wishgranter"
+    "prestart": "npm run build",
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   },
-  "mocha": {
-    "enable-source-maps": true,
-    "spec": "./dist/**/*_test.js",
-    "ui": "qunit",
-    "require": "./dist/tests/hooks.js",
-    "inline-diffs": true
-  },
-  "dependencies": {
-    "@electron/asar": "^4.2.0",
-    "node-cleanup": "^2.1.2",
+  "optionalDependencies": {
     "steam-locate": "^1.0.6"
   },
   "devDependencies": {
+    "@electron-forge/cli": "^7.11.2",
+    "@electron-forge/maker-deb": "^7.11.2",
+    "@electron-forge/maker-rpm": "^7.11.2",
+    "@electron-forge/maker-squirrel": "^7.11.2",
+    "@electron-forge/maker-zip": "^7.11.2",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.11.2",
+    "@electron-forge/plugin-fuses": "^7.11.2",
+    "@electron/fuses": "^1.8.0",
     "@eslint/js": "^10.0.1",
     "@types/node": "^25.9.1",
-    "@types/node-cleanup": "^2.1.5",
-    "@types/sinon": "^21.0.0",
+    "degit": "^3.4.2",
+    "electron": "^42.0.0",
     "eslint": "^10.2.0",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
-    "mocha": "^11.7.5",
     "prettier": "^3.8.1",
     "shx": "^0.4.0",
-    "sinon": "^21.0.3",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.58.0"
   },
   "lint-staged": {
     "*.ts": "eslint --cache --fix",
     "*.{ts,js,css,md}": "prettier --write"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.1"
+  },
+  "allowScripts": {
+    "electron-winstaller@5.4.0": true,
+    "electron@41.7.1": true
   }
 }

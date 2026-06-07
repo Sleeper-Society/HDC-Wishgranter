@@ -1,11 +1,6 @@
 import type { PathLike } from "node:fs";
-import type {
-  LoadSequenceFunction,
-  LoadSequenceElement,
-  LoadingBarElement,
-} from "../modMenu/loadingBar.ts";
+import type { LoadSequenceElement, LoadingBarElement } from "./loadingBar.ts";
 import { loadWishgranter, unloadWishgranter } from "./loadWishgranter.ts";
-import { getModLoadLoadingElements, getModGamestarts } from "./loadMods.ts";
 
 const loading_bar = document.getElementsByTagName(
   "loading-bar",
@@ -14,7 +9,7 @@ const start_game_button = document.getElementById(
   "start_game_button",
 ) as HTMLButtonElement;
 
-const baseStartGame: LoadSequenceFunction = () => {
+const baseStartGame = () => {
   //Initialization
   const gdgame = new gdjs.RuntimeGame(gdjs.projectData, {});
 
@@ -35,31 +30,17 @@ const baseStartGame: LoadSequenceFunction = () => {
   //Load all assets and start the game
   gdgame.loadAllAssets(() => {
     gdgame.startGameLoop();
-    for (const gamestart of getModGamestarts()) {
-      try {
-        gamestart(gdgame);
-      } catch (error) {
-        console.error(error);
-      }
-    }
   });
 };
-export async function startGame(hyperspace_path: PathLike) {
+export async function startGame() {
   start_game_button.disabled = true;
   document.body.classList.add("game_loading");
-  await loading_bar.runThroughLoadingSequence(
-    [
-      {
-        status_text: "Loading Mods",
-        function: getModLoadLoadingElements,
-      },
-      {
-        status_text: "Loading Hyperspace Deck Command",
-        function: loadHyperspaceDeckCommand,
-      },
-    ],
-    hyperspace_path,
-  );
+  await loading_bar.runThroughLoadingSequence([
+    {
+      status_text: "Loading Hyperspace Deck Command",
+      function: loadHyperspaceDeckCommand,
+    },
+  ]);
   document.body.classList.remove("game_loading");
   document.body.classList.add("game_loaded");
 }

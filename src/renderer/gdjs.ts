@@ -1,12 +1,28 @@
-import type { LoadSequenceElement } from "wishgranter";
+import type { LoadSequenceElement } from "./loadingBar.ts";
 
 declare global {
   var gdjs: gdjs;
 }
 
 export interface gdjs {
-  Logger: new (name: string) => { error: (...msg: unknown[]) => void };
+  Logger: new (name: string) => {
+    error: (...msg: unknown[]) => void;
+    warn: (...msg: unknown[]) => void;
+  };
   fileSystem?: unknown;
+  JsonManager?: unknown;
+  ResourceLoader: {
+    getResource: (resource_name: string) => Resource | null;
+    checkIfCredentialsRequired: (resource_file: string) => boolean;
+    getFullUrl: (resource_file: string) => string;
+  };
+  ResourceCache: new <A>() => {
+    get: (resource: Resource) => A | null;
+    getFromName: (resource_name: string) => A | null;
+    set: (resource: Resource, a: A) => void;
+    delete: (resource: Resource) => void;
+    clear: () => void;
+  };
   LoadingScreenRenderer?: {
     new (): unknown;
     getLoadingElements: () => LoadSequenceElement[];
@@ -61,14 +77,7 @@ export interface projectData {
     platformSpecificAssets: Record<string, string>;
   };
   resources: {
-    resources: {
-      file: string;
-      kind: string;
-      metadata: string;
-      name: string;
-      smoothed: boolean;
-      userAdded: boolean;
-    }[];
+    resources: Resource[];
   };
   layouts: {
     objects: {
@@ -79,6 +88,16 @@ export interface projectData {
     variables: UnloadedVariable[];
     usedResources: { name: string }[];
   }[];
+}
+
+export interface Resource {
+  disablePreload?: boolean;
+  file: string;
+  kind: string;
+  metadata: string;
+  name: string;
+  smoothed: boolean;
+  userAdded: boolean;
 }
 
 export type UnloadedVariable =
@@ -151,6 +170,7 @@ export interface RuntimeGame {
 }
 
 export interface RuntimeScene {
+  getGame: () => RuntimeGame;
   getScene: () => RuntimeScene;
   getVariables: () => {
     getFromIndex: (index: number) => Variable;

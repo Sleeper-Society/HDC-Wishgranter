@@ -16,8 +16,7 @@ body {
   width: 100%;
   height: 50%;
   display: grid;
-  grid-template-columns: 30% auto 2fr 0.2fr 0.2fr;
-  grid-template-rows: 1fr;
+  grid-template-rows: auto 80% 0.2fr 0.2fr;
   grid-column-gap: 8px;
 }
 body[game_loaded] {
@@ -35,21 +34,29 @@ body:not([game_loaded]) canvas {
   display: none;
 }
 #modlist {
-  grid-column: 1;
-  grid-row: 1 / 5;
+  grid-column: 1 / 4;
+  grid-row: 2;
   height: 100%;
   background-color: #63636380;
   overflow-y: auto;
 }
-label {
+label,
+button,
+input[type="text"] {
+  grid-row: 1;
   align-self: center;
-  grid-column: 2;
 }
-div:has(img),
+div:has(img) {
+  height: 100%;
+  grid-column: 5 / 9;
+}
 #start_game_button,
 loading-bar {
   text-align: center;
-  grid-column: 2 / -1;
+  grid-column: 1 / 9;
+}
+#start_game_button {
+  grid-row: -1;
 }
 #hyperspace_box_art {
   width: 80%;
@@ -60,7 +67,6 @@ body[game_loading] loading-bar {
   transition: border-color 3s linear;
 }
 loading-bar {
-  grid-column: 1 / -1;
   height: 20px;
   border: groove;
   display: flex;

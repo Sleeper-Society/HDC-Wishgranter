@@ -6,26 +6,31 @@
     <link href="mod_menu.css" rel="stylesheet" type="text/css" media="all" />
     <style id="font"></style>
     <script src="dist/renderer/modMenu/loadingBar.js"></script>
-    <script src="dist/renderer/modMenu/modEntry.js" type="module"></script>
+    <script src="dist/renderer/modMenu/modEntry.js" defer></script>
     <script src="dist/renderer/modMenu/modMenu.js" type="module"></script>
-    <script type="importmap">
-      {
-        "imports": {
-          "wishgranter": "./dist/exports.js"
-        }
-      }
-    </script>
   </head>
   <body>
     <template>
-      <div><img class="icon" /></div>
-      <h2 class="name"></h2>
-      <p class="version"></p>
-      <p class="description"></p>
-      <button class="move_up">↑</button>
-      <button class="move_down">↓</button>
+      <div><img id="icon" /></div>
+      <h2 id="name"></h2>
+      <p id="version"></p>
+      <p id="description"></p>
+      <button id="move_up">↑</button>
+      <button id="move_down">↓</button>
+      <input type="checkbox" id="enabled" checked />
     </template>
-    <div mod_menu id="modlist"></div>
+    <label mod_menu for="mods_file_location_input">Mods folder:</label>
+    <input mod_menu type="text" id="mods_file_location_input" />
+    <button
+      mod_menu
+      class="file_location_button"
+      for="mods_file_location_input"
+    >
+      <img src="folder.svg" />
+    </button>
+    <div mod_menu id="modlist">
+      <mod-entry></mod-entry>
+    </div>
     <div mod_menu>
       <img id="hyperspace_box_art" />
     </div>
@@ -41,15 +46,7 @@
     >
       <img src="folder.svg" />
     </button>
-    <label mod_menu for="mods_file_location_input">Mods folder:</label>
-    <input mod_menu type="text" id="mods_file_location_input" />
-    <button
-      mod_menu
-      class="file_location_button"
-      for="mods_file_location_input"
-    >
-      <img src="folder.svg" />
-    </button>
+
     <button mod_menu id="start_game_button" disabled>Start Game</button>
     <loading-bar mod_menu id="loading_bar"></loading-bar>
   </body>

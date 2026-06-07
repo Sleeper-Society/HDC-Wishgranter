@@ -1,5 +1,5 @@
 import type { PathLike } from "fs";
-import type { gdjs } from "../../gdjs.ts";
+import type { gdjs } from "./gdjs.ts";
 (function (gdjs: gdjs) {
   //Preloads
   const fs = window.remote_replace.fs;

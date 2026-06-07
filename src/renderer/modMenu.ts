@@ -1,6 +1,6 @@
-import { startGame, loadHyperspaceLocation } from "../startGame/startGame.ts";
-import { loadModLocation } from "../startGame/loadMods.ts";
-import { reimportDefaultMod } from "../startGame/loadMods.ts";
+import { startGame, loadHyperspaceLocation } from "./startGame.ts";
+import type { ModEntry } from "./modEntry.ts";
+import type { PathLike } from "node:fs";
 
 const hyperspace_file_location_input = document.getElementById(
   "hyperspace_file_location_input",
@@ -8,6 +8,7 @@ const hyperspace_file_location_input = document.getElementById(
 const mods_file_location_input = document.getElementById(
   "mods_file_location_input",
 );
+const modlist_parent = document.getElementById("modlist");
 const box_art = document.getElementById(
   "hyperspace_box_art",
 ) as HTMLImageElement;
@@ -34,18 +35,23 @@ function subscribeFileLocations() {
     loadHyperspaceLocation(
       hyperspace_file_location_input.getAttribute("value") ?? "",
     )
-      .then(() =>
-        { reimportDefaultMod(
-          hyperspace_file_location_input.getAttribute("value") ?? "",
-        ); },
-      )
+      .then(() => {
+        (modlist_parent?.firstChild as ModEntry).onModDirectoryChanged();
+      })
       .catch((error: unknown) => {
         console.log(error);
       });
   });
   mods_file_location_input?.addEventListener("change", () => {
-    loadModLocation(mods_file_location_input.getAttribute("value") ?? "");
+    loadModLocation(mods_file_location_input.getAttribute("value") ?? "").catch(
+      (error: unknown) => {
+        console.log(error);
+      },
+    );
   });
+  if (modlist_parent?.firstChild)
+    (modlist_parent.firstChild as ModEntry).mod_directory_path = () =>
+      `${hyperspace_file_location_input?.getAttribute("value") ?? ""}/resources/app.asar/app/`;
 }
 
 function changeStyleToHyperspace(hyperspace_location: string) {
@@ -142,6 +148,22 @@ function enableFileLocationButtons() {
   }
 }
 
+async function loadModLocation(mods_location: PathLike) {
+  for (const path in await window.wishgranter.getModsFromLocation(
+    mods_location,
+  )) {
+    if (
+      modlist_parent?.children[Symbol.iterator]().find(
+        (mod_entry) => (mod_entry as ModEntry).mod_directory_path == path,
+      )
+    )
+      continue;
+    const mod_entry = document.createElement("mod-entry") as ModEntry;
+    mod_entry.mod_directory_path = path;
+    modlist_parent?.append(mod_entry);
+  }
+}
+
 function enableStartGameButton() {
   start_game_button.addEventListener("click", () => {
     Array.from(document.body.getElementsByClassName("mod_menu")).forEach(
@@ -151,9 +173,7 @@ function enableStartGameButton() {
         }
       },
     );
-    startGame(
-      hyperspace_file_location_input?.getAttribute("value") ?? "",
-    ).catch((err: unknown) => {
+    startGame().catch((err: unknown) => {
       console.error(err);
       Array.from(document.body.getElementsByClassName("mod_menu")).forEach(
         (element) => {

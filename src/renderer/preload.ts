@@ -33,7 +33,13 @@ const wishgranter = {
   getSteamGameLocation: () =>
     ipcRenderer.invoke("getSteamGameLocation") as Promise<PathLike>,
   getModsFromLocation: (location: PathLike) =>
-    ipcRenderer.invoke("getModsFromLocation", location) as Promise<string[]>,
+    ipcRenderer.invoke("getModsFromLocation", location) as Promise<
+      Iterable<string>
+    >,
+  getHyperspaceJsonList: (hyperspace_path: PathLike) =>
+    ipcRenderer.invoke("getHyperspaceJsonList", hyperspace_path) as Promise<
+      Iterable<string>
+    >,
   askUserForDirectory: (start_directory: string) =>
     ipcRenderer.invoke(
       "askUserForDirectory",

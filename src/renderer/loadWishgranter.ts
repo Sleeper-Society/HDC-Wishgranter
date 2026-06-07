@@ -1,4 +1,4 @@
-import type { LoadSequenceElement } from "../modMenu/loadingBar.ts";
+import type { LoadSequenceElement } from "./loadingBar.ts";
 import type { PathLike } from "fs";
 
 export function unloadWishgranter() {
@@ -22,9 +22,11 @@ export async function loadWishgranter(hyperspace_path: PathLike) {
 
 const replacements: Record<string, PathLike> = {
   "pixi-renderers/loadingscreen-pixi-renderer.js":
-    "dist/renderer/factories/loadingReimplementation.js",
+    "dist/renderer/loadingReimplementation.js",
   "Extensions/FileSystem/filesystemtools.js":
-    "dist/renderer/factories/filesystemReimplementation.js",
+    "dist/renderer/filesystemReimplementation.js",
+  "gdjs-evtsext__jsonresourceloader__loadjsontoscene-func.js":
+    "dist/renderer/jsonLoaderReimplementation.js",
 };
 
 function getPossiblyReplacedScriptSource(

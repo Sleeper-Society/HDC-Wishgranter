@@ -1,27 +1,4 @@
-import { readFile, writeFileSync } from "node:fs";
-import path from "node:path";
 import type { projectData } from "./gdjs.ts";
-
-const code0_path = process.argv[2];
-const datajs_path = process.argv[3];
-
-// @ts-expect-error While useing the same gdjs, this script will not fully populate gdjs beforehand
-globalThis.gdjs = {};
-
-import(path.join(process.cwd(), datajs_path))
-  .then(() => {
-    console.log(datajs_path, "imported");
-    readFile(path.join(process.cwd(), code0_path), "utf8", (_err, file) => {
-      console.log(code0_path, "read");
-      writeFileSync(
-        path.join(process.cwd(), code0_path),
-        commentCode0(file, gdjs.projectData),
-      );
-    });
-  })
-  .catch((err: unknown) => {
-    console.error(err);
-  });
 
 export function commentCode0(
   code0: string,

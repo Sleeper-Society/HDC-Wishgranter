@@ -153,6 +153,15 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
       (value) => value[1],
     );
   }
+  async getHyperspaceJsonList(
+    hyperspace_path: PathLike,
+  ): Promise<Iterable<string>> {
+    return (await fsPromise.readdir(hyperspace_path, "utf8"))
+      .filter((file_name) => file_name.endsWith(".json"))
+      .map((file_name) =>
+        file_name.substring(0, file_name.length - ".json".length),
+      );
+  }
   readHyperspaceFile(
     hyperspace_path: PathLike,
     file_name: PathLike,

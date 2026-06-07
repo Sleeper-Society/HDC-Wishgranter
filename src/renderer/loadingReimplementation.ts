@@ -1,4 +1,4 @@
-import type { LoadSequenceElement } from "wishgranter";
+import type { LoadSequenceElement } from "./loadingBar.ts";
 
 (function (gdjs: { LoadingScreenRenderer?: unknown }) {
   class LoadingReimplementiation {

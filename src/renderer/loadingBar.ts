@@ -7,10 +7,14 @@ class LoadingBarElement extends HTMLElement {
     this.append(this.text);
   }
 
-  private async _runThroughLoadingSequence(
-    load_sequence: Iterable<LoadSequenceElement> & { length?: number },
-    hyperspace_path: PathLike,
+  private async _runThroughLoadingSequence<
+    CallParamaters extends unknown[] = [hyperspace_path: PathLike],
+  >(
+    load_sequence: Iterable<LoadSequenceElement<CallParamaters>> & {
+      length?: number;
+    },
     bar: HTMLElement,
+    ...args: CallParamaters
   ) {
     const new_sub_bars: Record<number, HTMLElement> = load_sequence.length
       ? Array.from({ length: load_sequence.length }, () => {
@@ -46,12 +50,12 @@ class LoadingBarElement extends HTMLElement {
                 // Since I'm not expecting the inner function to wait, I'm handling it with a mesa promise
                 // eslint-disable-next-line @typescript-eslint/no-misused-promises
                 window.requestAnimationFrame(async () => {
-                  const sub_sequence = await element.function(hyperspace_path);
+                  const sub_sequence = await element.function(...args);
                   if (sub_sequence) {
                     await this._runThroughLoadingSequence(
                       sub_sequence,
-                      hyperspace_path,
                       sub_bar,
+                      ...args,
                     );
                   }
                   sub_bar.classList.remove("loading");
@@ -71,26 +75,35 @@ class LoadingBarElement extends HTMLElement {
     }
     if (this.text) this.text.textContent = "";
   }
-  public async runThroughLoadingSequence(
-    load_sequence: Iterable<LoadSequenceElement> & { length?: number },
-    hyperspace_path: PathLike,
+  public async runThroughLoadingSequence<
+    CallParamaters extends unknown[] = [hyperspace_path: PathLike],
+  >(
+    load_sequence: Iterable<LoadSequenceElement<CallParamaters>> & {
+      length?: number;
+    },
+    ...args: CallParamaters
   ) {
-    await this._runThroughLoadingSequence(load_sequence, hyperspace_path, this);
+    await this._runThroughLoadingSequence(load_sequence, this, ...args);
   }
 }
 
 customElements.define("loading-bar", LoadingBarElement);
 
 export type { LoadingBarElement };
-export type LoadSequenceReturns =
-  // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-  void | (Iterable<LoadSequenceElement> & { length?: number });
-export type LoadSequenceAsyncReturns = Promise<LoadSequenceReturns>;
-export type LoadSequenceFunction = (
-  hyperspace_path: PathLike,
-) => LoadSequenceReturns | LoadSequenceAsyncReturns;
-export interface LoadSequenceElement {
+export interface LoadSequenceElement<
+  CallParamaters extends unknown[] = unknown[],
+> {
   status_text: string;
   estimated_loading_time_multiplier?: number;
-  function: LoadSequenceFunction;
+  function:
+    | ((...args: CallParamaters) => void)
+    | ((...args: CallParamaters) => Promise<void>)
+    | ((
+        ...args: CallParamaters
+      ) => Iterable<LoadSequenceElement<CallParamaters>> & { length?: number })
+    | ((
+        ...args: CallParamaters
+      ) => Promise<
+        Iterable<LoadSequenceElement<CallParamaters>> & { length?: number }
+      >);
 }
