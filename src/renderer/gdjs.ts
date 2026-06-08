@@ -25,7 +25,7 @@ export interface gdjs {
   };
   LoadingScreenRenderer?: {
     new (): unknown;
-    getLoadingElements: () => LoadSequenceElement[];
+    getLoadingElements: () => LoadSequenceElement<[]>[];
   };
   projectData: projectData;
   CommandCode: Record<

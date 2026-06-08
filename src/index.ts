@@ -137,13 +137,15 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
     }
     return "";
   }
-  async getHyperspaceScriptTags(hyperspace_path: string): Promise<string[]> {
+  async getHyperspaceScriptTags(
+    hyperspace_path: string,
+  ): Promise<`${string}.js`[]> {
     const file = await fsPromise.readFile(
       path.join(hyperspace_path, "resources", "app.asar", "app", "index.html"),
       "utf8",
     );
-    return Array.from(file.matchAll(/src="([\w\-/.]+?)"/g)).map(
-      (value) => value[1],
+    return Array.from(file.matchAll(/(?<=src=")[\w\-/.]+?\.js(?=")/g)).map(
+      (match) => match[0] as `${string}.js`,
     );
   }
   async getHyperspaceJsonList(
@@ -246,7 +248,8 @@ class RemoteReplacePreloadHandler implements AwaitedFuncs<
   getPath(path_flag: "documents" | "home" | "temp") {
     const out = app.getPath(path_flag);
     if (path_flag == "temp") {
-      fs.mkdirSync(path.join(app.getPath(path_flag), "Wishgranter"));
+      if (!fs.existsSync(path.join(app.getPath(path_flag), "Wishgranter")))
+        fs.mkdirSync(path.join(app.getPath(path_flag), "Wishgranter"));
       return path.join(out, "Wishgranter");
     }
     return out;

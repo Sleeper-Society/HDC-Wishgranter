@@ -33,13 +33,9 @@ function subscribeFileLocations() {
     );
     loadHyperspaceLocation(
       hyperspace_file_location_input.getAttribute("value") ?? "",
-    )
-      .then(() => {
-        (modlist_parent?.firstChild as ModEntry).onModDirectoryChanged();
-      })
-      .catch((error: unknown) => {
-        console.log(error);
-      });
+    ).catch((error: unknown) => {
+      console.log(error);
+    });
   });
   mods_file_location_input?.addEventListener("change", () => {
     loadModLocation(mods_file_location_input.getAttribute("value") ?? "").catch(

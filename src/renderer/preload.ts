@@ -38,7 +38,7 @@ const wishgranter = {
     ) as Promise<string>,
   getHyperspaceScriptTags: (hyperspace_path: string) =>
     ipcRenderer.invoke("getHyperspaceScriptTags", hyperspace_path) as Promise<
-      string[]
+      `${string}.js`[]
     >,
   readHyperspaceFile: (hyperspace_path: string, file_name: string) =>
     ipcRenderer.invoke(

@@ -12,7 +12,7 @@ import type { gdjs } from "./gdjs.ts";
         fs.writeFileSync(file, JSON.stringify(variable.toJSObject()));
       } catch (error) {
         logger.error(
-          "Unable to save the variable to path: '" + file.toString() + "': ",
+          "Unable to save the variable to path: '" + file + "': ",
           error,
         );
       }
@@ -21,10 +21,7 @@ import type { gdjs } from "./gdjs.ts";
       try {
         fs.unlinkSync(file);
       } catch (error) {
-        logger.error(
-          "Unable to delete the file: '" + file.toString() + "': ",
-          error,
-        );
+        logger.error("Unable to delete the file: '" + file + "': ", error);
       }
     },
     pathExists(file: string): boolean {
@@ -51,9 +48,7 @@ import type { gdjs } from "./gdjs.ts";
         }
       } catch (error) {
         logger.error(
-          "Unable to load variable from the file at path: '" +
-            file.toString() +
-            "': ",
+          "Unable to load variable from the file at path: '" + file + "': ",
           error,
         );
       }
@@ -62,10 +57,7 @@ import type { gdjs } from "./gdjs.ts";
       try {
         fs.mkdirSync(dir);
       } catch (error) {
-        logger.error(
-          "Unable to create directory at: '" + dir.toString() + "': ",
-          error,
-        );
+        logger.error("Unable to create directory at: '" + dir + "': ", error);
       }
     },
     getPathDelimiter(): string {
