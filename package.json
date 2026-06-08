@@ -43,11 +43,12 @@
   "main": "dist/index.js",
   "scripts": {
     "prepare": "npm run pretty && npm run build",
+    "postinstall": "cd node_modules/electron && node install.js",
     "prelint": "npm run pretty",
     "lint": "eslint src --cache --fix",
     "\n========== Building ==========": "",
     "prebuild": "npm run clean",
-    "build": "tsc",
+    "build": "tsc && tsc -p preload.tsconfig.json",
     "clean": "shx rm -rf ./dist/*",
     "pretty": "prettier --write src/**/*.ts",
     "\n========== Exporting ========": "",
@@ -81,15 +82,11 @@
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.58.0"
   },
+  "overrides": {
+    "yauzl": "^3.3.1"
+  },
   "lint-staged": {
     "*.ts": "eslint --cache --fix",
     "*.{ts,js,css,md}": "prettier --write"
-  },
-  "dependencies": {
-    "electron-squirrel-startup": "^1.0.1"
-  },
-  "allowScripts": {
-    "electron-winstaller@5.4.0": true,
-    "electron@41.7.1": true
   }
 }

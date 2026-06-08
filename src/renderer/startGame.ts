@@ -1,4 +1,3 @@
-import type { PathLike } from "node:fs";
 import type { LoadSequenceElement, LoadingBarElement } from "./loadingBar.ts";
 import { loadWishgranter, unloadWishgranter } from "./loadWishgranter.ts";
 
@@ -54,7 +53,7 @@ function loadHyperspaceDeckCommand(): LoadSequenceElement[] {
   ].concat(gdjs.LoadingScreenRenderer?.getLoadingElements() ?? []);
 }
 
-export async function loadHyperspaceLocation(hyperspace_path: PathLike) {
+export async function loadHyperspaceLocation(hyperspace_path: string) {
   start_game_button.disabled = true;
   unloadWishgranter();
   await loading_bar.runThroughLoadingSequence(

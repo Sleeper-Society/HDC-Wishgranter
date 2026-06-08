@@ -1,13 +1,4 @@
-import type {
-  contextBridge as contextBridgeType,
-  ipcRenderer as ipcRendererType,
-} from "electron";
-//eslint-disable-next-line @typescript-eslint/no-require-imports
-const { contextBridge, ipcRenderer } = require("electron") as {
-  contextBridge: typeof contextBridgeType;
-  ipcRenderer: typeof ipcRendererType;
-};
-import type { PathLike } from "node:fs";
+import { contextBridge, ipcRenderer } from "electron";
 
 declare global {
   interface Window {
@@ -23,20 +14,20 @@ let sep = "/";
 let documents_path = "~/Documents";
 let home_path = "~";
 let temp_path = "tmp/Wishgranter";
-const cached_files: Map<PathLike, string> = new Map<PathLike, string>();
+const cached_files: Map<string, string> = new Map<string, string>();
 
 const wishgranter = {
   getDefaultHyperspacePath: () =>
-    ipcRenderer.invoke("getDefaultHyperspacePath") as Promise<PathLike>,
+    ipcRenderer.invoke("getDefaultHyperspacePath") as Promise<string>,
   getDefaultModsPath: () =>
-    ipcRenderer.invoke("getDefaultModsPath") as Promise<PathLike>,
+    ipcRenderer.invoke("getDefaultModsPath") as Promise<string>,
   getSteamGameLocation: () =>
-    ipcRenderer.invoke("getSteamGameLocation") as Promise<PathLike>,
-  getModsFromLocation: (location: PathLike) =>
+    ipcRenderer.invoke("getSteamGameLocation") as Promise<string>,
+  getModsFromLocation: (location: string) =>
     ipcRenderer.invoke("getModsFromLocation", location) as Promise<
       Iterable<string>
     >,
-  getHyperspaceJsonList: (hyperspace_path: PathLike) =>
+  getHyperspaceJsonList: (hyperspace_path: string) =>
     ipcRenderer.invoke("getHyperspaceJsonList", hyperspace_path) as Promise<
       Iterable<string>
     >,
@@ -44,18 +35,18 @@ const wishgranter = {
     ipcRenderer.invoke(
       "askUserForDirectory",
       start_directory,
-    ) as Promise<PathLike>,
-  getHyperspaceScriptTags: (hyperspace_path: PathLike) =>
+    ) as Promise<string>,
+  getHyperspaceScriptTags: (hyperspace_path: string) =>
     ipcRenderer.invoke("getHyperspaceScriptTags", hyperspace_path) as Promise<
-      PathLike[]
+      string[]
     >,
-  readHyperspaceFile: (hyperspace_path: PathLike, file_name: PathLike) =>
+  readHyperspaceFile: (hyperspace_path: string, file_name: string) =>
     ipcRenderer.invoke(
       "readHyperspaceFile",
       hyperspace_path,
       file_name,
     ) as Promise<string>,
-  createTemporaryFile: (file_name: PathLike, data: string) =>
+  createTemporaryFile: (file_name: string, data: string) =>
     ipcRenderer.invoke(
       "createTemporaryFile",
       file_name,
@@ -94,13 +85,13 @@ const remote_replace = {
     sep: () => sep,
   },
   fs: {
-    existsSync: (file: PathLike) => cached_files.has(file),
-    unlinkSync: (file: PathLike) => {
+    existsSync: (file: string) => cached_files.has(file),
+    unlinkSync: (file: string) => {
       void ipcRenderer.invoke("unlinkSync", file);
     },
     writeFileSync: writeFile,
-    readFileSync: (file: PathLike) => cached_files.get(file) ?? "",
-    mkdirSync: (dir: PathLike) => {
+    readFileSync: (file: string) => cached_files.get(file) ?? "",
+    mkdirSync: (dir: string) => {
       void ipcRenderer.invoke("mkdirSync", dir);
     },
   },
@@ -143,7 +134,7 @@ async function getPaths() {
   }
 }
 
-function writeFile(file: PathLike, data: string) {
+function writeFile(file: string, data: string) {
   cached_files.set(file, data);
   ipcRenderer.invoke("writeFileSync", file, data).catch((error: unknown) => {
     console.error(error);

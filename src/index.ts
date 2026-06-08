@@ -5,7 +5,6 @@
 // Modules to control application life and create native browser window
 import { app, BrowserWindow, shell, Menu, ipcMain, dialog } from "electron";
 import path from "path";
-import type { PathLike } from "fs";
 import fs from "fs";
 import fsPromise from "fs/promises";
 import os from "os";
@@ -47,7 +46,7 @@ function createWindow() {
   });
 
   // and load the index.html of the app.
-  void mainWindow.loadFile("../mod_menu.html");
+  void mainWindow.loadFile("./mod_menu.html");
 
   Menu.setApplicationMenu(null);
 
@@ -99,7 +98,7 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
       );
     }
   }
-  async getDefaultHyperspacePath(): Promise<PathLike> {
+  async getDefaultHyperspacePath(): Promise<string> {
     if (fs.existsSync(config_path)) {
       const config = JSON.parse(fs.readFileSync(config_path, "utf8")) as Config;
       if (config.hyperspace_path) {
@@ -108,7 +107,7 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
     }
     return this.getSteamGameLocation();
   }
-  getDefaultModsPath(): PathLike {
+  getDefaultModsPath(): string {
     if (fs.existsSync(config_path)) {
       const config = JSON.parse(fs.readFileSync(config_path, "utf8")) as Config;
       if (config.mods_path) {
@@ -117,15 +116,15 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
     }
     return os.homedir() + "/HDC/Mods";
   }
-  async getSteamGameLocation(): Promise<PathLike> {
+  async getSteamGameLocation(): Promise<string> {
     const response = await findSteamApp("2711190");
     return response.installDir ?? "";
   }
-  getModsFromLocation(location: PathLike) {
+  getModsFromLocation(location: string) {
     if (!fs.existsSync(location)) return [];
     return fs
       .readdirSync(location)
-      .map((mod_path) => path.join(location.toString(), mod_path))
+      .map((mod_path) => path.join(location, mod_path))
       .filter((mod_path) => fs.existsSync(path.join(mod_path, "/index.js")));
   }
   async askUserForDirectory(start_directory: string): Promise<string> {
@@ -138,15 +137,9 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
     }
     return "";
   }
-  async getHyperspaceScriptTags(hyperspace_path: PathLike): Promise<string[]> {
+  async getHyperspaceScriptTags(hyperspace_path: string): Promise<string[]> {
     const file = await fsPromise.readFile(
-      path.join(
-        hyperspace_path.toString(),
-        "resources",
-        "app.asar",
-        "app",
-        "index.html",
-      ),
+      path.join(hyperspace_path, "resources", "app.asar", "app", "index.html"),
       "utf8",
     );
     return Array.from(file.matchAll(/src="([\w\-/.]+?)"/g)).map(
@@ -154,7 +147,7 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
     );
   }
   async getHyperspaceJsonList(
-    hyperspace_path: PathLike,
+    hyperspace_path: string,
   ): Promise<Iterable<string>> {
     return (await fsPromise.readdir(hyperspace_path, "utf8"))
       .filter((file_name) => file_name.endsWith(".json"))
@@ -163,25 +156,16 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
       );
   }
   readHyperspaceFile(
-    hyperspace_path: PathLike,
-    file_name: PathLike,
+    hyperspace_path: string,
+    file_name: string,
   ): Promise<string> {
     return fsPromise.readFile(
-      path.join(
-        hyperspace_path.toString(),
-        "resources",
-        "app.asar",
-        "app",
-        file_name.toString(),
-      ),
+      path.join(hyperspace_path, "resources", "app.asar", "app", file_name),
       "utf8",
     );
   }
-  async createTemporaryFile(
-    file_name: PathLike,
-    data: string,
-  ): Promise<string> {
-    const sep_file_name = file_name.toString().split(path.sep);
+  async createTemporaryFile(file_name: string, data: string): Promise<string> {
+    const sep_file_name = file_name.split(path.sep);
     await fsPromise.mkdir(path.join(app.getPath("temp"), "Wishgranter"), {
       recursive: true,
     });
@@ -270,14 +254,14 @@ class RemoteReplacePreloadHandler implements AwaitedFuncs<
   sep() {
     return path.sep;
   }
-  existsSync(file: PathLike) {
+  existsSync(file: string) {
     return !file;
   }
   unlinkSync() {
     return;
   }
-  writeFileSync(file: PathLike, data: string) {
-    const file_path = file.toString().split(path.sep);
+  writeFileSync(file: string, data: string) {
+    const file_path = file.split(path.sep);
     for (let i = 1; i < file_path.length; i++) {
       const sub_file_path = file_path
         .toSpliced(i)
@@ -289,12 +273,12 @@ class RemoteReplacePreloadHandler implements AwaitedFuncs<
     }
     fs.writeFileSync(file, data, { flag: "w", encoding: "utf8" });
   }
-  readFileSync(file: PathLike) {
+  readFileSync(file: string) {
     if (!fs.existsSync(file)) return "undefined";
     if (fs.lstatSync(file).isDirectory()) return "null";
     return fs.readFileSync(file, "utf8");
   }
-  mkdirSync(file: PathLike) {
+  mkdirSync(file: string) {
     return fs.existsSync(file);
   }
 }

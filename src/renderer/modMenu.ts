@@ -1,6 +1,5 @@
 import { startGame, loadHyperspaceLocation } from "./startGame.ts";
 import type { ModEntry } from "./modEntry.ts";
-import type { PathLike } from "node:fs";
 
 const hyperspace_file_location_input = document.getElementById(
   "hyperspace_file_location_input",
@@ -82,7 +81,7 @@ function prepopulateFileLocations() {
   window.wishgranter
     .getDefaultHyperspacePath()
     .then((value) => {
-      hyperspace_file_location_input?.setAttribute("value", value.toString());
+      hyperspace_file_location_input?.setAttribute("value", value);
       hyperspace_file_location_input?.dispatchEvent(
         new Event("change", { bubbles: true }),
       );
@@ -93,7 +92,7 @@ function prepopulateFileLocations() {
   window.wishgranter
     .getDefaultModsPath()
     .then((value) => {
-      mods_file_location_input?.setAttribute("value", value.toString());
+      mods_file_location_input?.setAttribute("value", value);
       mods_file_location_input?.dispatchEvent(
         new Event("change", { bubbles: true }),
       );
@@ -116,9 +115,7 @@ function enableFileLocationButtons() {
       window.wishgranter
         .askUserForDirectory(default_path ?? "")
         .then((value) => {
-          document
-            .getElementById(output_id)
-            ?.setAttribute("value", value.toString());
+          document.getElementById(output_id)?.setAttribute("value", value);
           document
             .getElementById(output_id)
             ?.dispatchEvent(new Event("change", { bubbles: true }));
@@ -133,10 +130,7 @@ function enableFileLocationButtons() {
       window.wishgranter
         .getSteamGameLocation()
         .then((value) => {
-          hyperspace_file_location_input?.setAttribute(
-            "value",
-            value.toString(),
-          );
+          hyperspace_file_location_input?.setAttribute("value", value);
           hyperspace_file_location_input?.dispatchEvent(
             new Event("change", { bubbles: true }),
           );
@@ -148,7 +142,7 @@ function enableFileLocationButtons() {
   }
 }
 
-async function loadModLocation(mods_location: PathLike) {
+async function loadModLocation(mods_location: string) {
   for (const path in await window.wishgranter.getModsFromLocation(
     mods_location,
   )) {

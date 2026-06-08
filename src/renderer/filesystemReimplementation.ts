@@ -1,4 +1,3 @@
-import type { PathLike } from "fs";
 import type { gdjs } from "./gdjs.ts";
 (function (gdjs: gdjs) {
   //Preloads
@@ -7,7 +6,7 @@ import type { gdjs } from "./gdjs.ts";
   gdjs.fileSystem = {
     saveVariableToJSONFile(
       variable: { toJSObject: () => object },
-      file: PathLike,
+      file: string,
     ) {
       try {
         fs.writeFileSync(file, JSON.stringify(variable.toJSObject()));
@@ -18,7 +17,7 @@ import type { gdjs } from "./gdjs.ts";
         );
       }
     },
-    deleteFile(file: PathLike) {
+    deleteFile(file: string) {
       try {
         fs.unlinkSync(file);
       } catch (error) {
@@ -28,7 +27,7 @@ import type { gdjs } from "./gdjs.ts";
         );
       }
     },
-    pathExists(file: PathLike): boolean {
+    pathExists(file: string): boolean {
       return fs.existsSync(file);
     },
     getUserHomePath(): string {
@@ -38,8 +37,8 @@ import type { gdjs } from "./gdjs.ts";
       return window.remote_replace.app.getPath("documents") || "";
     },
     loadVariableFromJSONFile(
-      variable: { fromJSON: (path: PathLike) => void },
-      file: PathLike,
+      variable: { fromJSON: (path: string) => void },
+      file: string,
       _t: unknown,
       removeCRCharacters = true,
     ) {
@@ -59,7 +58,7 @@ import type { gdjs } from "./gdjs.ts";
         );
       }
     },
-    makeDirectory(dir: PathLike) {
+    makeDirectory(dir: string) {
       try {
         fs.mkdirSync(dir);
       } catch (error) {
