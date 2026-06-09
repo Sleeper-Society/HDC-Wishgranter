@@ -28,12 +28,15 @@ window.remote_replace
 
 function subscribeFileLocations() {
   hyperspace_file_location_input?.addEventListener("change", () => {
-    changeStyleToHyperspace(
-      hyperspace_file_location_input.getAttribute("value") ?? "",
+    const hyperspace_location =
+      hyperspace_file_location_input.getAttribute("value") ?? "";
+    modlist_parent?.children[0]?.setAttribute(
+      "mod_directory_path",
+      `${hyperspace_location}/resources/app.asar/app/`,
     );
-    loadHyperspaceLocation(
-      hyperspace_file_location_input.getAttribute("value") ?? "",
-    ).catch((error: unknown) => {
+
+    changeStyleToHyperspace(hyperspace_location);
+    loadHyperspaceLocation(hyperspace_location).catch((error: unknown) => {
       console.log(error);
     });
   });
@@ -44,9 +47,6 @@ function subscribeFileLocations() {
       },
     );
   });
-  if (modlist_parent?.firstChild)
-    (modlist_parent.firstChild as ModEntry).mod_directory_path = () =>
-      `${hyperspace_file_location_input?.getAttribute("value") ?? ""}/resources/app.asar/app/`;
 }
 
 function changeStyleToHyperspace(hyperspace_location: string) {
@@ -139,7 +139,7 @@ function enableFileLocationButtons() {
 }
 
 async function loadModLocation(mods_location: string) {
-  for (const path in await window.wishgranter.getModsFromLocation(
+  for (const path of await window.wishgranter.getModsFromLocation(
     mods_location,
   )) {
     if (

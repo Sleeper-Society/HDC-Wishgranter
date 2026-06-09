@@ -16,29 +16,41 @@ class ModEntry extends HTMLElement {
   get enabled(): boolean {
     return (this.shadow.getElementById("enabled") as HTMLInputElement).checked;
   }
+  get mod_name(): string {
+    return this.mod_directory_path.split("/")[
+      this.mod_directory_path.split("/").length - 1
+    ];
+  }
   constructor() {
     super();
     this.shadow = this.attachShadow({ mode: "open" });
     this.shadow.append(mod_entry_template.content.cloneNode(true));
   }
-  connectedCallback() {
+  static get observedAttributes() {
+    return ["mod_directory_path"];
+  }
+
+  attributeChangedCallback(
+    _name: string,
+    _old_value: string,
+    new_value: string,
+  ) {
+    this.mod_directory_path = new_value;
     this.onModDirectoryChanged();
   }
   onModDirectoryChanged() {
     const name_element = this.shadow.getElementById("name");
-    if (name_element) {
-      name_element.textContent =
-        this.mod_directory_path.split("/")[
-          this.mod_directory_path.split("/").length
-        ];
-    }
-    fetch(`file://${this.mod_directory_path}/icon.png`)
-      .then(() => {
-        (this.shadow.getElementById("icon") as HTMLImageElement).src =
-          `${this.mod_directory_path}/icon.png`;
+    if (name_element) name_element.textContent = this.mod_name;
+    fetch(`${this.mod_directory_path}/icon.png`, {
+      method: "HEAD",
+    })
+      .then((result) => {
+        if (result.ok)
+          (this.shadow.getElementById("icon") as HTMLImageElement).src =
+            `${this.mod_directory_path}/icon.png`;
       })
-      .catch(() => {
-        console.warn(this.mod_directory_path, "has no icon");
+      .catch((err: unknown) => {
+        console.warn(err);
       });
 
     this.shadow.getElementById("move_up")?.addEventListener("click", () => {
@@ -47,19 +59,6 @@ class ModEntry extends HTMLElement {
     this.shadow.getElementById("move_down")?.addEventListener("click", () => {
       this.parentElement?.moveBefore(this, this.nextSibling);
     });
-  }
-  async *getJsons(
-    hyperspace_path: string,
-  ): AsyncGenerator<[string, Record<string, unknown>]> {
-    for (const possibly_defined_json of await window.wishgranter.getHyperspaceJsonList(
-      hyperspace_path,
-    )) {
-      const json_response = await fetch(
-        `file://${this.mod_directory_path}/${possibly_defined_json}.json`,
-      );
-      if (!json_response.ok) continue;
-      yield [possibly_defined_json, await json_response.json()];
-    }
   }
 }
 

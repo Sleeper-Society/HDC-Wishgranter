@@ -46,7 +46,7 @@ function createWindow() {
   });
 
   // and load the index.html of the app.
-  void mainWindow.loadFile("./mod_menu.html");
+  void mainWindow.loadFile("./modMenu.html");
 
   Menu.setApplicationMenu(null);
 
@@ -124,8 +124,7 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
     if (!fs.existsSync(location)) return [];
     return fs
       .readdirSync(location)
-      .map((mod_path) => path.join(location, mod_path))
-      .filter((mod_path) => fs.existsSync(path.join(mod_path, "/index.js")));
+      .map((mod_path) => path.join(location, mod_path));
   }
   async askUserForDirectory(start_directory: string): Promise<string> {
     const { canceled, filePaths } = await dialog.showOpenDialog({
@@ -147,15 +146,6 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
     return Array.from(file.matchAll(/(?<=src=")[\w\-/.]+?\.js(?=")/g)).map(
       (match) => match[0] as `${string}.js`,
     );
-  }
-  async getHyperspaceJsonList(
-    hyperspace_path: string,
-  ): Promise<Iterable<string>> {
-    return (await fsPromise.readdir(hyperspace_path, "utf8"))
-      .filter((file_name) => file_name.endsWith(".json"))
-      .map((file_name) =>
-        file_name.substring(0, file_name.length - ".json".length),
-      );
   }
   readHyperspaceFile(
     hyperspace_path: string,

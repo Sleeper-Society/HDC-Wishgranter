@@ -1,4 +1,5 @@
 import type { Resource } from "./gdjs.ts";
+import { getJson } from "./modFactory.ts";
 
 const logger = new gdjs.Logger("JSON Manager");
 
@@ -54,14 +55,7 @@ gdjs.JsonManager = class JsonManager {
     }
 
     try {
-      await new Promise((resolve, reject) => {
-        this.loadJson(resourceName, (error, content) => {
-          if (error) {
-            reject(error);
-          }
-          resolve(content);
-        });
-      });
+      await this.loadJson(resourceName);
     } catch (error) {
       logger.error(
         `Error while preloading json resource ${resource.name}:`,
@@ -90,90 +84,31 @@ gdjs.JsonManager = class JsonManager {
    * @param resourceName The resource pointing to the json file to load.
    * @param callback The callback function called when json is loaded (or an error occurred).
    */
-  loadJson(resourceName: string, callback: JsonManagerRequestCallback): void {
+  async loadJson(resourceName: string): Promise<void> {
     const resource = this._getJsonResource(resourceName);
     if (!resource) {
-      callback(
-        new Error(
-          "Can't find resource with name: \"" +
-            resourceName +
-            '" (or is not a json resource).',
-        ),
-        null,
+      throw new Error(
+        "Can't find resource with name: \"" +
+          resourceName +
+          '" (or is not a json resource).',
       );
-      return;
     }
 
     // Don't fetch again an object that is already in memory
     if (this._loadedJsons.get(resource)) {
-      callback(null, this._loadedJsons.get(resource));
       return;
     }
-    // Don't fetch again an object that is already being fetched.
-    {
-      const callbacks = this._callbacks.get(resource);
-      if (callbacks) {
-        callbacks.push(callback);
-        return;
-      } else {
-        this._callbacks.set(resource, [callback]);
-      }
-    }
 
-    //eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this;
-    const xhr = new XMLHttpRequest();
-    xhr.responseType = "json";
-    xhr.withCredentials = this._resourceLoader.checkIfCredentialsRequired(
-      resource.file,
+    const json_file_name = resource.file.split(
+      window.remote_replace.path.sep(),
+    )[resource.file.split(window.remote_replace.path.sep()).length - 1];
+    const json_name = json_file_name.substring(
+      0,
+      json_file_name.length - ".json".length,
     );
-    xhr.open("GET", this._resourceLoader.getFullUrl(resource.file));
-    xhr.onload = function () {
-      const callbacks = that._callbacks.get(resource);
-      if (!callbacks) {
-        return;
-      }
-      if (xhr.status !== 200) {
-        for (const callback of callbacks) {
-          callback(
-            new Error(
-              `HTTP error: ${xhr.status.toString()}(" + xhr.statusText + ")`,
-            ),
-            null,
-          );
-        }
-        that._callbacks.delete(resource);
-        return;
-      }
 
-      // Cache the result
-      that._loadedJsons.set(resource, xhr.response as object);
-      for (const callback of callbacks) {
-        callback(null, xhr.response as object);
-      }
-      that._callbacks.delete(resource);
-    };
-    xhr.onerror = function () {
-      const callbacks = that._callbacks.get(resource);
-      if (!callbacks) {
-        return;
-      }
-      for (const callback of callbacks) {
-        callback(new Error("Network error"), null);
-      }
-      that._callbacks.delete(resource);
-    };
-    xhr.onabort = function () {
-      const callbacks = that._callbacks.get(resource);
-      if (!callbacks) {
-        return;
-      }
-      for (const callback of callbacks) {
-        callback(new Error("Request aborted"), null);
-      }
-      that._callbacks.delete(resource);
-    };
-    xhr.send();
+    // Cache the result
+    this._loadedJsons.set(resource, await getJson(json_name));
   }
 
   /**

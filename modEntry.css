@@ -1,0 +1,39 @@
+:host {
+  display: grid;
+  grid-template-columns: 1fr 4fr 1fr;
+  grid-template-rows: auto auto 1fr 1fr;
+}
+:host:hover {
+  grid-template-rows: auto;
+}
+div:has(#icon) {
+  grid-row: 2 / 4;
+}
+#icon {
+  max-height: 100%;
+  max-width: 100%;
+}
+h2 {
+  grid-row: 1;
+  grid-column: 1 / 3;
+  text-align: left;
+  align-self: anchor-center;
+}
+#description {
+  grid-column: 2;
+  grid-row: 2 /4;
+}
+#version {
+  grid-column: 3;
+}
+:host:not(:hover) p,
+:host:not(:hover) h2 {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  align-self: anchor-center;
+}
+button,
+input[type="checkbox"] {
+  grid-column: 3;
+}

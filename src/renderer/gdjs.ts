@@ -27,7 +27,6 @@ export interface gdjs {
     new (): unknown;
     getLoadingElements: () => LoadSequenceElement<[]>[];
   };
-  projectData: projectData;
   CommandCode: Record<
     string,
     | unknown[]

@@ -27,10 +27,6 @@ const wishgranter = {
     ipcRenderer.invoke("getModsFromLocation", location) as Promise<
       Iterable<string>
     >,
-  getHyperspaceJsonList: (hyperspace_path: string) =>
-    ipcRenderer.invoke("getHyperspaceJsonList", hyperspace_path) as Promise<
-      Iterable<string>
-    >,
   askUserForDirectory: (start_directory: string) =>
     ipcRenderer.invoke(
       "askUserForDirectory",

@@ -1,5 +1,6 @@
 import type { LoadSequenceElement, LoadingBarElement } from "./loadingBar.ts";
 import { loadWishgranter, unloadWishgranter } from "./loadWishgranter.ts";
+import { getData } from "./modFactory.ts";
 
 const loading_bar = document.getElementsByTagName(
   "loading-bar",
@@ -8,9 +9,9 @@ const start_game_button = document.getElementById(
   "start_game_button",
 ) as HTMLButtonElement;
 
-const baseStartGame = () => {
+async function baseStartGame() {
   //Initialization
-  const gdgame = new gdjs.RuntimeGame(gdjs.projectData, {});
+  const gdgame = new gdjs.RuntimeGame(await getData(), {});
 
   //Create a renderer
   gdgame.getRenderer().createStandardCanvas(document.body);
@@ -30,7 +31,7 @@ const baseStartGame = () => {
   gdgame.loadAllAssets(() => {
     gdgame.startGameLoop();
   });
-};
+}
 export async function startGame() {
   start_game_button.disabled = true;
   document.body.classList.add("game_loading");
@@ -49,7 +50,7 @@ function loadHyperspaceDeckCommand(): LoadSequenceElement[] {
     {
       status_text: "Starting Game",
       function: baseStartGame,
-    },
+    } as LoadSequenceElement<[]>,
   ].concat(gdjs.LoadingScreenRenderer?.getLoadingElements() ?? []);
 }
 

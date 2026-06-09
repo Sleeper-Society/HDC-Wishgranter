@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>Hyperspace Deck Command: Wishgranter</title>
-    <link href="mod_menu.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="modMenu.css" rel="stylesheet" type="text/css" media="all" />
     <style id="font"></style>
     <script src="dist/renderer/loadingBar.js" type="module"></script>
     <script src="dist/renderer/modEntry.js" type="module"></script>
@@ -11,13 +11,14 @@
   </head>
   <body>
     <template>
-      <div><img id="icon" /></div>
+      <link href="modEntry.css" rel="stylesheet" type="text/css" media="all" />
       <h2 id="name"></h2>
-      <p id="version"></p>
+      <div><img id="icon" /></div>
       <p id="description"></p>
+      <input type="checkbox" id="enabled" checked />
+      <p id="version"></p>
       <button id="move_up">↑</button>
       <button id="move_down">↓</button>
-      <input type="checkbox" id="enabled" checked />
     </template>
     <label mod_menu for="mods_file_location_input">Mods folder:</label>
     <input mod_menu type="text" id="mods_file_location_input" />
