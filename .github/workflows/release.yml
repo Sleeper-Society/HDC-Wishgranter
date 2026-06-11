@@ -1,0 +1,29 @@
+name: Release
+permissions:
+  contents: write
+
+on:
+    push:
+        branches: [stable,experimental]
+    pull_request:
+        branches: [stable,experimental]
+
+jobs:
+    download:
+        runs-on: self-hosted
+        steps:
+        - uses: actions/checkout@v6
+        - uses: actions/setup-node@v6
+        with:
+            node-version: 24
+        - run: npm ci
+    test:
+        runs-on: self-hosted
+        needs: download
+        steps:
+        - run: npm test
+    publish:
+        runs-on: self-hosted
+        needs: test
+        steps:
+        - run: npm run publish

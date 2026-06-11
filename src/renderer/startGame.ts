@@ -1,6 +1,6 @@
 import type { LoadSequenceElement, LoadingBarElement } from "./loadingBar.ts";
 import { loadWishgranter, unloadWishgranter } from "./loadWishgranter.ts";
-import { getData } from "./modFactory.ts";
+import { getFileFromMods, parseData } from "./modFactory.ts";
 
 const loading_bar = document.getElementsByTagName(
   "loading-bar",
@@ -11,7 +11,10 @@ const start_game_button = document.getElementById(
 
 async function baseStartGame() {
   //Initialization
-  const gdgame = new gdjs.RuntimeGame(await getData(), {});
+  const gdgame = new gdjs.RuntimeGame(
+    await getFileFromMods(parseData, "data.js", "data.json"),
+    {},
+  );
 
   //Create a renderer
   gdgame.getRenderer().createStandardCanvas(document.body);

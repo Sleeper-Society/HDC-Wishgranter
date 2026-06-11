@@ -2,6 +2,7 @@
 
 import eslint from "@eslint/js";
 import eslintConfigPrettier from "eslint-config-prettier";
+import mochaPlugin from "eslint-plugin-mocha";
 import { defineConfig } from "eslint/config";
 import path from "path";
 import tseslint from "typescript-eslint";
@@ -10,6 +11,7 @@ export default defineConfig(
   eslint.configs.recommended,
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,
+
   {
     languageOptions: {
       parserOptions: {
@@ -43,6 +45,29 @@ export default defineConfig(
       ],
     },
   },
+  {
+    files: ["./**/*.test.ts"],
+    ...mochaPlugin.configs.recommended,
+  },
+  {
+    files: ["./**/*.test.ts"],
+    rules: {
+      "@typescript-eslint/no-restricted-imports": "off",
+      "@typescript-eslint/no-floating-promises": [
+        "error",
+        {
+          allowForKnownSafeCalls: [
+            {
+              from: "package",
+              name: ["describe", "it"],
+              package: "node:test",
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   {
     files: ["./renderer/**/preload.ts"],
     rules: {

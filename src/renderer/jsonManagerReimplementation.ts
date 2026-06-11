@@ -1,5 +1,5 @@
 import type { Resource } from "./gdjs.ts";
-import { getJson } from "./modFactory.ts";
+import { getFileFromMods, parseJson } from "./modFactory.ts";
 
 const logger = new gdjs.Logger("JSON Manager");
 
@@ -102,13 +102,12 @@ gdjs.JsonManager = class JsonManager {
     const json_file_name = resource.file.split(
       window.remote_replace.path.sep(),
     )[resource.file.split(window.remote_replace.path.sep()).length - 1];
-    const json_name = json_file_name.substring(
-      0,
-      json_file_name.length - ".json".length,
-    );
 
     // Cache the result
-    this._loadedJsons.set(resource, await getJson(json_name));
+    this._loadedJsons.set(
+      resource,
+      await getFileFromMods(parseJson, json_file_name),
+    );
   }
 
   /**

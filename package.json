@@ -46,6 +46,8 @@
     "postinstall": "cd node_modules/electron && node install.js",
     "prelint": "npm run pretty",
     "lint": "eslint src --cache --fix",
+    "pretest": "npm run build",
+    "test": "mocha",
     "\n========== Building ==========": "",
     "prebuild": "npm run clean",
     "build": "tsc && tsc -p preload.tsconfig.json",
@@ -55,7 +57,8 @@
     "prestart": "npm run build",
     "start": "electron-forge start",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "electron-forge make",
+    "publish": "electron-forge publish"
   },
   "optionalDependencies": {
     "steam-locate": "^1.0.6"
@@ -68,6 +71,7 @@
     "@electron-forge/maker-zip": "^7.11.2",
     "@electron-forge/plugin-auto-unpack-natives": "^7.11.2",
     "@electron-forge/plugin-fuses": "^7.11.2",
+    "@electron-forge/publisher-github": "^7.11.2",
     "@electron/fuses": "^1.8.0",
     "@eslint/js": "^10.0.1",
     "@types/node": "^25.9.1",
@@ -75,8 +79,10 @@
     "electron": "^42.0.0",
     "eslint": "^10.2.0",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-mocha": "^11.3.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
+    "mocha": "^11.7.6",
     "prettier": "^3.8.1",
     "shx": "^0.4.0",
     "typescript": "^6.0.2",
@@ -88,5 +94,8 @@
   "lint-staged": {
     "*.ts": "eslint --cache --fix",
     "*.{ts,js,css,md}": "prettier --write"
+  },
+  "mocha": {
+    "spec": "./dist/**/*.test.js"
   }
 }
