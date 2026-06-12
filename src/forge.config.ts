@@ -1,26 +1,18 @@
 import { FusesPlugin } from "@electron-forge/plugin-fuses";
 import { FuseV1Options, FuseVersion } from "@electron/fuses";
-
-module.exports = {
+export default {
   packagerConfig: {
     asar: true,
   },
   rebuildConfig: {},
   makers: [
     {
-      name: "@electron-forge/maker-squirrel",
-      config: {},
-    },
-    {
       name: "@electron-forge/maker-zip",
-      platforms: ["darwin"],
+      platforms: ["win32", "linux"],
+      config: {},
     },
     {
       name: "@electron-forge/maker-deb",
-      config: {},
-    },
-    {
-      name: "@electron-forge/maker-rpm",
       config: {},
     },
   ],
@@ -41,4 +33,20 @@ module.exports = {
       [FuseV1Options.OnlyLoadAppFromAsar]: true,
     }),
   ],
+  publishers: [
+    {
+      name: "@electron-forge/publisher-github",
+      platforms: ["win32", "debian"],
+      config: {
+        repository: {
+          owner: "Sleeper-Society",
+          name: "HDC-Wishgranter",
+        },
+        authToken: process.env.GITHUB_TOKEN,
+        draft: true,
+        prerelease: true,
+      },
+    },
+  ],
 };
+//# sourceMappingURL=forge.config.js.map

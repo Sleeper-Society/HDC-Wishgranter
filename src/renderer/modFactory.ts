@@ -1,64 +1,72 @@
 import type { projectData } from "./gdjs.ts";
 import type { ModEntry } from "./modEntry.ts";
 
-export async function getJson(json_name: string) {
-  let result = {};
+export async function getFileFromMods<FileContents = object>(
+  parser: (
+    old_object: Partial<FileContents>,
+    file_contents: Response,
+    mod_directory_path: string,
+    extention: string,
+  ) => FileContents | Promise<FileContents>,
+  ...files: string[]
+): Promise<FileContents> {
+  let result: Partial<FileContents> = {};
   for (const mod_entry of Array.from(
     document.getElementById("modlist")?.children ?? [],
   ) as ModEntry[]) {
-    try {
-      result = {
-        ...result,
-        ...(await getJsonFromMod(json_name, mod_entry.mod_directory_path)),
-      };
-    } catch (err: unknown) {
-      console.warn(`${mod_entry.mod_name} ${json_name}.json not loaded:`, err);
+    for (const file of files) {
+      try {
+        const response = await fetch(`${mod_entry.mod_directory_path}/${file}`);
+        if (!response.ok) continue;
+        result = await parser(
+          result,
+          response,
+          mod_entry.mod_directory_path,
+          file.split(".")[file.split(".").length - 1],
+        );
+      } catch (err: unknown) {
+        console.warn(`${mod_entry.mod_name} ${file} not loaded:`, err);
+      }
     }
   }
-  return result;
+  return result as FileContents;
 }
-async function getJsonFromMod(
-  json_name: string,
-  mod_path: string,
-): Promise<object> {
-  const json_response = await fetch(`${mod_path}/${json_name}.json`);
-  if (!json_response.ok) return {};
-  return json_response.json() as object;
-}
-export async function getData(): Promise<projectData> {
-  let result = {};
-  for (const mod_entry of Array.from(
-    document.getElementById("modlist")?.children ?? [],
-  ) as ModEntry[]) {
-    try {
-      result = {
-        ...result,
-        ...(await getDataFromMod(mod_entry.mod_directory_path)),
-      };
-    } catch (err: unknown) {
-      console.warn(`${mod_entry.mod_name} data not loaded:`, err);
-    }
-  }
-  return result as projectData;
-}
-async function getDataFromMod(mod_path: string): Promise<Partial<projectData>> {
-  const js_response = await fetch(`${mod_path}/data.js`);
-  if (js_response.ok)
-    return eval(
-      await js_response
-        .text()
-        .then(
-          (data: string) =>
-            data
-              .replace(/gdjs.projectData\s*=\s*/, "(")
-              .replace(/;\s*gdjs.runtimeGameOptions\s*=\s*\{\};/, "") + ")",
-        )
-        .then((data) =>
-          data.replaceAll(/(?<=file: ?")[\w.-]*(?=")/g, `${mod_path}$&`),
-        ),
-    ) as projectData;
 
-  const json_response = await fetch(`${mod_path}/data.json`);
-  if (!json_response.ok) return {};
-  return json_response.json() as Partial<projectData>;
+export async function parseJson<JsonObject>(
+  json: Partial<JsonObject>,
+  json_response: Response,
+): Promise<JsonObject> {
+  return { ...json, ...(await json_response.json()) } as JsonObject;
+}
+
+export async function parseData(
+  data: Partial<projectData>,
+  response: Response,
+  mod_directory_path: string,
+  extention: string,
+): Promise<projectData> {
+  if (extention == "js") {
+    return {
+      ...data,
+      ...eval(
+        await response
+          .text()
+          .then(
+            (data: string) =>
+              data
+                .replace(/gdjs.projectData\s*=\s*/, "(")
+                .replace(/;\s*gdjs.runtimeGameOptions\s*=\s*\{\};/, "") + ")",
+          )
+          .then((data) =>
+            data.replaceAll(
+              /(?<=file: ?")[\w.-]*(?=")/g,
+              `${mod_directory_path}$&`,
+            ),
+          ),
+      ),
+    } as projectData;
+  } else if (extention == "json") {
+    return parseJson(data, response);
+  }
+  return data as projectData;
 }
