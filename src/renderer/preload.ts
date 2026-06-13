@@ -99,6 +99,10 @@ const remote_replace = {
       void ipcRenderer.invoke("mkdirSync", dir);
     },
   },
+  fsPromise: {
+    readFile: (file: string) =>
+      ipcRenderer.invoke("readFile", file) as Promise<string>,
+  },
 };
 
 contextBridge.exposeInMainWorld("remote_replace", remote_replace);

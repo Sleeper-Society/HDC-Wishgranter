@@ -102,7 +102,7 @@ function getAddPossiblyReplacedScriptLoadSequenceElement(
     };
   } else {
     return {
-      status_text: `Loading ${script_name}`,
+      status_text: `Replacing ${script_name}`,
       estimated_loading_time_multiplier: 100,
       function: async (hyperspace_path) => {
         const script_source_result = await (
@@ -117,17 +117,15 @@ function getAddPossiblyReplacedScriptLoadSequenceElement(
         if (typeof script_source_result == "string")
           return addScript(script_source_result);
         else {
-          let i = 0;
           const out = [];
           for await (const sub_script_source of script_source_result) {
-            out.push({
-              status_text: `Loading ${script_name}${(i++).toString()}`,
-              function: () => addScript(sub_script_source),
-            });
+            out.push(() => addScript(sub_script_source));
           }
-          return out.map((element, index) => {
-            element.status_text = `Loading ${script_name} ${index.toString()}/${out.length.toString()}`;
-            return element;
+          return out.map((func, index) => {
+            return {
+              status_text: `Loading ${script_name} ${index.toString()}/${out.length.toString()}`,
+              function: func,
+            };
           });
         }
       },
@@ -135,11 +133,11 @@ function getAddPossiblyReplacedScriptLoadSequenceElement(
   }
 }
 
-function addScript(script_source: string, moudle = true) {
+function addScript(script_source: string, module = true) {
   return new Promise<void>((resolve) => {
     const script_orphan = document.createElement("script");
     script_orphan.src = script_source;
-    if (moudle) script_orphan.type = "module";
+    if (module) script_orphan.type = "module";
     script_orphan.crossOrigin = "anonymous";
     script_orphan.className = "wishgranter_script";
     script_orphan.addEventListener("load", () => {

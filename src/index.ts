@@ -311,6 +311,10 @@ class RemoteReplacePreloadHandler implements AwaitedFuncs<
     if (fs.lstatSync(file).isDirectory()) return "null";
     return fs.readFileSync(file, "utf8");
   }
+  readFile(file: string) {
+    if (!fs.existsSync(file) || fs.lstatSync(file).isDirectory()) return "";
+    return fsPromise.readFile(file, "utf8");
+  }
   mkdirSync(file: string) {
     return fs.existsSync(file);
   }
