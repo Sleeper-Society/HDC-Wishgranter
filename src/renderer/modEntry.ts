@@ -17,8 +17,10 @@ class ModEntry extends HTMLElement {
     return (this.shadow.getElementById("enabled") as HTMLInputElement).checked;
   }
   get mod_name(): string {
-    return this.mod_directory_path.split("/")[
-      this.mod_directory_path.split("/").length - 1
+    if ([...(this.parentElement?.children ?? [])].indexOf(this) == 0)
+      return "Hyperspace Deck Command";
+    return this.mod_directory_path.split(window.remote_replace.path.sep())[
+      this.mod_directory_path.split(window.remote_replace.path.sep()).length - 1
     ];
   }
   constructor() {
@@ -41,6 +43,13 @@ class ModEntry extends HTMLElement {
   onModDirectoryChanged() {
     const name_element = this.shadow.getElementById("name");
     if (name_element) name_element.textContent = this.mod_name;
+    const description_element = this.shadow.getElementById("description");
+    if (
+      description_element &&
+      [...(this.parentElement?.children ?? [])].indexOf(this) == 0
+    )
+      description_element.textContent =
+        "Hyperspace Deck Command is a sci-fi card-battler roguelite. Deploy spaceships that operate on individual turn timers, combine a wide variety of cards into powerful decks and master the dual-use status effects to defeat the hegemonising swarm. ";
     fetch(`${this.mod_directory_path}/icon.png`, {
       method: "HEAD",
     })

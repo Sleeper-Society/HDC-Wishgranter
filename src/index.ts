@@ -15,6 +15,7 @@ const config_path = path.join(os.homedir(), "HDC", "config.json");
 interface Config {
   hyperspace_path?: string;
   mods_path?: string;
+  mod_paths?: string[];
 }
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -51,7 +52,9 @@ function createWindow() {
   Menu.setApplicationMenu(null);
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  if (!app.isPackaged) {
+    mainWindow.webContents.openDevTools();
+  }
 
   // Emitted when the window is closed.
   mainWindow.on("closed", function () {
@@ -100,7 +103,9 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
   }
   async getDefaultHyperspacePath(): Promise<string> {
     if (fs.existsSync(config_path)) {
-      const config = JSON.parse(fs.readFileSync(config_path, "utf8")) as Config;
+      const config = JSON.parse(
+        await fsPromise.readFile(config_path, "utf8"),
+      ) as Config;
       if (config.hyperspace_path) {
         return config.hyperspace_path;
       }
@@ -114,17 +119,52 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
         return config.mods_path;
       }
     }
-    return os.homedir() + "/HDC/Mods";
+    return path.join(os.homedir(), "HDC", "Mods");
+  }
+  async getDefaultModPaths(): Promise<string[]> {
+    if (fs.existsSync(config_path)) {
+      const config = JSON.parse(
+        await fsPromise.readFile(config_path, "utf8"),
+      ) as Config;
+      if (config.mod_paths) {
+        return config.mod_paths;
+      }
+    }
+    return await this.getModsFromLocation(
+      path.join(os.homedir(), "HDC", "Mods"),
+    );
+  }
+  async savePaths(
+    hyperspace_path: string,
+    mods_path: string,
+    ...mod_paths: string[]
+  ) {
+    let config: Config = fs.existsSync(config_path)
+      ? (JSON.parse(await fsPromise.readFile(config_path, "utf8")) as Config)
+      : {};
+    config = {
+      ...config,
+      hyperspace_path:
+        hyperspace_path != "" ? hyperspace_path : config.hyperspace_path,
+      mods_path: mods_path != "" ? mods_path : config.mods_path,
+      mod_paths: [
+        ...(config.mod_paths?.filter(
+          (mod_path) => !mod_paths.includes(mod_path),
+        ) ?? []),
+        ...mod_paths,
+      ],
+    };
+    await fsPromise.writeFile(config_path, JSON.stringify(config, null, 4));
   }
   async getSteamGameLocation(): Promise<string> {
     const response = await findSteamApp("2711190");
     return response.installDir ?? "";
   }
-  getModsFromLocation(location: string) {
+  async getModsFromLocation(location: string) {
     if (!fs.existsSync(location)) return [];
-    return fs
-      .readdirSync(location)
-      .map((mod_path) => path.join(location, mod_path));
+    return (await fsPromise.readdir(location))
+      .map((mod_path) => path.join(location, mod_path))
+      .filter((mod_path) => fs.lstatSync(mod_path).isDirectory());
   }
   async askUserForDirectory(start_directory: string): Promise<string> {
     const { canceled, filePaths } = await dialog.showOpenDialog({

@@ -16,8 +16,11 @@ export async function getFileFromMods<FileContents = object>(
   ) as ModEntry[]) {
     for (const file of files) {
       try {
-        const response = await fetch(`${mod_entry.mod_directory_path}/${file}`);
+        let response = await fetch(`${mod_entry.mod_directory_path}/${file}`, {
+          method: "HEAD",
+        });
         if (!response.ok) continue;
+        response = await fetch(`${mod_entry.mod_directory_path}/${file}`);
         result = await parser(
           result,
           response,
@@ -46,25 +49,23 @@ export async function parseData(
   extention: string,
 ): Promise<projectData> {
   if (extention == "js") {
-    return {
-      ...data,
-      ...eval(
-        await response
-          .text()
-          .then(
-            (data: string) =>
-              data
-                .replace(/gdjs.projectData\s*=\s*/, "(")
-                .replace(/;\s*gdjs.runtimeGameOptions\s*=\s*\{\};/, "") + ")",
-          )
-          .then((data) =>
-            data.replaceAll(
-              /(?<=file: ?")[\w.-]*(?=")/g,
-              `${mod_directory_path}$&`,
-            ),
+    //No one should ever make data.js in a normal mod, so it should be safe to give data back directly
+    return eval(
+      await response
+        .text()
+        .then(
+          (data: string) =>
+            data
+              .replace(/gdjs.projectData\s*=\s*/, "(")
+              .replace(/;\s*gdjs.runtimeGameOptions\s*=\s*\{\};/, "") + ")",
+        )
+        .then((data) =>
+          data.replaceAll(
+            /(?<="?file"?: ?")[\w.-]*(?=")/g,
+            `${mod_directory_path}${window.remote_replace.path.sep()}$&`,
           ),
-      ),
-    } as projectData;
+        ),
+    ) as projectData;
   } else if (extention == "json") {
     return parseJson(data, response);
   }

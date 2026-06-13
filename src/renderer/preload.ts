@@ -21,6 +21,14 @@ const wishgranter = {
     ipcRenderer.invoke("getDefaultHyperspacePath") as Promise<string>,
   getDefaultModsPath: () =>
     ipcRenderer.invoke("getDefaultModsPath") as Promise<string>,
+  getDefaultModPaths: () =>
+    ipcRenderer.invoke("getDefaultModPaths") as Promise<string[]>,
+  savePaths: (
+    hyperspace_path: string,
+    mods_path: string,
+    ...mod_paths: string[]
+  ) =>
+    ipcRenderer.invoke("savePaths", hyperspace_path, mods_path, ...mod_paths),
   getSteamGameLocation: () =>
     ipcRenderer.invoke("getSteamGameLocation") as Promise<string>,
   getModsFromLocation: (location: string) =>

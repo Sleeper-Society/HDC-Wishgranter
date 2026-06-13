@@ -47,30 +47,27 @@ function subscribeFileLocations() {
       },
     );
   });
+  hyperspace_file_location_input?.addEventListener("change", saveFilePaths);
+  mods_file_location_input?.addEventListener("change", saveFilePaths);
+}
+function saveFilePaths() {
+  window.wishgranter
+    .savePaths(
+      hyperspace_file_location_input?.getAttribute("value") ?? "",
+      mods_file_location_input?.getAttribute("value") ?? "",
+      ...(
+        Array.from(modlist_parent?.children ?? []).slice(1) as ModEntry[]
+      ).map((entry: ModEntry) => entry.mod_directory_path),
+    )
+    .catch((err: unknown) => {
+      console.error(err);
+    });
 }
 
 function changeStyleToHyperspace(hyperspace_location: string) {
-  box_art.src =
-    hyperspace_location +
-    window.remote_replace.path.sep() +
-    "resources" +
-    window.remote_replace.path.sep() +
-    "app.asar" +
-    window.remote_replace.path.sep() +
-    "app" +
-    window.remote_replace.path.sep() +
-    "store_capsule_header.png";
-  font.innerText =
-    '@font-face {font-family: "Oxanium";src: url("' +
-    hyperspace_location +
-    window.remote_replace.path.sep() +
-    "resources" +
-    window.remote_replace.path.sep() +
-    "app.asar" +
-    window.remote_replace.path.sep() +
-    "app" +
-    window.remote_replace.path.sep() +
-    '/Oxanium-Hyper.ttf");}';
+  const sep = window.remote_replace.path.sep();
+  box_art.src = `${hyperspace_location}${sep}resources${sep}app.asar${sep}app${sep}store_capsule_header.png`;
+  font.innerText = `@font-face {font-family: "Oxanium";src: url("${hyperspace_location}${sep}resources${sep}app.asar${sep}app${sep}/Oxanium-Hyper.ttf");}`;
 }
 
 function prepopulateFileLocations() {
@@ -87,11 +84,19 @@ function prepopulateFileLocations() {
     });
   window.wishgranter
     .getDefaultModsPath()
-    .then((value) => {
-      mods_file_location_input?.setAttribute("value", value);
+    .then((mods_path) => {
+      mods_file_location_input?.setAttribute("value", mods_path);
       mods_file_location_input?.dispatchEvent(
         new Event("change", { bubbles: true }),
       );
+    })
+    .catch((error: unknown) => {
+      console.log(error);
+    });
+  window.wishgranter
+    .getDefaultModPaths()
+    .then((mod_directory_paths) => {
+      mod_directory_paths.forEach(addMod);
     })
     .catch((error: unknown) => {
       console.log(error);
@@ -142,20 +147,25 @@ async function loadModLocation(mods_location: string) {
   for (const path of await window.wishgranter.getModsFromLocation(
     mods_location,
   )) {
-    if (
-      modlist_parent?.children[Symbol.iterator]().find(
-        (mod_entry) => (mod_entry as ModEntry).mod_directory_path == path,
-      )
-    )
-      continue;
-    const mod_entry = document.createElement("mod-entry") as ModEntry;
-    mod_entry.mod_directory_path = path;
-    modlist_parent?.append(mod_entry);
+    addMod(path);
   }
+}
+function addMod(mod_directory_path: string) {
+  if (
+    modlist_parent?.children[Symbol.iterator]().find(
+      (mod_entry) =>
+        (mod_entry as ModEntry).mod_directory_path == mod_directory_path,
+    )
+  )
+    return;
+  const mod_entry = document.createElement("mod-entry") as ModEntry;
+  mod_entry.mod_directory_path = mod_directory_path;
+  modlist_parent?.append(mod_entry);
 }
 
 function enableStartGameButton() {
   start_game_button.addEventListener("click", () => {
+    saveFilePaths();
     Array.from(document.body.getElementsByClassName("mod_menu")).forEach(
       (element) => {
         if ("disabled" in element) {
