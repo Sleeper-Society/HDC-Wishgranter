@@ -28,11 +28,12 @@ window.remote_replace
 
 function subscribeFileLocations() {
   hyperspace_file_location_input?.addEventListener("change", () => {
+    const sep = window.remote_replace.path.sep();
     const hyperspace_location =
       hyperspace_file_location_input.getAttribute("value") ?? "";
     modlist_parent?.children[0]?.setAttribute(
       "mod_directory_path",
-      `${hyperspace_location}/resources/app.asar/app/`,
+      `${hyperspace_location}${sep}resources${sep}app.asar${sep}app${sep}`,
     );
 
     changeStyleToHyperspace(hyperspace_location);
@@ -67,7 +68,7 @@ function saveFilePaths() {
 function changeStyleToHyperspace(hyperspace_location: string) {
   const sep = window.remote_replace.path.sep();
   box_art.src = `${hyperspace_location}${sep}resources${sep}app.asar${sep}app${sep}store_capsule_header.png`;
-  font.innerText = `@font-face {font-family: "Oxanium";src: url("${hyperspace_location}${sep}resources${sep}app.asar${sep}app${sep}/Oxanium-Hyper.ttf");}`;
+  font.innerText = `@font-face {font-family: "Oxanium";src: url("${hyperspace_location}${sep}resources${sep}app.asar${sep}app${sep}Oxanium-Hyper.ttf");}`;
 }
 
 function prepopulateFileLocations() {
