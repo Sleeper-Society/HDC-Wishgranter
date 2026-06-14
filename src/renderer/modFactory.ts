@@ -33,7 +33,7 @@ export async function loadModdedFile<FileContents = object>(
 
 export function get_file(file_name: string, mod_path: string) {
   return window.remote_replace.fsPromise.readFile(
-    `${mod_path}${window.remote_replace.path.sep()}${file_name}`,
+    `${mod_path}${window.remote_replace.path.sep}${file_name}`,
   );
 }
 export async function parseJson<JsonObject = object>(

@@ -11,17 +11,10 @@ class ModEntry extends HTMLElement {
   }
   set mod_directory_path(new_path: string | (() => string)) {
     this._mod_directory_path = new_path;
-    this.onModDirectoryChanged();
+    void this.onModDirectoryChanged();
   }
   get enabled(): boolean {
     return (this.shadow.getElementById("enabled") as HTMLInputElement).checked;
-  }
-  get mod_name(): string {
-    if ([...(this.parentElement?.children ?? [])].indexOf(this) == 0)
-      return "Hyperspace Deck Command";
-    return this.mod_directory_path.split(window.remote_replace.path.sep())[
-      this.mod_directory_path.split(window.remote_replace.path.sep()).length - 1
-    ];
   }
   constructor() {
     super();
@@ -38,29 +31,26 @@ class ModEntry extends HTMLElement {
     new_value: string,
   ) {
     this.mod_directory_path = new_value;
-    this.onModDirectoryChanged();
+    void this.onModDirectoryChanged();
   }
-  onModDirectoryChanged() {
+  async onModDirectoryChanged() {
+    this.dispatchEvent(
+      new CustomEvent("mod_directory_changed", {
+        detail: { new_directory: this.mod_directory_path },
+      }),
+    );
+    const metadata = await window.mod_menu.getModMetadata(
+      this.mod_directory_path,
+    );
     const name_element = this.shadow.getElementById("name");
-    if (name_element) name_element.textContent = this.mod_name;
+    if (name_element) name_element.textContent = metadata.name;
     const description_element = this.shadow.getElementById("description");
-    if (
-      description_element &&
-      [...(this.parentElement?.children ?? [])].indexOf(this) == 0
-    )
-      description_element.textContent =
-        "Hyperspace Deck Command is a sci-fi card-battler roguelite. Deploy spaceships that operate on individual turn timers, combine a wide variety of cards into powerful decks and master the dual-use status effects to defeat the hegemonising swarm. ";
-    fetch(`${this.mod_directory_path}/icon.png`, {
-      method: "HEAD",
-    })
-      .then((result) => {
-        if (result.ok)
-          (this.shadow.getElementById("icon") as HTMLImageElement).src =
-            `${this.mod_directory_path}/icon.png`;
-      })
-      .catch((err: unknown) => {
-        console.warn(err);
-      });
+    if (description_element)
+      description_element.textContent = metadata.description ?? "";
+    const icon_element = this.shadow.getElementById("icon") as
+      | HTMLImageElement
+      | undefined;
+    if (icon_element) icon_element.src = metadata.icon_path ?? "";
 
     this.shadow.getElementById("move_up")?.addEventListener("click", () => {
       this.parentElement?.moveBefore(this, this.previousSibling);

@@ -9,7 +9,11 @@ import fs from "fs";
 import fsPromise from "fs/promises";
 import os from "os";
 import { findSteamApp } from "steam-locate";
-import type { RemoteReplace, Wishgranter } from "./renderer/preload.ts";
+import type {
+  ModMenu,
+  RemoteReplace,
+  Wishgranter,
+} from "./renderer/preload.ts";
 
 const config_path = path.join(os.homedir(), "HDC", "config.json");
 interface Config {
@@ -25,6 +29,7 @@ let mainWindow: BrowserWindow | null = null;
 function createWindow() {
   new WishgranterPreloadHandler();
   new RemoteReplacePreloadHandler();
+  new ModMenuPreloadHandler();
 
   // Create the browser window.
   mainWindow = new BrowserWindow({
@@ -77,26 +82,24 @@ type AwaitedFuncs<T> = {
     ? (
         ...args: Parameters<T[Key]>
       ) => Awaited<ReturnType<T[Key]>> | ReturnType<T[Key]>
-    : T[Key];
+    : () => Promise<T[Key]> | T[Key];
 };
-class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
+class ModMenuPreloadHandler implements AwaitedFuncs<ModMenu> {
   constructor() {
     for (const key of Object.getOwnPropertyNames(
       this.constructor.prototype,
     ).filter(
       (key) => key != "constructor",
-    ) as (keyof WishgranterPreloadHandler)[]) {
+    ) as (keyof ModMenuPreloadHandler)[]) {
       ipcMain.handle(
         key,
-        (_event, ...args: Parameters<Wishgranter[keyof Wishgranter]>) =>
+        (_event, ...args: Parameters<ModMenu[keyof ModMenu]>) =>
           (
             this[key] as (
               ...args: Parameters<
-                WishgranterPreloadHandler[keyof WishgranterPreloadHandler]
+                ModMenuPreloadHandler[keyof ModMenuPreloadHandler]
               >
-            ) => ReturnType<
-              WishgranterPreloadHandler[keyof WishgranterPreloadHandler]
-            >
+            ) => ReturnType<ModMenuPreloadHandler[keyof ModMenuPreloadHandler]>
           )(...args),
       );
     }
@@ -176,6 +179,45 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
     }
     return "";
   }
+  getModMetadata(mod_directory_path: string): {
+    name: string;
+    description?: string;
+    icon_path?: string;
+    version?: string;
+  } {
+    return {
+      name: mod_directory_path.split(path.sep)[
+        mod_directory_path.split(path.sep).length - 1
+      ],
+      icon_path: fs.existsSync(path.join(mod_directory_path, "icon.png"))
+        ? path.join(mod_directory_path, "icon.png")
+        : "",
+    };
+  }
+}
+class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
+  constructor() {
+    for (const key of Object.getOwnPropertyNames(
+      this.constructor.prototype,
+    ).filter(
+      (key) => key != "constructor",
+    ) as (keyof WishgranterPreloadHandler)[]) {
+      ipcMain.handle(
+        key,
+        (_event, ...args: Parameters<Wishgranter[keyof Wishgranter]>) =>
+          (
+            this[key] as (
+              ...args: Parameters<
+                WishgranterPreloadHandler[keyof WishgranterPreloadHandler]
+              >
+            ) => ReturnType<
+              WishgranterPreloadHandler[keyof WishgranterPreloadHandler]
+            >
+          )(...args),
+      );
+    }
+  }
+
   async getHyperspaceScriptTags(
     hyperspace_path: string,
   ): Promise<`${string}.js`[]> {
@@ -239,16 +281,28 @@ class RemoteReplacePreloadHandler implements AwaitedFuncs<
         (
           _event,
           ...args: Parameters<
-            Flatten<RemoteReplace>[keyof Flatten<RemoteReplace>]
+            Extract<
+              Flatten<RemoteReplace>[keyof Flatten<RemoteReplace>],
+              //eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (...args: any[]) => any
+            >
           >
         ) =>
           (
             this[key] as (
               ...args: Parameters<
-                RemoteReplacePreloadHandler[keyof RemoteReplacePreloadHandler]
+                Extract<
+                  Flatten<RemoteReplace>[keyof Flatten<RemoteReplace>],
+                  //eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (...args: any[]) => any
+                >
               >
             ) => ReturnType<
-              RemoteReplacePreloadHandler[keyof RemoteReplacePreloadHandler]
+              Extract<
+                Flatten<RemoteReplace>[keyof Flatten<RemoteReplace>],
+                //eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (...args: any[]) => any
+              >
             >
           )(...args),
       );
@@ -256,6 +310,9 @@ class RemoteReplacePreloadHandler implements AwaitedFuncs<
   }
   getPaths() {
     return;
+  }
+  join(...file_names: string[]) {
+    return path.join(...file_names);
   }
   focus() {
     mainWindow?.focus();

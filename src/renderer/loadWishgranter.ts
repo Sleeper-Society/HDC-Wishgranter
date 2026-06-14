@@ -97,7 +97,7 @@ function replaceElectronRemote(hyperspace_path: string): Promise<string> {
 function getAddPossiblyReplacedScriptLoadSequenceElement(
   script_source: `${string}.js`,
 ): LoadSequenceElement<[string]> {
-  const sep: string = window.remote_replace.path.sep();
+  const sep: string = window.remote_replace.path.sep;
   const script_name =
     script_source.split(sep)[script_source.split(sep).length - 1];
   if (!(script_source in replacements)) {

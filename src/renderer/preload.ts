@@ -2,11 +2,13 @@ import { contextBridge, ipcRenderer } from "electron";
 
 declare global {
   interface Window {
+    mod_menu: ModMenu;
     wishgranter: Wishgranter;
     remote_replace: RemoteReplace;
   }
 }
 
+export type ModMenu = typeof mod_menu;
 export type Wishgranter = typeof wishgranter;
 export type RemoteReplace = typeof remote_replace;
 
@@ -16,7 +18,7 @@ let home_path = "~";
 let temp_path = "tmp/Wishgranter";
 const cached_files: Map<string, string> = new Map<string, string>();
 
-const wishgranter = {
+const mod_menu = {
   getDefaultHyperspacePath: () =>
     ipcRenderer.invoke("getDefaultHyperspacePath") as Promise<string>,
   getDefaultModsPath: () =>
@@ -40,6 +42,16 @@ const wishgranter = {
       "askUserForDirectory",
       start_directory,
     ) as Promise<string>,
+  getModMetadata: (mod_directory_path: string) =>
+    ipcRenderer.invoke("getModMetadata", mod_directory_path) as Promise<{
+      name: string;
+      description?: string;
+      icon_path?: string;
+      version?: string;
+    }>,
+};
+
+const wishgranter = {
   getHyperspaceScriptTags: (hyperspace_path: string) =>
     ipcRenderer.invoke("getHyperspaceScriptTags", hyperspace_path) as Promise<
       `${string}.js`[]
@@ -86,7 +98,13 @@ const remote_replace = {
     },
   },
   path: {
-    sep: () => sep,
+    get sep() {
+      return sep;
+    },
+    join: (...file_names: string[]) =>
+      file_names.reduce(
+        (file_path, file_name) => `${file_path}${sep}${file_name}`,
+      ),
   },
   fs: {
     existsSync: (file: string) => cached_files.has(file),
@@ -105,6 +123,7 @@ const remote_replace = {
   },
 };
 
+contextBridge.exposeInMainWorld("mod_menu", mod_menu);
 contextBridge.exposeInMainWorld("remote_replace", remote_replace);
 contextBridge.exposeInMainWorld("wishgranter", wishgranter);
 

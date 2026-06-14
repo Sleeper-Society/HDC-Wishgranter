@@ -28,12 +28,16 @@ window.remote_replace
 
 function subscribeFileLocations() {
   hyperspace_file_location_input?.addEventListener("change", () => {
-    const sep = window.remote_replace.path.sep();
     const hyperspace_location =
       hyperspace_file_location_input.getAttribute("value") ?? "";
     modlist_parent?.children[0]?.setAttribute(
       "mod_directory_path",
-      `${hyperspace_location}${sep}resources${sep}app.asar${sep}app${sep}`,
+      window.remote_replace.path.join(
+        hyperspace_location,
+        "resources",
+        "app.asar",
+        "app",
+      ),
     );
 
     changeStyleToHyperspace(hyperspace_location);
@@ -52,7 +56,7 @@ function subscribeFileLocations() {
   mods_file_location_input?.addEventListener("change", saveFilePaths);
 }
 function saveFilePaths() {
-  window.wishgranter
+  window.mod_menu
     .savePaths(
       hyperspace_file_location_input?.getAttribute("value") ?? "",
       mods_file_location_input?.getAttribute("value") ?? "",
@@ -66,13 +70,24 @@ function saveFilePaths() {
 }
 
 function changeStyleToHyperspace(hyperspace_location: string) {
-  const sep = window.remote_replace.path.sep();
-  box_art.src = `${hyperspace_location}${sep}resources${sep}app.asar${sep}app${sep}store_capsule_header.png`;
-  font.innerText = `@font-face {font-family: "Oxanium";src: url("${hyperspace_location}${sep}resources${sep}app.asar${sep}app${sep}Oxanium-Hyper.ttf");}`;
+  box_art.src = window.remote_replace.path.join(
+    hyperspace_location,
+    "resources",
+    "app.asar",
+    "app",
+    "store_capsule_header.png",
+  );
+  font.innerText = `@font-face {font-family: "Oxanium";src: url("${window.remote_replace.path.join(
+    hyperspace_location,
+    "resources",
+    "app.asar",
+    "app",
+    "Oxanium-Hyper.ttf",
+  )}");}`;
 }
 
 function prepopulateFileLocations() {
-  window.wishgranter
+  window.mod_menu
     .getDefaultHyperspacePath()
     .then((value) => {
       hyperspace_file_location_input?.setAttribute("value", value);
@@ -83,7 +98,7 @@ function prepopulateFileLocations() {
     .catch((error: unknown) => {
       console.log(error);
     });
-  window.wishgranter
+  window.mod_menu
     .getDefaultModsPath()
     .then((mods_path) => {
       mods_file_location_input?.setAttribute("value", mods_path);
@@ -94,7 +109,7 @@ function prepopulateFileLocations() {
     .catch((error: unknown) => {
       console.log(error);
     });
-  window.wishgranter
+  window.mod_menu
     .getDefaultModPaths()
     .then((mod_directory_paths) => {
       mod_directory_paths.forEach(addMod);
@@ -114,7 +129,7 @@ function enableFileLocationButtons() {
       const default_path = document
         .getElementById(output_id)
         ?.getAttribute("value");
-      window.wishgranter
+      window.mod_menu
         .askUserForDirectory(default_path ?? "")
         .then((value) => {
           document.getElementById(output_id)?.setAttribute("value", value);
@@ -129,7 +144,7 @@ function enableFileLocationButtons() {
   }
   for (const button of document.getElementsByClassName("steam_button")) {
     button.addEventListener("click", () => {
-      window.wishgranter
+      window.mod_menu
         .getSteamGameLocation()
         .then((value) => {
           hyperspace_file_location_input?.setAttribute("value", value);
@@ -145,9 +160,7 @@ function enableFileLocationButtons() {
 }
 
 async function loadModLocation(mods_location: string) {
-  for (const path of await window.wishgranter.getModsFromLocation(
-    mods_location,
-  )) {
+  for (const path of await window.mod_menu.getModsFromLocation(mods_location)) {
     addMod(path);
   }
 }
@@ -160,6 +173,18 @@ function addMod(mod_directory_path: string) {
   )
     return;
   const mod_entry = document.createElement("mod-entry") as ModEntry;
+  //@ts-expect-error Using custom event
+  mod_entry.addEventListener(
+    "mod_directory_changed",
+    (e: { detail: { new_directory: string } }) => {
+      (Array.from(modlist_parent?.children ?? []) as ModEntry[])
+        .filter((sub_mod_entry) => sub_mod_entry != mod_entry)
+        .forEach((sub_mod_entry) => {
+          if (sub_mod_entry.mod_directory_path == e.detail.new_directory)
+            sub_mod_entry.remove();
+        });
+    },
+  );
   mod_entry.mod_directory_path = mod_directory_path;
   modlist_parent?.append(mod_entry);
 }
