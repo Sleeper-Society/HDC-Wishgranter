@@ -38,41 +38,61 @@ const replacements: Record<
   "Extensions/FileSystem/filesystemtools.js":
     "dist/renderer/filesystemReimplementation.js",
   "jsonmanager.js": "dist/renderer/jsonManagerReimplementation.js",
-  "code0.js": async function* (hyperspace_path) {
-    const commented_code_0 = commentCode0(
-      await window.wishgranter.readHyperspaceFile(hyperspace_path, "code0.js"),
-      (
-        (await import(
-          await window.wishgranter
-            .readHyperspaceFile(hyperspace_path, "data.js")
-            .then((data: string) =>
-              data.replace(/gdjs.projectData = /, "export default "),
-            )
-            .then((data: string) =>
-              window.wishgranter.createTemporaryFile("data.js", data),
-            )
-        )) as { default: projectData }
-      ).default, //Get data from file since it loads in after code0
-    );
-    const regex =
-      /gdjs.CommandCode.eventsList\d+ ?= ?function ?\(runtimeScene\) ?\{[^]*?\};/g;
-    yield window.wishgranter.createTemporaryFile(
-      "code0remainder.js",
-      commented_code_0.replaceAll(regex, ""),
-    );
-    yield* commented_code_0
-      .match(regex)
-      ?.map((match, index) =>
-        window.wishgranter.createTemporaryFile(
-          `code0event${index.toString()}.js`,
-          match.replace(
-            /(?<=gdjs\s*\.evtsExt__GetPropertiesData__ReturnGameVersion\.func\(\s*runtimeScene,\s*null,?\s*\)\s*\+\s*")[\w()\s-]*(?="?)/g,
-            " (Modded - Wishgranter)",
-          ),
-        ),
-      ) ?? [];
-  },
+  "code0.js": replaceCode0,
+  "pixi-renderers/runtimegame-pixi-renderer.js": replaceElectronRemote,
 };
+
+async function* replaceCode0(hyperspace_path: string): AsyncIterable<string> {
+  const commented_code_0 = commentCode0(
+    await window.wishgranter.readHyperspaceFile(hyperspace_path, "code0.js"),
+    (
+      (await import(
+        await window.wishgranter
+          .readHyperspaceFile(hyperspace_path, "data.js")
+          .then((data: string) =>
+            data.replace(/gdjs.projectData = /, "export default "),
+          )
+          .then((data: string) =>
+            window.wishgranter.createTemporaryFile("data.js", data),
+          )
+      )) as { default: projectData }
+    ).default,
+  );
+  const regex =
+    /gdjs.CommandCode.eventsList\d+ ?= ?function ?\(runtimeScene\) ?\{[^]*?\};/g;
+  yield window.wishgranter.createTemporaryFile(
+    "code0remainder.js",
+    commented_code_0.replaceAll(regex, ""),
+  );
+  yield* commented_code_0
+    .match(regex)
+    ?.map((match, index) =>
+      window.wishgranter.createTemporaryFile(
+        `code0event${index.toString()}.js`,
+        match.replace(
+          /(?<=gdjs\s*\.evtsExt__GetPropertiesData__ReturnGameVersion\.func\(\s*runtimeScene,\s*null,?\s*\)\s*\+\s*")[\w()\s-]*(?="?)/g,
+          " (Modded - Wishgranter)",
+        ),
+      ),
+    ) ?? [];
+}
+
+function replaceElectronRemote(hyperspace_path: string): Promise<string> {
+  return window.wishgranter
+    .readHyperspaceFile(
+      hyperspace_path,
+      "pixi-renderers/runtimegame-pixi-renderer.js",
+    )
+    .then((renderer_code) =>
+      renderer_code.replace(
+        /(?<=this.getElectronRemote ?= ?\(\) ?=> ?\{)[^]*?(?=\};)/,
+        `return window.remote_replace`,
+      ),
+    )
+    .then((renderer_code) =>
+      window.wishgranter.createTemporaryFile("renderer.js", renderer_code),
+    );
+}
 
 function getAddPossiblyReplacedScriptLoadSequenceElement(
   script_source: `${string}.js`,
@@ -115,7 +135,7 @@ function getAddPossiblyReplacedScriptLoadSequenceElement(
             | string
         )(hyperspace_path);
         if (typeof script_source_result == "string")
-          return addScript(script_source_result);
+          return addScript(script_source_result, false);
         else {
           const out = [];
           for await (const sub_script_source of script_source_result) {

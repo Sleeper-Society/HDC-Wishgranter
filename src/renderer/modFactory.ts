@@ -15,6 +15,7 @@ export async function loadModdedFile<FileContents = object>(
   return await (
     Array.from(document.getElementById("modlist")?.children ?? []) as ModEntry[]
   )
+    .filter((mod_entry) => mod_entry.enabled)
     .map((mod_entry) => mod_entry.mod_directory_path)
     .reduce(
       (file_contents_promise: Promise<FileContents>, mod_path: string) =>
