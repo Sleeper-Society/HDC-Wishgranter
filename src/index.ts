@@ -127,7 +127,7 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
         await fsPromise.readFile(config_path, "utf8"),
       ) as Config;
       if (config.mod_paths) {
-        return config.mod_paths;
+        return config.mod_paths.filter((mod_path) => fs.existsSync(mod_path));
       }
     }
     return await this.getModsFromLocation(

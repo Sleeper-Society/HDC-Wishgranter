@@ -1,5 +1,5 @@
 import type { Resource } from "./gdjs.ts";
-import { loadModdedFile, mergeDeep, parseJson } from "./modFactory.ts";
+import { getJSONMerger, loadModdedFile, parseJson } from "./modFactory.ts";
 
 const logger = new gdjs.Logger("JSON Manager");
 
@@ -108,16 +108,7 @@ gdjs.JsonManager = class JsonManager {
       resource,
       await loadModdedFile(
         parseJson,
-        !/list/.exec(json_file_name)
-          ? async (old_obj, ...new_objs) =>
-              await new_objs.reduce(
-                (past: Promise<object>, new_obj: object | Promise<object>) =>
-                  past.then(async (newer_obj) => {
-                    return { ...newer_obj, ...(await new_obj) };
-                  }),
-                Promise.resolve(old_obj),
-              )
-          : mergeDeep,
+        getJSONMerger(json_file_name),
         json_file_name,
       ),
     );

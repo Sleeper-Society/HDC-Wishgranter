@@ -78,6 +78,7 @@ export interface projectData {
   resources: {
     resources: Resource[];
   };
+  usedResources: { name: string }[];
   layouts: {
     objects: {
       variables: UnloadedVariable[];
