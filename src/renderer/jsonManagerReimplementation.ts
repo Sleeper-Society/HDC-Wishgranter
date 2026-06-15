@@ -99,8 +99,8 @@ gdjs.JsonManager = class JsonManager {
       return;
     }
 
-    const json_file_name = resource.file.split(window.remote_replace.path.sep)[
-      resource.file.split(window.remote_replace.path.sep).length - 1
+    const json_file_name = resource.file.split(window.remote_replace.path.sep())[
+      resource.file.split(window.remote_replace.path.sep()).length - 1
     ];
 
     // Cache the result

@@ -351,16 +351,6 @@ class RemoteReplacePreloadHandler implements AwaitedFuncs<
     return;
   }
   writeFileSync(file: string, data: string) {
-    const file_path = file.split(path.sep);
-    for (let i = 1; i < file_path.length; i++) {
-      const sub_file_path = file_path
-        .toSpliced(i)
-        .reduce((prev, current) => prev + path.sep + current, "");
-      if (!fs.existsSync(sub_file_path)) {
-        console.warn(sub_file_path, " does not exist");
-        return;
-      }
-    }
     fs.writeFileSync(file, data, { flag: "w", encoding: "utf8" });
   }
   readFileSync(file: string) {

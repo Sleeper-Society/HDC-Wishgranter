@@ -61,7 +61,7 @@ import type { gdjs } from "./gdjs.ts";
       }
     },
     getPathDelimiter(): string {
-      return window.remote_replace.path.sep;
+      return window.remote_replace.path.sep();
     },
   };
 })(gdjs);

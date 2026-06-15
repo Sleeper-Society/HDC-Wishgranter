@@ -98,9 +98,9 @@ const remote_replace = {
     },
   },
   path: {
-    get sep() {
-      return sep;
-    },
+	sep(){
+		return sep;
+	},
     join: (...file_names: string[]) =>
       file_names.reduce(
         (file_path, file_name) => `${file_path}${sep}${file_name}`,

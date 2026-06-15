@@ -77,13 +77,15 @@ function changeStyleToHyperspace(hyperspace_location: string) {
     "app",
     "store_capsule_header.png",
   );
-  font.innerText = `@font-face {font-family: "Oxanium";src: url("${window.remote_replace.path.join(
+  const ox_path = window.remote_replace.path.join(
     hyperspace_location,
     "resources",
     "app.asar",
     "app",
     "Oxanium-Hyper.ttf",
-  )}");}`;
+  )
+  const ox_family = new FontFace("Oxanium", `url("file:${encodeURI(ox_path)}")` );
+  ox_family.load().then( () => document.fonts.add(ox_family));
 }
 
 function prepopulateFileLocations() {
