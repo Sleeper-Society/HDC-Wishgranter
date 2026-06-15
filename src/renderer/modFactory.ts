@@ -33,7 +33,7 @@ export async function loadModdedFile<FileContents = object>(
 
 export function get_file(file_name: string, mod_path: string) {
   return window.remote_replace.fsPromise.readFile(
-    window.remote_replace.path.join(mod_path,file_name),
+    window.remote_replace.path.join(mod_path, file_name),
   );
 }
 export async function parseJson<JsonObject = object>(
@@ -62,7 +62,10 @@ export async function parseData(
   if (new_data.resources)
     new_data.resources.resources = new_data.resources.resources.map(
       (resource) => {
-        resource.file = window.remote_replace.path.join(mod_path,resource.file);
+        resource.file = window.remote_replace.path.join(
+          mod_path,
+          resource.file,
+        );
         return resource;
       },
     );

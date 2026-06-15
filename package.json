@@ -52,7 +52,7 @@
     "prebuild": "npm run clean",
     "build": "tsc && tsc -p preload.tsconfig.json",
     "clean": "shx rm -rf ./dist/*",
-    "pretty": "prettier --write src/**/*.ts",
+    "pretty": "prettier --write src/",
     "\n========== Exporting ========": "",
     "prestart": "npm run build",
     "start": "electron-forge start",

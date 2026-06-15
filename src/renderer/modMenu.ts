@@ -11,7 +11,6 @@ const modlist_parent = document.getElementById("modlist");
 const box_art = document.getElementById(
   "hyperspace_box_art",
 ) as HTMLImageElement;
-const font = document.getElementById("font") as HTMLStyleElement;
 const start_game_button = document.getElementById(
   "start_game_button",
 ) as HTMLButtonElement;
@@ -83,9 +82,17 @@ function changeStyleToHyperspace(hyperspace_location: string) {
     "app.asar",
     "app",
     "Oxanium-Hyper.ttf",
-  )
-  const ox_family = new FontFace("Oxanium", `url("file:${encodeURI(ox_path)}")` );
-  ox_family.load().then( () => document.fonts.add(ox_family));
+  );
+  const ox_family = new FontFace(
+    "Oxanium",
+    `url("file:${ox_path.replace(/\\/, "/")}")`,
+  );
+  ox_family
+    .load()
+    .then(() => document.fonts.add(ox_family))
+    .catch((err: unknown) => {
+      console.error(err);
+    });
 }
 
 function prepopulateFileLocations() {
