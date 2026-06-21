@@ -1,6 +1,6 @@
 {
   "name": "wishgranter",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Modloader for Sleeper Game's Hyperspace Deck Command",
   "keywords": [
     "modloader",
@@ -40,12 +40,12 @@
     "dist/**/*.d.ts.map"
   ],
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/node_env/index.js",
   "scripts": {
-    "prepare": "npm run pretty && npm run build",
+    "prepare": "husky",
     "postinstall": "cd node_modules/electron && node install.js",
-    "prelint": "npm run pretty",
-    "lint": "eslint src --cache --fix",
+    "postlint": "npm run pretty",
+    "lint": "eslint src --cache --fix && stylelint *.css --fix",
     "pretest": "npm run build",
     "test": "mocha",
     "\n========== Building ==========": "",
@@ -86,6 +86,8 @@
     "mocha": "^11.7.6",
     "prettier": "^3.8.1",
     "shx": "^0.4.0",
+    "stylelint": "^17.13.0",
+    "stylelint-config-standard": "^40.0.0",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.58.0"
   },
@@ -94,7 +96,8 @@
   },
   "lint-staged": {
     "*.ts": "eslint --cache --fix",
-    "*.{ts,js,css,md}": "prettier --write"
+    "*.css": "stylelint --fix",
+    "*.{ts,js,css,md,html}": "prettier --write"
   },
   "mocha": {
     "spec": "./dist/**/*.test.js"

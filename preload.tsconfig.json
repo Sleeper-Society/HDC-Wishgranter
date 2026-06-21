@@ -4,6 +4,6 @@
         "module": "commonjs"
     },
     "include": [
-        "./src/renderer/preload.ts"
+        "./src/preload.ts"
     ]
 }

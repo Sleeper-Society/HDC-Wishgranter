@@ -1,52 +1,52 @@
 import { FusesPlugin } from "@electron-forge/plugin-fuses";
 import { FuseV1Options, FuseVersion } from "@electron/fuses";
 export default {
-  packagerConfig: {
-    asar: true,
-  },
-  rebuildConfig: {},
-  makers: [
-    {
-      name: "@electron-forge/maker-zip",
-      platforms: ["win32", "linux"],
-      config: {},
+    packagerConfig: {
+        asar: true,
     },
-    {
-      name: "@electron-forge/maker-deb",
-      config: {},
-    },
-  ],
-  plugins: [
-    {
-      name: "@electron-forge/plugin-auto-unpack-natives",
-      config: {},
-    },
-    // Fuses are used to enable/disable various Electron functionality
-    // at package time, before code signing the application
-    new FusesPlugin({
-      version: FuseVersion.V1,
-      [FuseV1Options.RunAsNode]: false,
-      [FuseV1Options.EnableCookieEncryption]: true,
-      [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
-      [FuseV1Options.EnableNodeCliInspectArguments]: false,
-      [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
-      [FuseV1Options.OnlyLoadAppFromAsar]: true,
-    }),
-  ],
-  publishers: [
-    {
-      name: "@electron-forge/publisher-github",
-      platforms: ["win32", "debian"],
-      config: {
-        repository: {
-          owner: "Sleeper-Society",
-          name: "HDC-Wishgranter",
+    rebuildConfig: {},
+    makers: [
+        {
+            name: "@electron-forge/maker-zip",
+            platforms: ["win32", "linux"],
+            config: {},
         },
-        authToken: process.env.GITHUB_TOKEN,
-        draft: true,
-        prerelease: true,
-      },
-    },
-  ],
+        {
+            name: "@electron-forge/maker-deb",
+            config: {},
+        },
+    ],
+    plugins: [
+        {
+            name: "@electron-forge/plugin-auto-unpack-natives",
+            config: {},
+        },
+        // Fuses are used to enable/disable various Electron functionality
+        // at package time, before code signing the application
+        new FusesPlugin({
+            version: FuseVersion.V1,
+            [FuseV1Options.RunAsNode]: false,
+            [FuseV1Options.EnableCookieEncryption]: true,
+            [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
+            [FuseV1Options.EnableNodeCliInspectArguments]: false,
+            [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
+            [FuseV1Options.OnlyLoadAppFromAsar]: true,
+        }),
+    ],
+    publishers: [
+        {
+            name: "@electron-forge/publisher-github",
+            platforms: ["win32", "debian"],
+            config: {
+                repository: {
+                    owner: "Sleeper-Society",
+                    name: "HDC-Wishgranter",
+                },
+                authToken: process.env.GITHUB_TOKEN,
+                draft: true,
+                prerelease: true,
+            },
+        },
+    ],
 };
 //# sourceMappingURL=forge.config.js.map

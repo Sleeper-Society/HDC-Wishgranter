@@ -1,108 +1,82 @@
+/* stylelint-disable font-family-no-missing-generic-family-keyword */
 @font-face {
-  font-family: "Oxanium";
-  src: url("Oxanium-Hyper.ttf");
+    font-family: Oxanium;
+    src: url("Oxanium-Hyper.ttf");
 }
+
 html {
-  height: 100%;
-  align-content: center;
-  align-items: center;
-  display: flex;
+    height: 100%;
+    align-content: center;
+    align-items: center;
+    display: flex;
 }
+
 body {
-  font-family: Oxanium;
-  --background-color: rgb(33, 33, 255);
-  --forground-color: 175, 250, 254;
-  --highlight-color: #ffda45;
-  color: rgb(var(--forground-color));
-  background-color: var(--background-color);
-  align-content: center;
-  align-items: center;
-  width: 100%;
-  height: 50%;
-  display: grid;
-  grid-template-rows: auto 80% 0.2fr 0.2fr;
-  grid-column-gap: 8px;
+    font-family: Oxanium;
+
+    --background-color: rgb(33 33 255);
+    --forground-color: 175, 250, 254;
+    --highlight-color: #ffda45;
+
+    color: rgb(var(--forground-color));
+    background-color: var(--background-color);
+    align-content: center;
+    align-items: center;
+    width: 100%;
+    height: 50%;
+    display: grid;
+    grid-template-rows: auto 80% 0.2fr 0.2fr;
+    column-gap: 8px;
 }
+
 body[game_loaded] {
-  background-color: black;
-  transition: background-color 3s linear;
+    background-color: black;
+    transition: background-color 3s linear;
 }
+
 body[game_loading] *[mod_menu] {
-  opacity: 0;
-  transition: opacity 2.5s linear;
+    opacity: 0;
+    transition: opacity 2.5s linear;
 }
+
 body[game_loaded] *[mod_menu] {
-  display: none;
+    display: none;
 }
+
 body:not([game_loaded]) canvas {
-  display: none;
+    display: none;
 }
+
 #modlist {
-  grid-column: 1 / 4;
-  grid-row: 2;
-  height: 100%;
-  background-color: #63636380;
-  overflow-y: auto;
+    grid-column: 1 / 4;
+    grid-row: 2;
+    height: 100%;
+    background-color: #63636380;
+    overflow-y: auto;
 }
+
 label,
 button,
 input[type="text"] {
-  grid-row: 1;
-  align-self: center;
+    grid-row: 1;
+    align-self: center;
 }
+
 div:has(img) {
-  height: 100%;
-  grid-column: 5 / 9;
+    height: 100%;
+    grid-column: 5 / 9;
 }
-#start_game_button,
-loading-bar {
-  text-align: center;
-  grid-column: 1 / 9;
+
+#start-game-button {
+    text-align: center;
+    grid-column: 1 / 9;
+    grid-row: -1;
 }
-#start_game_button {
-  grid-row: -1;
+
+#hyperspace-box-art {
+    width: 80%;
 }
-#hyperspace_box_art {
-  width: 80%;
-}
-body[game_loading] loading-bar {
-  opacity: 1;
-  border-color: var(--highlight-color);
-  transition: border-color 3s linear;
-}
-loading-bar {
-  height: 20px;
-  border: groove;
-  display: flex;
-  text-align: center;
-  text-shadow:
-    -2px -2px 0 var(--background-color),
-    2px -2px 0 var(--background-color),
-    -2px 2px 0 var(--background-color),
-    2px 2px 0 var(--background-color),
-    -3px 0 0 var(--background-color),
-    3px 0 0 var(--background-color);
-}
-loading-bar p {
-  position: absolute;
-}
-loading-bar *:not(p) {
-  flex-grow: 1;
-  display: flex;
-}
-loading-bar .loaded {
-  background-color: rgb(var(--forground-color));
-}
-loading-bar .loading:empty {
-  background-color: rgba(var(--forground-color), 0.5);
-}
-loading-bar .loading {
-  background-color: rgba(var(--forground-color), 0.25);
-}
-loading-bar .unknown_length {
-  border-color: var(--highlight-color);
-  border: groove;
-}
+
 mod-entry:hover {
-  background-color: rgba(var(--forground-color), 0.2);
+    background-color: rgb(var(--forground-color), 0.2);
 }

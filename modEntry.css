@@ -1,39 +1,63 @@
 :host {
-  display: grid;
-  grid-template-columns: 1fr 4fr 1fr;
-  grid-template-rows: auto auto 1fr 1fr;
+    display: grid !important;
+    margin-bottom: 4px;
+    margin-top: 4px;
+    grid-template-columns: min-content auto min-content min-content;
 }
-:host:hover {
-  grid-template-rows: auto;
+
+img {
+    grid-column: 1;
 }
-div:has(#icon) {
-  grid-row: 2 / 4;
+
+#description,
+img {
+    grid-row: 2 / 5;
+    margin: 0;
+    max-height: 48px;
+    overflow-y: clip;
 }
-#icon {
-  max-height: 100%;
-  max-width: 100%;
-}
-h2 {
-  grid-row: 1;
-  grid-column: 1 / 3;
-  text-align: left;
-  align-self: anchor-center;
-}
+
 #description {
-  grid-column: 2;
-  grid-row: 2 /4;
+    grid-column: 2 /4;
 }
+
+img,
+h2 {
+    margin-left: 8px;
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+h2 {
+    grid-column: 1 / 3;
+    align-self: center;
+}
+
 #version {
-  grid-column: 3;
+    grid-row: 1;
+    grid-column: 3;
 }
-:host:not(:hover) p,
-:host:not(:hover) h2 {
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-  align-self: anchor-center;
+
+h2,
+loading-bar {
+    grid-column: 1 / 5;
 }
+
+h2,
+input[type="checkbox"] {
+    grid-row: 1;
+}
+
 button,
 input[type="checkbox"] {
-  grid-column: 3;
+    grid-column: 4;
+    aspect-ratio: 1;
+    max-width: 32px;
+}
+
+:host([mod_type]) button,
+:host(:last-child) #move-down,
+:host(:nth-child(3)) #move-up,
+:host([mod_type="wishgranter"]) input[type="checkbox"] {
+    display: none;
 }

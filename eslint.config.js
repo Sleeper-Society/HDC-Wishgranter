@@ -8,84 +8,86 @@ import path from "path";
 import tseslint from "typescript-eslint";
 
 export default defineConfig(
-  eslint.configs.recommended,
-  tseslint.configs.strictTypeChecked,
-  tseslint.configs.stylisticTypeChecked,
+    eslint.configs.recommended,
+    tseslint.configs.strictTypeChecked,
+    tseslint.configs.stylisticTypeChecked,
 
-  {
-    languageOptions: {
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: path.join(import.meta.dirname, ".."),
-      },
-    },
-  },
-  {
-    files: ["./**/*.ts"],
-    rules: {
-      "@typescript-eslint/consistent-type-imports": "error",
-      "@typescript-eslint/consistent-type-exports": "error",
-    },
-  },
-  {
-    files: ["./renderer/**/*.ts", "./renderer/*.ts"],
-    rules: {
-      "no-restricted-imports": "off",
-      "@typescript-eslint/no-restricted-imports": [
-        "error",
-        {
-          patterns: [
-            {
-              group: ["node:*", "fs", "fs/*", "path", "app"],
-              message: "Not a node enviroment, node modules are not allowed",
-              allowTypeImports: true,
+    {
+        languageOptions: {
+            parserOptions: {
+                projectService: true,
+                tsconfigRootDir: path.join(import.meta.dirname, ".."),
             },
-          ],
         },
-      ],
     },
-  },
-  {
-    files: ["./**/*.test.ts"],
-    ...mochaPlugin.configs.recommended,
-  },
-  {
-    files: ["./**/*.test.ts"],
-    rules: {
-      "@typescript-eslint/no-restricted-imports": "off",
-      "@typescript-eslint/no-floating-promises": [
-        "error",
-        {
-          allowForKnownSafeCalls: [
-            {
-              from: "package",
-              name: ["describe", "it"],
-              package: "node:test",
-            },
-          ],
+    {
+        files: ["./**/*.ts"],
+        rules: {
+            "@typescript-eslint/consistent-type-imports": "error",
+            "@typescript-eslint/consistent-type-exports": "error",
         },
-      ],
     },
-  },
+    {
+        files: ["./**/*.ts"],
+        ignores: ["./**/node_env/*.ts"],
+        rules: {
+            "no-restricted-imports": "off",
+            "@typescript-eslint/no-restricted-imports": [
+                "error",
+                {
+                    patterns: [
+                        {
+                            group: ["node:*", "fs", "fs/*", "path", "app"],
+                            message:
+                                "Not a node enviroment, node modules are not allowed",
+                            allowTypeImports: true,
+                        },
+                    ],
+                },
+            ],
+        },
+    },
+    {
+        files: ["./**/*.test.ts"],
+        ...mochaPlugin.configs.recommended,
+    },
+    {
+        files: ["./**/*.test.ts"],
+        rules: {
+            "@typescript-eslint/no-restricted-imports": "off",
+            "@typescript-eslint/no-floating-promises": [
+                "error",
+                {
+                    allowForKnownSafeCalls: [
+                        {
+                            from: "package",
+                            name: ["describe", "it"],
+                            package: "node:test",
+                        },
+                    ],
+                },
+            ],
+        },
+    },
 
-  {
-    files: ["./renderer/**/preload.ts"],
-    rules: {
-      "no-restricted-imports": "off",
-      "@typescript-eslint/no-restricted-imports": [
-        "error",
-        {
-          patterns: [
-            {
-              group: ["*", "!electron"],
-              message:
-                "Not a normal node enviroment, imports other than electron are not allowed",
-              allowTypeImports: true,
-            },
-          ],
+    {
+        files: ["./preload.ts"],
+        rules: {
+            "no-restricted-imports": "off",
+            "@typescript-eslint/no-restricted-imports": [
+                "error",
+                {
+                    patterns: [
+                        {
+                            group: ["*", "!electron"],
+                            message:
+                                "Not a normal node enviroment, imports other than electron are not allowed",
+                            allowTypeImports: true,
+                        },
+                    ],
+                },
+            ],
         },
-      ],
     },
-  },
-  eslintConfigPrettier,
+    eslintConfigPrettier,
 );
