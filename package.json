@@ -32,6 +32,7 @@
     "url": "git+ssh://git@github.com/Hederarch/HDC-Modloader.git"
   },
   "files": [
+    "tsconfig.json",
     "src/**/*.ts",
     "!src/forge.config.ts",
     "dist/**/*.js",
@@ -42,8 +43,7 @@
   "type": "module",
   "main": "dist/node_env/index.js",
   "scripts": {
-    "prepare": "husky",
-    "postinstall": "cd node_modules/electron && node install.js",
+    "prepare": "husky && cd node_modules/electron && node install.js",
     "postlint": "npm run pretty",
     "lint": "eslint src --cache --fix && stylelint *.css --fix",
     "pretest": "npm run build",
