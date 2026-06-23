@@ -1,4 +1,6 @@
-import { BaseGameMod, WishgranterMod, Mod } from "../mod.ts";
+import { WishgranterMod } from "../wishgranterMod.ts";
+import { BaseGameMod } from "../baseGameMod.ts";
+import { Mod } from "../mod.ts";
 import type { LoadingBarElement } from "./loadingBar.ts";
 
 const mod_entry_template = document.getElementsByTagName("template")[0];
