@@ -1,5 +1,5 @@
 import { fixDataPaths, get_file_getter, mergeDeep } from "./fileFactory.ts";
-import type { projectData } from "./gdjs.ts";
+import type { AnimationFrame, projectData } from "./gdjs.ts";
 import type { LoadSequenceElement } from "./mod_menu/loadingBar.ts";
 
 export interface ModMetadata {
@@ -81,6 +81,7 @@ export class Mod {
                     origin: { x: number; y: number };
                     center: { x: number; y: number };
                 };
+                frame_order?: number[];
             }
         >;
         const cards = this.getJson("cards.json") as Record<
@@ -136,39 +137,92 @@ export class Mod {
                                                             looping: true,
                                                             timeBetweenFrames: 0.068,
                                                             sprites: [
-                                                                ...animations[
+                                                                ...(animations[
                                                                     card_id
-                                                                ].sprites.map(
-                                                                    (
-                                                                        sprite_file_path,
-                                                                    ) => {
-                                                                        return {
-                                                                            image: sprite_file_path,
-                                                                            hasCustomCollisionMask:
-                                                                                false as const,
-                                                                            points: [],
-                                                                            originPoint:
-                                                                                {
-                                                                                    ...animations[
-                                                                                        card_id
-                                                                                    ]
-                                                                                        .points
-                                                                                        .origin,
-                                                                                    name: "origine",
-                                                                                },
-                                                                            centerPoint:
-                                                                                {
-                                                                                    ...animations[
-                                                                                        card_id
-                                                                                    ]
-                                                                                        .points
-                                                                                        .center,
-                                                                                    name: "centre",
-                                                                                    automatic: true,
-                                                                                },
-                                                                        };
-                                                                    },
-                                                                ),
+                                                                ].sprites
+                                                                    .map(
+                                                                        (
+                                                                            sprite_file_path,
+                                                                        ): AnimationFrame => {
+                                                                            return {
+                                                                                image: sprite_file_path,
+                                                                                hasCustomCollisionMask:
+                                                                                    false as const,
+                                                                                points: [],
+                                                                                originPoint:
+                                                                                    {
+                                                                                        ...animations[
+                                                                                            card_id
+                                                                                        ]
+                                                                                            .points
+                                                                                            .origin,
+                                                                                        name: "origine",
+                                                                                    },
+                                                                                centerPoint:
+                                                                                    {
+                                                                                        ...animations[
+                                                                                            card_id
+                                                                                        ]
+                                                                                            .points
+                                                                                            .center,
+                                                                                        name: "centre",
+                                                                                        automatic: true,
+                                                                                    },
+                                                                            };
+                                                                        },
+                                                                    )
+                                                                    .reduce(
+                                                                        (
+                                                                            out: (
+                                                                                | number
+                                                                                | AnimationFrame
+                                                                            )[],
+                                                                            sprite: AnimationFrame,
+                                                                            index: number,
+                                                                            array: AnimationFrame[],
+                                                                        ): (
+                                                                            | number
+                                                                            | AnimationFrame
+                                                                        )[] => {
+                                                                            if (
+                                                                                animations[
+                                                                                    card_id
+                                                                                ]
+                                                                                    .frame_order
+                                                                            )
+                                                                                return out.map(
+                                                                                    (
+                                                                                        frame_index,
+                                                                                    ) =>
+                                                                                        (
+                                                                                            frame_index ==
+                                                                                            index
+                                                                                        ) ?
+                                                                                            sprite
+                                                                                        :   frame_index,
+                                                                                );
+                                                                            const new_out =
+                                                                                [
+                                                                                    ...out,
+                                                                                    ...array.slice(
+                                                                                        index,
+                                                                                    ),
+                                                                                    ...array.slice(
+                                                                                        0,
+                                                                                        index,
+                                                                                    ),
+                                                                                ];
+                                                                            console.log(
+                                                                                new_out,
+                                                                            );
+                                                                            return new_out;
+                                                                        },
+                                                                        animations[
+                                                                            card_id
+                                                                        ]
+                                                                            .frame_order ??
+                                                                            [],
+                                                                    ) as AnimationFrame[]),
                                                             ],
                                                         },
                                                     ],
