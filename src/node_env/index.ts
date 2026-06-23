@@ -286,7 +286,15 @@ class WishgranterPreloadHandler implements AwaitedFuncs<Wishgranter> {
         return temp_path;
     }
     getAllFilesToLoadFromMod(mod_directory_path: string) {
-        return fsPromise.readdir(mod_directory_path, { recursive: true });
+        return fsPromise
+            .readdir(mod_directory_path, { recursive: true })
+            .then((files) =>
+                files.filter((file) =>
+                    ["js", "json"].includes(
+                        file.split(".")[file.split(".").length - 1],
+                    ),
+                ),
+            );
     }
 }
 

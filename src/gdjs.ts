@@ -80,6 +80,7 @@ export interface projectData {
     };
     usedResources: { name: string }[];
     layouts: {
+        name: "Command";
         objects: {
             variables: UnloadedVariable[];
             name: string;
@@ -94,7 +95,7 @@ export interface Resource {
     disablePreload?: boolean;
     file: string;
     kind: string;
-    metadata: string;
+    metadata?: string;
     name: string;
     smoothed: boolean;
     userAdded: boolean;
@@ -129,8 +130,7 @@ export interface Animation {
     }[];
 }
 
-export interface AnimationFrame {
-    hasCustomCollisionMask: boolean;
+export type AnimationFrame = {
     image: string;
     points: {
         name: string;
@@ -148,11 +148,13 @@ export interface AnimationFrame {
         x: number;
         y: number;
     };
-    customCollisionMask: {
-        x: number;
-        y: number;
-    }[][];
-}
+} & (
+    | {
+          hasCustomCollisionMask: true;
+          customCollisionMask: { x: number; y: number }[][];
+      }
+    | { hasCustomCollisionMask: false }
+);
 
 type RuntimeGameClass = new (
     projectData: projectData,

@@ -1,4 +1,4 @@
-import { fixDataPaths, get_file, mergeDeep } from "./fileFactory.ts";
+import { fixDataPaths, get_file_getter, mergeDeep } from "./fileFactory.ts";
 import type { projectData } from "./gdjs.ts";
 import type { LoadSequenceElement } from "./mod_menu/loadingBar.ts";
 
@@ -19,9 +19,15 @@ export class Mod {
     protected set mod_directory_path(new_path: string) {
         this._mod_directory_path = new_path;
     }
+    protected file_getter: (file_path: string) => Promise<string>;
     protected file_map = new Map<string, string>();
-    constructor(enabled: boolean, mod_directory_path: string) {
+    constructor(
+        enabled: boolean,
+        mod_directory_path: string,
+        file_getter?: (file_path: string) => Promise<string>,
+    ) {
         this.enabled = enabled;
+        this.file_getter = file_getter ?? get_file_getter(mod_directory_path);
         this.mod_directory_path = mod_directory_path;
     }
     async load(
@@ -40,7 +46,7 @@ export class Mod {
                 function: async () => {
                     this.file_map.set(
                         file_to_load,
-                        await get_file(this.mod_directory_path, file_to_load),
+                        await this.file_getter(file_to_load),
                     );
                 },
             };
@@ -50,19 +56,150 @@ export class Mod {
     getJson(json_name: `${string}.json`): object {
         return this.cached_jsons.getOrInsertComputed(json_name, (json_name) => {
             const file = this.file_map.get(json_name);
-            if (file == undefined) return {};
+            if (!file) return {};
             return JSON.parse(file) as object;
         });
     }
     protected cached_data: Partial<projectData> | undefined = undefined;
     getData(): Partial<projectData> {
         if (this.cached_data) return this.cached_data;
-        let data = {} as Partial<projectData>;
+        let data = this.getDataFromCardAnimations();
         const file = this.file_map.get("data.json");
         if (file)
             data = mergeDeep(data, JSON.parse(file) as Partial<projectData>);
 
         return (this.cached_data = fixDataPaths(data, this.mod_directory_path));
+    }
+    getDataFromCardAnimations(): Partial<projectData> {
+        const file = this.file_map.get("card_animations.json");
+        if (!file) return {};
+        const animations = JSON.parse(file) as Record<
+            string,
+            {
+                sprites: string[];
+                points: Record<string, { x: number; y: number }> & {
+                    origin: { x: number; y: number };
+                    center: { x: number; y: number };
+                };
+            }
+        >;
+        const cards = this.getJson("cards.json") as Record<
+            string,
+            { por_obj: `por_obj_${string}` }
+        >;
+        return {
+            resources: {
+                resources: [
+                    ...Object.getOwnPropertyNames(animations)
+                        .flatMap((card_id) => animations[card_id].sprites)
+                        .map((sprite_file_path) => {
+                            return {
+                                file: sprite_file_path,
+                                name: sprite_file_path,
+                                kind: "image",
+                                smoothed: false,
+                                userAdded: true,
+                            };
+                        }),
+                ],
+            },
+            layouts: [
+                {
+                    name: "Command",
+                    objects: [
+                        ...Object.getOwnPropertyNames(animations)
+                            .reduce(
+                                (obj_set, card_id) =>
+                                    obj_set.add(cards[card_id].por_obj),
+                                new Set<string>(),
+                            )
+                            .keys()
+                            .map((por_obj_name) => {
+                                return {
+                                    name: por_obj_name,
+                                    variables: [],
+                                    animations: [
+                                        ...Object.getOwnPropertyNames(
+                                            animations,
+                                        )
+                                            .filter(
+                                                (card_id) =>
+                                                    cards[card_id].por_obj ==
+                                                    por_obj_name,
+                                            )
+                                            .map((card_id) => {
+                                                return {
+                                                    name: card_id,
+                                                    useMultipleDirections: false,
+                                                    directions: [
+                                                        {
+                                                            looping: true,
+                                                            timeBetweenFrames: 0.068,
+                                                            sprites: [
+                                                                ...animations[
+                                                                    card_id
+                                                                ].sprites.map(
+                                                                    (
+                                                                        sprite_file_path,
+                                                                    ) => {
+                                                                        return {
+                                                                            image: sprite_file_path,
+                                                                            hasCustomCollisionMask:
+                                                                                false as const,
+                                                                            points: [],
+                                                                            originPoint:
+                                                                                {
+                                                                                    ...animations[
+                                                                                        card_id
+                                                                                    ]
+                                                                                        .points
+                                                                                        .origin,
+                                                                                    name: "origine",
+                                                                                },
+                                                                            centerPoint:
+                                                                                {
+                                                                                    ...animations[
+                                                                                        card_id
+                                                                                    ]
+                                                                                        .points
+                                                                                        .center,
+                                                                                    name: "centre",
+                                                                                    automatic: true,
+                                                                                },
+                                                                        };
+                                                                    },
+                                                                ),
+                                                            ],
+                                                        },
+                                                    ],
+                                                };
+                                            }),
+                                    ],
+                                };
+                            }),
+                    ],
+                    variables: [],
+                    usedResources: [
+                        ...Object.getOwnPropertyNames(animations)
+                            .flatMap((card_id) => animations[card_id].sprites)
+                            .map((sprite_file_path) => {
+                                return {
+                                    name: sprite_file_path,
+                                };
+                            }),
+                    ],
+                },
+            ],
+            usedResources: [
+                ...Object.getOwnPropertyNames(animations)
+                    .flatMap((card_id) => animations[card_id].sprites)
+                    .map((sprite_file_path) => {
+                        return {
+                            name: sprite_file_path,
+                        };
+                    }),
+            ],
+        };
     }
     protected cached_metadata: ModMetadata | undefined = undefined;
     getMetadata(): ModMetadata {
@@ -95,7 +232,7 @@ export class Mod {
     getCode0Adjustments(): (code0: string) => string {
         if (this.cached_code_0_adjustment) return this.cached_code_0_adjustment;
         const file = this.file_map.get("code0adjustments.js");
-        if (file == undefined) return (out) => out;
+        if (!file) return (out) => out;
         try {
             const adjustment = eval(file) as unknown;
             if (

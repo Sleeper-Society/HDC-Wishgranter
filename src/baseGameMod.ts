@@ -1,4 +1,4 @@
-import { fixDataPaths, get_file } from "./fileFactory.ts";
+import { fixDataPaths } from "./fileFactory.ts";
 import type { projectData } from "./gdjs.ts";
 import { Mod, type ModMetadata } from "./mod.ts";
 import type { LoadSequenceElement } from "./mod_menu/loadingBar.ts";
@@ -17,34 +17,31 @@ export class BaseGameMod extends Mod {
     protected set mod_directory_path(_who_cares: string) {
         return;
     }
-    constructor(enabled: boolean, mod_directory_path = "") {
-        super(enabled, mod_directory_path);
+    constructor(
+        enabled: boolean,
+        mod_directory_path = "",
+        file_getter?: (file_path: string) => Promise<string>,
+    ) {
+        super(enabled, mod_directory_path, file_getter);
     }
     async load(
         ...files_to_load: string[]
     ): Promise<Iterable<LoadSequenceElement>> {
         if (files_to_load.length <= 0) {
-            files_to_load = await window.wishgranter.getAllFilesToLoadFromMod(
-                this.mod_directory_path,
-            );
-            files_to_load = files_to_load.filter(
-                (file_to_load) =>
-                    !this.file_map.has(file_to_load) &&
-                    (file_to_load.endsWith(".json") ||
-                        ["data.js", "code0.js"].includes(file_to_load)),
+            return super.load(
+                ...(
+                    await window.wishgranter.getAllFilesToLoadFromMod(
+                        this.mod_directory_path,
+                    )
+                ).filter(
+                    (file_to_load) =>
+                        !this.file_map.has(file_to_load) &&
+                        (file_to_load.endsWith(".json") ||
+                            ["data.js", "code0.js"].includes(file_to_load)),
+                ),
             );
         }
-        return files_to_load.map((file_to_load) => {
-            return {
-                status_text: `Loading ${file_to_load}`,
-                function: async () => {
-                    this.file_map.set(
-                        file_to_load,
-                        await get_file(this.mod_directory_path, file_to_load),
-                    );
-                },
-            };
-        });
+        return super.load(...files_to_load);
     }
     getData(): projectData {
         if (this.cached_data) return this.cached_data as projectData;

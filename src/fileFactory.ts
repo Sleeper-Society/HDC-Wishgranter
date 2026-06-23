@@ -100,10 +100,13 @@ export function mergeDeep<MergeTarget = object>(
 
     return out as MergeTarget;
 }
-export function get_file(mod_path: string, file_name: string) {
-    return window.remote_replace.fsPromise.readFile(
-        window.remote_replace.path.join(mod_path, file_name),
-    );
+export function get_file_getter(
+    mod_path: string,
+): (file_name: string) => Promise<string> {
+    return (file_name) =>
+        window.remote_replace.fsPromise.readFile(
+            window.remote_replace.path.join(mod_path, file_name),
+        );
 }
 export function fixDataPaths(
     data: Partial<projectData>,
