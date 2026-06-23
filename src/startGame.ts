@@ -3,7 +3,7 @@ import type {
     LoadingBarElement,
 } from "./mod_menu/loadingBar.ts";
 import { loadWishgranter, unloadWishgranter } from "./loadWishgranter.ts";
-import { getDataFromMods } from "./mod.ts";
+import { getDataFromMods } from "./fileFactory.ts";
 
 const loading_bar = document.getElementsByTagName(
     "loading-bar",

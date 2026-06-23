@@ -1,5 +1,5 @@
 import type { LoadSequenceElement } from "./mod_menu/loadingBar.ts";
-import { getCode0FromMods } from "./mod.ts";
+import { getCode0FromMods } from "./fileFactory.ts";
 
 export function unloadWishgranter() {
     document.body.classList.remove("game_loadable");

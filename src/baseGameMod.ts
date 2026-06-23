@@ -47,9 +47,10 @@ export class BaseGameMod extends Mod {
         });
     }
     getData(): projectData {
+        if (this.cached_data) return this.cached_data as projectData;
         const file = this.file_map.get("data.js");
         if (!file) throw new Error("Base game data not found.");
-        return fixDataPaths(
+        return (this.cached_data = fixDataPaths(
             eval(
                 file
                     .replace(/gdjs.projectData\s*=\s*/, "(")
@@ -57,14 +58,15 @@ export class BaseGameMod extends Mod {
                     ")",
             ) as projectData,
             this.mod_directory_path,
-        ) as projectData;
+        ) as projectData);
     }
     getCode0Adjustments(): (code0: string) => string {
         return () => this.file_map.get("code0.js") ?? "";
     }
     getMetadata(): ModMetadata {
+        if (this.cached_metadata) return this.cached_metadata;
         const data = this.getData();
-        return {
+        return (this.cached_metadata = {
             name: data.properties.name,
             description: data.properties.description,
             version: data.properties.version,
@@ -73,6 +75,6 @@ export class BaseGameMod extends Mod {
                     resource.name ==
                     data.properties.platformSpecificAssets["desktop-icon-512"],
             )?.file,
-        };
+        });
     }
 }

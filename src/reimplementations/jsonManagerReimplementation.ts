@@ -1,5 +1,5 @@
 import type { Resource } from "../gdjs.ts";
-import { getJsonFromMods } from "../mod.ts";
+import { getJsonFromMods } from "../fileFactory.ts";
 
 const logger = new gdjs.Logger("JSON Manager");
 

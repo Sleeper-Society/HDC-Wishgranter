@@ -46,20 +46,27 @@ export class Mod {
             };
         });
     }
+    protected cached_jsons = new Map<`${string}.json`, object>();
     getJson(json_name: `${string}.json`): object {
-        const file = this.file_map.get(json_name);
-        if (file == undefined) return {};
-        return JSON.parse(file) as object;
+        return this.cached_jsons.getOrInsertComputed(json_name, (json_name) => {
+            const file = this.file_map.get(json_name);
+            if (file == undefined) return {};
+            return JSON.parse(file) as object;
+        });
     }
+    protected cached_data: Partial<projectData> | undefined = undefined;
     getData(): Partial<projectData> {
+        if (this.cached_data) return this.cached_data;
         let data = {} as Partial<projectData>;
         const file = this.file_map.get("data.json");
         if (file)
             data = mergeDeep(data, JSON.parse(file) as Partial<projectData>);
 
-        return fixDataPaths(data, this.mod_directory_path);
+        return (this.cached_data = fixDataPaths(data, this.mod_directory_path));
     }
+    protected cached_metadata: ModMetadata | undefined = undefined;
     getMetadata(): ModMetadata {
+        if (this.cached_metadata) return this.cached_metadata;
         const file = this.file_map.get("metadata.json");
         if (file == undefined)
             return {
@@ -80,20 +87,26 @@ export class Mod {
             this.mod_directory_path,
             metadata.icon_path ?? "icon.png",
         );
-        return metadata;
+        return (this.cached_metadata = metadata);
     }
+    protected cached_code_0_adjustment:
+        | ((code0: string) => string)
+        | undefined = undefined;
     getCode0Adjustments(): (code0: string) => string {
+        if (this.cached_code_0_adjustment) return this.cached_code_0_adjustment;
         const file = this.file_map.get("code0adjustments.js");
         if (file == undefined) return (out) => out;
-        const adjustment = eval(file) as unknown;
         try {
+            const adjustment = eval(file) as unknown;
             if (
                 typeof adjustment != "function" ||
                 adjustment.length != 1 ||
                 typeof (adjustment as (a: unknown) => unknown)("a") != "string"
             )
                 return (out) => out;
-            return adjustment as (code0: string) => string;
+            return (this.cached_code_0_adjustment = adjustment as (
+                code0: string,
+            ) => string);
         } catch {
             return (out) => out;
         }
