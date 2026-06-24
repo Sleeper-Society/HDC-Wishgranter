@@ -1,25 +1,22 @@
 import { getDataFromMods } from "./fileFactory.ts";
-import type { projectData } from "./gdjs.ts";
 import { Mod, type ModMetadata } from "./mod.ts";
-import type { LoadSequenceElement } from "./mod_menu/loadingBar.ts";
 import { commentCode0 } from "./reimplementations/code0Commenter.ts";
 
 export class WishgranterMod extends Mod {
     constructor(enabled = true, mod_directory_path = ".") {
         super(enabled, mod_directory_path);
+        this.getJson = () => {
+            return {};
+        };
+        this.getData = () => {
+            return {};
+        };
+        this.load = () =>
+            new Promise((resolve) => {
+                resolve([]);
+            });
     }
-    load(): Promise<Iterable<LoadSequenceElement>> {
-        return new Promise((resolve) => {
-            resolve([]);
-        });
-    }
-    //eslint-disable-next-line @typescript-eslint/no-unused-vars
-    getJson(_json_name: string): object {
-        return {};
-    }
-    getData(): Partial<projectData> {
-        return {};
-    }
+
     getCode0Adjustments(): (code0: string) => string {
         return (code0) => {
             if (window.remote_replace.app.isPackaged())

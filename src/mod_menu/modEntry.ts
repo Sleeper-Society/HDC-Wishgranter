@@ -1,6 +1,24 @@
 import { WishgranterMod } from "../wishgranterMod.ts";
 import { BaseGameMod } from "../baseGameMod.ts";
 import { Mod } from "../mod.ts";
+import type Jsons from "../jsons.js";
+import type {
+    CardAnimations,
+    Cards,
+    CloudLabels,
+    Comms,
+    Credits,
+    Data,
+    Encounters,
+    LootListCard,
+    LootListUp,
+    SpUp,
+    TextLists,
+    Tooltips,
+    Tutorials,
+    UnlockCond,
+    Upgrades,
+} from "../jsons.js";
 import type { LoadingBarElement } from "./loadingBar.ts";
 
 const mod_entry_template = document.getElementsByTagName("template")[0];
@@ -119,7 +137,23 @@ class ModEntry extends HTMLElement {
         ) as HTMLImageElement | null;
         if (icon_element) icon_element.src = metadata.icon_path ?? "";
     }
-    getJson(josn_name: `${string}.json`) {
+    getJson(json_name: `card_animations.json`): Partial<CardAnimations>;
+    getJson(json_name: `cards.json`): Partial<Cards>;
+    getJson(json_name: `comms.json`): Partial<Comms>;
+    getJson(json_name: `encounters.json`): Partial<Encounters>;
+    getJson(json_name: `loot_list_up.json`): Partial<LootListUp>;
+    getJson(json_name: `text_lists.json`): Partial<TextLists>;
+    getJson(json_name: `tutorials.json`): Partial<Tutorials>;
+    getJson(json_name: `upgrades.json`): Partial<Upgrades>;
+    getJson(json_name: `cloud_labels.json`): Partial<CloudLabels>;
+    getJson(json_name: `credits.json`): Partial<Credits>;
+    getJson(json_name: `loot_list_card.json`): Partial<LootListCard>;
+    getJson(json_name: `sp_up.json`): Partial<SpUp>;
+    getJson(json_name: `tooltips.json`): Partial<Tooltips>;
+    getJson(json_name: `unlock_cond.json`): Partial<UnlockCond>;
+    getJson(json_name: `data.json`): Partial<Data>;
+    getJson(josn_name: `${string}.json`): Partial<Jsons>;
+    getJson(josn_name: `${string}.json`): Partial<Jsons> {
         return this.mod?.getJson(josn_name) ?? {};
     }
     getData() {

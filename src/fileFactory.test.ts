@@ -1,54 +1,30 @@
 import { describe, it } from "node:test";
-import { Mod } from "./mod.ts";
+
 import assert from "node:assert";
+import { getDataFromCardAnimations } from "./fileFactory.ts";
 
 describe("getDataFromCardAnimations", () => {
-    it("should return nothing when no card animations exist", async () => {
-        const mod = new Mod(
-            true,
-            "",
-            () =>
-                new Promise<string>((resolve) => {
-                    resolve("");
-                }),
-        );
-        await loadMockMod(mod);
-        assert.deepEqual(mod.getDataFromCardAnimations(), {});
+    it("should return nothing when no card animations exist", () => {
+        const actual = getDataFromCardAnimations({}, {});
+        assert.deepEqual(actual, {});
     });
-    it("should return one frame animation", async () => {
-        const mod = new Mod(
-            true,
-            "",
-            (file_name) =>
-                new Promise<string>((resolve) => {
-                    switch (file_name) {
-                        case "cards.json":
-                            resolve(
-                                JSON.stringify({
-                                    my_sample_card: {
-                                        por_obj: "por_obj_eh",
-                                    },
-                                }),
-                            );
-                            break;
-                        case "card_animations.json":
-                            resolve(
-                                JSON.stringify({
-                                    my_sample_card: {
-                                        sprites: ["my_sample_png.png"],
-                                        points: {
-                                            origin: { x: 0, y: 0 },
-                                            center: { x: 0, y: 0 },
-                                        },
-                                    },
-                                }),
-                            );
-                            break;
-                    }
-                }),
+    it("should return one frame animation", () => {
+        const actual = getDataFromCardAnimations(
+            {
+                my_sample_card: {
+                    sprites: ["my_sample_png.png"],
+                    points: {
+                        origin: { x: 0, y: 0 },
+                        center: { x: 0, y: 0 },
+                    },
+                },
+            },
+            {
+                my_sample_card: {
+                    por_obj: "obj_unit_eh",
+                },
+            },
         );
-        await loadMockMod(mod);
-        const actual = mod.getDataFromCardAnimations();
 
         assert(
             actual.resources?.resources.find(
@@ -59,13 +35,13 @@ describe("getDataFromCardAnimations", () => {
 
         assert(
             (actual.layouts ?? [])[0].objects.find(
-                (my_obj) => my_obj.name == "por_obj_eh",
+                (my_obj) => my_obj.name == "obj_unit_eh",
             ),
             "card portiat in objects",
         );
         assert(
             (actual.layouts ?? [])[0].objects
-                .find((my_obj) => my_obj.name == "por_obj_eh")
+                .find((my_obj) => my_obj.name == "obj_unit_eh")
                 ?.animations.find(
                     (animation) => animation.name == "my_sample_card",
                 ),
@@ -73,7 +49,7 @@ describe("getDataFromCardAnimations", () => {
         );
         assert(
             (actual.layouts ?? [])[0].objects
-                .find((my_obj) => my_obj.name == "por_obj_eh")
+                .find((my_obj) => my_obj.name == "obj_unit_eh")
                 ?.animations.find(
                     (animation) => animation.name == "my_sample_card",
                 )
@@ -95,44 +71,27 @@ describe("getDataFromCardAnimations", () => {
             "Sprite in global usedResources",
         );
     });
-    it("should return three frame animation", async () => {
-        const mod = new Mod(
-            true,
-            "",
-            (file_name) =>
-                new Promise<string>((resolve) => {
-                    switch (file_name) {
-                        case "cards.json":
-                            resolve(
-                                JSON.stringify({
-                                    my_sample_card: {
-                                        por_obj: "por_obj_eh",
-                                    },
-                                }),
-                            );
-                            break;
-                        case "card_animations.json":
-                            resolve(
-                                JSON.stringify({
-                                    my_sample_card: {
-                                        sprites: [
-                                            "my_sample_png.png",
-                                            "my_sample_png2.png",
-                                            "my_sample_png3.png",
-                                        ],
-                                        points: {
-                                            origin: { x: 0, y: 0 },
-                                            center: { x: 0, y: 0 },
-                                        },
-                                    },
-                                }),
-                            );
-                            break;
-                    }
-                }),
+    it("should return three frame animation", () => {
+        const actual = getDataFromCardAnimations(
+            {
+                my_sample_card: {
+                    sprites: [
+                        "my_sample_png.png",
+                        "my_sample_png2.png",
+                        "my_sample_png3.png",
+                    ],
+                    points: {
+                        origin: { x: 0, y: 0 },
+                        center: { x: 0, y: 0 },
+                    },
+                },
+            },
+            {
+                my_sample_card: {
+                    por_obj: "obj_unit_eh",
+                },
+            },
         );
-        await loadMockMod(mod);
-        const actual = mod.getDataFromCardAnimations();
 
         assert(
             actual.resources?.resources.find(
@@ -155,13 +114,13 @@ describe("getDataFromCardAnimations", () => {
 
         assert(
             (actual.layouts ?? [])[0].objects.find(
-                (my_obj) => my_obj.name == "por_obj_eh",
+                (my_obj) => my_obj.name == "obj_unit_eh",
             ),
             "card portiat in objects",
         );
         assert(
             (actual.layouts ?? [])[0].objects
-                .find((my_obj) => my_obj.name == "por_obj_eh")
+                .find((my_obj) => my_obj.name == "obj_unit_eh")
                 ?.animations.find(
                     (animation) => animation.name == "my_sample_card",
                 ),
@@ -169,7 +128,7 @@ describe("getDataFromCardAnimations", () => {
         );
         assert(
             (actual.layouts ?? [])[0].objects
-                .find((my_obj) => my_obj.name == "por_obj_eh")
+                .find((my_obj) => my_obj.name == "obj_unit_eh")
                 ?.animations.find(
                     (animation) => animation.name == "my_sample_card",
                 )
@@ -180,7 +139,7 @@ describe("getDataFromCardAnimations", () => {
         );
         assert(
             (actual.layouts ?? [])[0].objects
-                .find((my_obj) => my_obj.name == "por_obj_eh")
+                .find((my_obj) => my_obj.name == "obj_unit_eh")
                 ?.animations.find(
                     (animation) => animation.name == "my_sample_card",
                 )
@@ -191,7 +150,7 @@ describe("getDataFromCardAnimations", () => {
         );
         assert(
             (actual.layouts ?? [])[0].objects
-                .find((my_obj) => my_obj.name == "por_obj_eh")
+                .find((my_obj) => my_obj.name == "obj_unit_eh")
                 ?.animations.find(
                     (animation) => animation.name == "my_sample_card",
                 )
@@ -202,7 +161,7 @@ describe("getDataFromCardAnimations", () => {
         );
         assert.equal(
             (actual.layouts ?? [])[0].objects
-                .find((my_obj) => my_obj.name == "por_obj_eh")
+                .find((my_obj) => my_obj.name == "obj_unit_eh")
                 ?.animations.find(
                     (animation) => animation.name == "my_sample_card",
                 )?.directions[0].sprites.length,
@@ -247,13 +206,3 @@ describe("getDataFromCardAnimations", () => {
         );
     });
 });
-
-async function loadMockMod(mod: Mod) {
-    let loading_sequence = [
-        ...(await mod.load("card_animations.json", "cards.json")),
-    ];
-    while (loading_sequence.length > 0) {
-        const loading_result = (await loading_sequence.pop()?.function()) ?? [];
-        loading_sequence = [...loading_result, ...loading_sequence];
-    }
-}

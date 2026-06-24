@@ -1,9 +1,6 @@
-import type { projectData } from "../gdjs.ts";
+import type { Data } from "../jsons.js";
 
-export function commentCode0(
-    code0: string,
-    hyperspace_data: projectData,
-): string {
+export function commentCode0(code0: string, hyperspace_data: Data): string {
     const possibly_commented_get_from_index_regex =
         /(?<=\.getVariables\(\)\s*\.getFromIndex\()(\d+)(?: \/\* [\w]* \*\/)?\)(\n|,|(?: \/\/[\w]+\n))?/;
     const scene_variable_regex = /(?<=runtimeScene\s*\.getScene\(\)\s*)/;

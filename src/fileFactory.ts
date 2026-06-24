@@ -1,38 +1,271 @@
-import type { projectData } from "./gdjs.ts";
+import type Jsons from "./jsons.js";
+import type {
+    AnimationFrame,
+    CardAnimations,
+    Cards,
+    CloudLabels,
+    Comms,
+    Credits,
+    Data,
+    Encounters,
+    LootListCard,
+    LootListUp,
+    SpUp,
+    TextLists,
+    Tooltips,
+    Tutorials,
+    UnlockCond,
+    Upgrades,
+} from "./jsons.js";
 import type { ModEntry } from "./mod_menu/modEntry.ts";
 
-const cachedJsons = new Map<`${string}.json`, object>();
-export function getJsonFromMods(json_name: `${string}.json`): object {
-    return cachedJsons.getOrInsertComputed(json_name, (json_name) =>
+const cachedJsons = new Map<`${string}.json`, Jsons>();
+export function getJsonFromMods(
+    json_name: `card_animations.json`,
+): CardAnimations;
+export function getJsonFromMods(json_name: `cards.json`): Cards;
+export function getJsonFromMods(json_name: `comms.json`): Comms;
+export function getJsonFromMods(json_name: `encounters.json`): Encounters;
+export function getJsonFromMods(json_name: `loot_list_up.json`): LootListUp;
+export function getJsonFromMods(json_name: `text_lists.json`): TextLists;
+export function getJsonFromMods(json_name: `tutorials.json`): Tutorials;
+export function getJsonFromMods(json_name: `upgrades.json`): Upgrades;
+export function getJsonFromMods(json_name: `cloud_labels.json`): CloudLabels;
+export function getJsonFromMods(json_name: `credits.json`): Credits;
+export function getJsonFromMods(json_name: `loot_list_card.json`): LootListCard;
+export function getJsonFromMods(json_name: `sp_up.json`): SpUp;
+export function getJsonFromMods(json_name: `tooltips.json`): Tooltips;
+export function getJsonFromMods(json_name: `unlock_cond.json`): UnlockCond;
+export function getJsonFromMods(json_name: `data.json`): Data;
+export function getJsonFromMods(json_name: `${string}.json`): Jsons;
+export function getJsonFromMods(json_name: `${string}.json`): Jsons {
+    return cachedJsons.getOrInsertComputed(
+        json_name,
+        (json_name) =>
+            (
+                Array.from(
+                    document.getElementById("modlist")?.children ?? [],
+                ) as ModEntry[]
+            )
+                .filter((mod_entry) => mod_entry.enabled)
+                .map((mod_entry) => mod_entry.getJson(json_name))
+                .reduce((file_contents: object, new_file_contents: object) =>
+                    mergeDeep(file_contents, new_file_contents),
+                ) as Jsons,
+    );
+}
+let cachedData: Data | undefined = undefined;
+export function getDataFromMods(): Data {
+    return (cachedData ??= mergeDeep(
         (
             Array.from(
                 document.getElementById("modlist")?.children ?? [],
             ) as ModEntry[]
         )
             .filter((mod_entry) => mod_entry.enabled)
-            .map((mod_entry) => mod_entry.getJson(json_name))
-            .reduce((file_contents: object, new_file_contents: object) =>
-                mergeDeep(file_contents, new_file_contents),
+            .map((mod_entry) => mod_entry.getData())
+            .reduce(
+                (
+                    file_contents: Partial<Data>,
+                    new_file_contents: Partial<Data>,
+                ) => mergeDeep(file_contents, new_file_contents),
             ),
-    );
+        getDataFromCardAnimations(
+            getJsonFromMods("card_animations.json"),
+            getJsonFromMods("cards.json"),
+        ),
+    ) as Data);
 }
-let cachedData: projectData | undefined = undefined;
-export function getDataFromMods(): projectData {
-    return (cachedData ??= (
-        Array.from(
-            document.getElementById("modlist")?.children ?? [],
-        ) as ModEntry[]
+export function getDataFromCardAnimations(
+    animations: CardAnimations,
+    cards: Record<
+        keyof CardAnimations,
+        { por_obj: `obj_${"unit" | "ab"}_${string}` }
+    >,
+): Partial<Data> {
+    if (
+        Object.getOwnPropertyNames(animations).length <= 0 ||
+        Object.getOwnPropertyNames(cards).length <= 0
     )
-        .filter((mod_entry) => mod_entry.enabled)
-        .map((mod_entry) => mod_entry.getData())
-        .reduce(
-            (
-                file_contents: Partial<projectData>,
-                new_file_contents: Partial<projectData>,
-            ) => mergeDeep(file_contents, new_file_contents),
-        ) as projectData);
+        return {};
+    return {
+        resources: {
+            resources: [
+                ...Object.getOwnPropertyNames(animations)
+                    .flatMap((card_id) => animations[card_id].sprites)
+                    .map((sprite_file_path) => {
+                        return {
+                            file: sprite_file_path,
+                            name: sprite_file_path,
+                            kind: "image",
+                            smoothed: false,
+                            userAdded: true,
+                        };
+                    }),
+            ],
+        },
+        layouts: [
+            {
+                name: "Command",
+                objects: [
+                    ...Object.getOwnPropertyNames(animations)
+                        .reduce(
+                            (obj_set, card_id) =>
+                                obj_set.add(cards[card_id].por_obj),
+                            new Set<string>(),
+                        )
+                        .keys()
+                        .map(getAnimationsOfPorObj(animations, cards)),
+                ],
+                variables: [],
+                usedResources: [
+                    ...Object.getOwnPropertyNames(animations)
+                        .flatMap((card_id) => animations[card_id].sprites)
+                        .map((sprite_file_path) => {
+                            return {
+                                name: sprite_file_path,
+                            };
+                        }),
+                ],
+            },
+        ],
+        usedResources: [
+            ...Object.getOwnPropertyNames(animations)
+                .flatMap((card_id) => animations[card_id].sprites)
+                .map((sprite_file_path) => {
+                    return {
+                        name: sprite_file_path,
+                    };
+                }),
+        ],
+    };
 }
 let cachedCode0: string | undefined = undefined;
+function getAnimationsOfPorObj(
+    animations: CardAnimations,
+    cards: Record<
+        keyof CardAnimations,
+        { por_obj: `obj_${"unit" | "ab"}_${string}` }
+    >,
+): (
+    value: string,
+    index: number,
+) => {
+    name: string;
+    variables: never[];
+    animations: {
+        name: string;
+        useMultipleDirections: boolean;
+        directions: {
+            looping: boolean;
+            timeBetweenFrames: number;
+            sprites: AnimationFrame[];
+        }[];
+    }[];
+} {
+    return function (por_obj_name) {
+        return {
+            name: por_obj_name,
+            variables: [],
+            animations: [
+                ...Object.getOwnPropertyNames(animations)
+                    .filter((card_id) => cards[card_id].por_obj == por_obj_name)
+                    .map(getCardsAnimation(animations)),
+            ],
+        };
+    };
+}
+
+function getCardsAnimation(animations: CardAnimations): (
+    value: string,
+    index: number,
+    array: string[],
+) => {
+    name: string;
+    useMultipleDirections: boolean;
+    directions: {
+        looping: boolean;
+        timeBetweenFrames: number;
+        sprites: AnimationFrame[];
+    }[];
+} {
+    return function (card_id) {
+        return {
+            name: card_id,
+            useMultipleDirections: false,
+            directions: [
+                {
+                    looping: true,
+                    timeBetweenFrames: 0.068,
+                    sprites: [
+                        ...(animations[card_id].sprites
+                            .map(
+                                getCardsDefaultAnimationFrames(
+                                    animations,
+                                    card_id,
+                                ),
+                            )
+                            .reduce(
+                                reduceAnimationFrames(animations, card_id),
+                                animations[card_id].frame_order ?? [],
+                            ) as AnimationFrame[]),
+                    ],
+                },
+            ],
+        };
+    };
+}
+
+function getCardsDefaultAnimationFrames(
+    animations: CardAnimations,
+    card_id: string,
+): (value: string, index: number, array: string[]) => AnimationFrame {
+    return function (sprite_file_path): AnimationFrame {
+        return {
+            image: sprite_file_path,
+            hasCustomCollisionMask: false as const,
+            points: [],
+            originPoint: {
+                ...animations[card_id].points.origin,
+                name: "origine",
+            },
+            centerPoint: {
+                ...animations[card_id].points.center,
+                name: "centre",
+                automatic: true,
+            },
+        };
+    };
+}
+
+function reduceAnimationFrames(
+    animations: CardAnimations,
+    card_id: string,
+): (
+    previousValue: (number | AnimationFrame)[],
+    currentValue: AnimationFrame,
+    currentIndex: number,
+    array: (number | AnimationFrame)[],
+) => (number | AnimationFrame)[] {
+    return function (
+        out: (number | AnimationFrame)[],
+        sprite: AnimationFrame,
+        index: number,
+        array: (number | AnimationFrame)[],
+    ): (number | AnimationFrame)[] {
+        if (animations[card_id].frame_order)
+            return out.map((frame_index) =>
+                frame_index == index ? sprite : frame_index,
+            );
+        const new_out = [
+            ...out,
+            ...array.slice(index),
+            ...array.slice(0, index),
+        ];
+        return new_out;
+    };
+}
+
 export function getCode0FromMods(): string {
     return (cachedCode0 ??= (
         Array.from(
@@ -109,9 +342,9 @@ export function get_file_getter(
         );
 }
 export function fixDataPaths(
-    data: Partial<projectData>,
+    data: Partial<Data>,
     mod_path: string,
-): Partial<projectData> {
+): Partial<Data> {
     if (data.resources)
         data.resources.resources = data.resources.resources.map((resource) => {
             resource.file = window.remote_replace.path.join(

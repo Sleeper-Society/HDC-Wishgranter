@@ -1,3 +1,4 @@
+import type { Data, Resource } from "./jsons.js";
 import type { LoadSequenceElement } from "./mod_menu/loadingBar.ts";
 
 declare global {
@@ -68,96 +69,8 @@ export interface gdjs {
     };
 }
 
-export interface projectData {
-    properties: {
-        name: string;
-        version: string;
-        description: string;
-        platformSpecificAssets: Record<string, string>;
-    };
-    resources: {
-        resources: Resource[];
-    };
-    usedResources: { name: string }[];
-    layouts: {
-        name: "Command";
-        objects: {
-            variables: UnloadedVariable[];
-            name: string;
-            animations: Animation[];
-        }[];
-        variables: UnloadedVariable[];
-        usedResources: { name: string }[];
-    }[];
-}
-
-export interface Resource {
-    disablePreload?: boolean;
-    file: string;
-    kind: string;
-    metadata?: string;
-    name: string;
-    smoothed: boolean;
-    userAdded: boolean;
-}
-
-export type UnloadedVariable =
-    | { folded?: true; name: string; type: "number"; value: number }
-    | { folded?: true; name: string; type: "string"; value: string }
-    | {
-          folded?: true;
-          name: string;
-          type: "array";
-          children: (
-              | { type: "number"; value: number }
-              | { type: "string"; value: string }
-          )[];
-      }
-    | {
-          folded?: true;
-          name: string;
-          type: "structure";
-          children: UnloadedVariable[];
-      };
-
-export interface Animation {
-    name: string;
-    useMultipleDirections: boolean;
-    directions: {
-        looping: boolean;
-        timeBetweenFrames: number;
-        sprites: AnimationFrame[];
-    }[];
-}
-
-export type AnimationFrame = {
-    image: string;
-    points: {
-        name: string;
-        x: number;
-        y: number;
-    }[];
-    originPoint: {
-        name: string;
-        x: number;
-        y: number;
-    };
-    centerPoint: {
-        automatic: boolean;
-        name: string;
-        x: number;
-        y: number;
-    };
-} & (
-    | {
-          hasCustomCollisionMask: true;
-          customCollisionMask: { x: number; y: number }[][];
-      }
-    | { hasCustomCollisionMask: false }
-);
-
 type RuntimeGameClass = new (
-    projectData: projectData,
+    projectData: Data,
     something_else: unknown,
 ) => RuntimeGame;
 

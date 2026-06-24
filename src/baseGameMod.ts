@@ -1,5 +1,5 @@
 import { fixDataPaths } from "./fileFactory.ts";
-import type { projectData } from "./gdjs.ts";
+import type { Data } from "./jsons.js";
 import { Mod, type ModMetadata } from "./mod.ts";
 import type { LoadSequenceElement } from "./mod_menu/loadingBar.ts";
 
@@ -43,8 +43,8 @@ export class BaseGameMod extends Mod {
         }
         return super.load(...files_to_load);
     }
-    getData(): projectData {
-        if (this.cached_data) return this.cached_data as projectData;
+    getData(): Data {
+        if (this.cached_data) return this.cached_data as Data;
         const file = this.file_map.get("data.js");
         if (!file) throw new Error("Base game data not found.");
         return (this.cached_data = fixDataPaths(
@@ -53,9 +53,9 @@ export class BaseGameMod extends Mod {
                     .replace(/gdjs.projectData\s*=\s*/, "(")
                     .replace(/;\s*gdjs.runtimeGameOptions\s*=\s*\{\};/, "") +
                     ")",
-            ) as projectData,
+            ) as Data,
             this.mod_directory_path,
-        ) as projectData);
+        ) as Data);
     }
     getCode0Adjustments(): (code0: string) => string {
         return () => this.file_map.get("code0.js") ?? "";
