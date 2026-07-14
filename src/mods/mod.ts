@@ -1,5 +1,6 @@
-import { fixDataPaths, get_file_getter, mergeDeep } from "./fileFactory.ts";
-import type Jsons from "./hyperspace.jsons.js";
+import { fixDataPaths, get_file_getter, mergeDeep } from "../fileFactory.ts";
+import type { Jsons } from "../jsons.d.ts";
+
 import type {
     Cards,
     CloudLabels,
@@ -14,10 +15,9 @@ import type {
     Tutorials,
     UnlockCond,
     Upgrades,
-} from "./hyperspace.jsons.js";
-import type { Data } from "./wishgranter.jsons.js";
-import type { CardAnimations } from "./wishgranter.jsons.js";
-import type { LoadSequenceElement } from "./mod_menu/loadingBar.ts";
+} from "../hyperspace.jsons.d.ts";
+import type { Data, CardAnimations } from "../wishgranter.jsons.d.ts";
+import type { LoadSequenceElement } from "../mod_menu/loadingBar.ts";
 
 export interface ModMetadata {
     name: string;

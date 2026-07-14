@@ -1,7 +1,8 @@
-import { fixDataPaths } from "./fileFactory.ts";
-import type { Data } from "./wishgranter.jsons.js";
+import { fixDataPaths } from "../fileFactory.ts";
+import type { Data } from "../jsons.d.ts";
+
 import { Mod, type ModMetadata } from "./mod.ts";
-import type { LoadSequenceElement } from "./mod_menu/loadingBar.ts";
+import type { LoadSequenceElement } from "../mod_menu/loadingBar.ts";
 
 export class BaseGameMod extends Mod {
     protected get mod_directory_path(): string {

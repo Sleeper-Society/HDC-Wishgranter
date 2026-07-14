@@ -1,8 +1,8 @@
-import { WishgranterMod } from "../wishgranterMod.ts";
-import { BaseGameMod } from "../baseGameMod.ts";
-import { Mod } from "../mod.ts";
-import type Jsons from "../hyperspace.jsons.js";
+import { WishgranterMod } from "../mods/wishgranterMod.ts";
+import { BaseGameMod } from "../mods/baseGameMod.ts";
+import { Mod } from "../mods/mod.ts";
 import type {
+    BaseGameJsons as Jsons,
     Cards,
     CloudLabels,
     Comms,
@@ -16,7 +16,7 @@ import type {
     Tutorials,
     UnlockCond,
     Upgrades,
-} from "../hyperspace.jsons.js";
+} from "../hyperspace.jsons.d.ts";
 import type { Data } from "../wishgranter.jsons.js";
 import type { CardAnimations } from "../wishgranter.jsons.js";
 import type { LoadingBarElement } from "./loadingBar.ts";

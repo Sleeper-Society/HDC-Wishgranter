@@ -1,6 +1,6 @@
-import { getDataFromMods } from "./fileFactory.ts";
+import { getDataFromMods } from "../fileFactory.ts";
 import { Mod, type ModMetadata } from "./mod.ts";
-import { commentCode0 } from "./reimplementations/code0Commenter.ts";
+import { commentCode0 } from "../reimplementations/code0Commenter.ts";
 
 export class WishgranterMod extends Mod {
     constructor(enabled = true, mod_directory_path = ".") {
@@ -33,7 +33,7 @@ export class WishgranterMod extends Mod {
             name: "Wishgranter Utilities",
             version: "0.0.3",
             description: "Modloader for Sleeper Game's Hyperspace Deck Command",
-            icon_path: "favicon.svg",
+            icon_path: "Wishgranter_Icon.png",
         };
     }
 }
