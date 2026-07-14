@@ -1,4 +1,4 @@
-import type { Data } from "../jsons.js";
+import type { Data } from "../wishgranter.jsons.js";
 
 export function commentCode0(code0: string, hyperspace_data: Data): string {
     const possibly_commented_get_from_index_regex =

@@ -6,12 +6,20 @@ import mochaPlugin from "eslint-plugin-mocha";
 import { defineConfig } from "eslint/config";
 import path from "path";
 import tseslint from "typescript-eslint";
+import tsdoceslint from "eslint-plugin-tsdoc";
 
 export default defineConfig(
     eslint.configs.recommended,
     tseslint.configs.strictTypeChecked,
     tseslint.configs.stylisticTypeChecked,
-
+    {
+        plugins: {
+            tsdoc: tsdoceslint,
+        },
+        rules: {
+            "tsdoc/syntax": "error",
+        },
+    },
     {
         languageOptions: {
             parserOptions: {

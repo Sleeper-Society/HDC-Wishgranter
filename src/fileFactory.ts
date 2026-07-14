@@ -1,12 +1,9 @@
-import type Jsons from "./jsons.js";
+import type Jsons from "./hyperspace.jsons.js";
 import type {
-    AnimationFrame,
-    CardAnimations,
     Cards,
     CloudLabels,
     Comms,
     Credits,
-    Data,
     Encounters,
     LootListCard,
     LootListUp,
@@ -16,7 +13,10 @@ import type {
     Tutorials,
     UnlockCond,
     Upgrades,
-} from "./jsons.js";
+} from "./hyperspace.jsons.js";
+import type { AnimationFrame } from "./wishgranter.jsons.js";
+import type { Data } from "./wishgranter.jsons.js";
+import type { CardAnimations } from "./wishgranter.jsons.js";
 import type { ModEntry } from "./mod_menu/modEntry.ts";
 
 const cachedJsons = new Map<`${string}.json`, Jsons>();

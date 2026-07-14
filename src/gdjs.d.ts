@@ -1,4 +1,5 @@
-import type { Data, Resource } from "./jsons.js";
+import type { Resource } from "./wishgranter.jsons.js";
+import type { Data } from "./wishgranter.jsons.js";
 import type { LoadSequenceElement } from "./mod_menu/loadingBar.ts";
 
 declare global {

@@ -1,35 +1,19 @@
-import type { Resource } from "../jsons.d.ts";
+import type { Resource } from "../wishgranter.jsons.js";
 import { getJsonFromMods } from "../fileFactory.ts";
 
 const logger = new gdjs.Logger("JSON Manager");
 
-/**
- * The callback called when a json that was requested is loaded (or an error occurred).
- * @category Resources > JSON
- */
 type JsonManagerRequestCallback = (
     error: Error | null,
     content: object | null,
 ) => void;
 
-/**
- * JsonManager loads json files (using `XMLHttpRequest`), using the "json" resources
- * registered in the game resources.
- *
- * Contrary to audio/fonts, json files are loaded asynchronously, when requested.
- * You should properly handle errors, and give the developer/player a way to know
- * that loading failed.
- * @category Resources > JSON
- */
 gdjs.JsonManager = class JsonManager {
     _resourceLoader: (typeof gdjs)["ResourceLoader"];
 
     _loadedJsons = new gdjs.ResourceCache<object>();
     _callbacks = new gdjs.ResourceCache<JsonManagerRequestCallback[]>();
 
-    /**
-     * @param resourceLoader The resources loader of the game.
-     */
     constructor(resourceLoader: (typeof gdjs)["ResourceLoader"]) {
         this._resourceLoader = resourceLoader;
     }
@@ -38,12 +22,6 @@ gdjs.JsonManager = class JsonManager {
         return ["json", "tilemap", "tileset"];
     }
 
-    /**
-     * Request all the json resources to be preloaded (unless they are marked as not preloaded).
-     *
-     * Note that even if a JSON is already loaded, it will be reloaded (useful for hot-reloading,
-     * as JSON files can have been modified without the editor knowing).
-     */
     loadResource(resourceName: string) {
         const resource = this._resourceLoader.getResource(resourceName);
         if (!resource) {
@@ -78,14 +56,6 @@ gdjs.JsonManager = class JsonManager {
         // Do nothing because json are light enough to be parsed in background.
     }
 
-    /**
-     * Request the json file from the given resource name.
-     * This method is asynchronous. When loaded, the `callback` is called with the error
-     * (null if none) and the loaded json (a JS Object).
-     *
-     * @param resourceName The resource pointing to the json file to load.
-     * @param callback The callback function called when json is loaded (or an error occurred).
-     */
     loadJson(resourceName: string) {
         const resource = this._getJsonResource(resourceName);
         if (!resource) {
@@ -111,30 +81,14 @@ gdjs.JsonManager = class JsonManager {
         this._loadedJsons.set(resource, getJsonFromMods(json_file_name));
     }
 
-    /**
-     * Check if the given json resource was loaded (preloaded or loaded with `loadJson`).
-     * @param resourceName The name of the json resource.
-     * @returns true if the content of the json resource is loaded. false otherwise.
-     */
     isJsonLoaded(resourceName: string): boolean {
         return !!this._loadedJsons.getFromName(resourceName);
     }
 
-    /**
-     * Get the object for the given resource that is already loaded (preloaded or loaded with `loadJson`).
-     * If the resource is not loaded, `null` will be returned.
-     *
-     * @param resourceName The name of the json resource.
-     * @returns the content of the json resource, if loaded. `null` otherwise.
-     */
     getLoadedJson(resourceName: string): object | null {
         return this._loadedJsons.getFromName(resourceName) ?? null;
     }
 
-    /**
-     * To be called when the game is disposed.
-     * Clear the JSONs loaded in this manager.
-     */
     dispose(): void {
         this._loadedJsons.clear();
         this._callbacks.clear();

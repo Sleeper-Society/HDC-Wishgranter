@@ -1,5 +1,5 @@
 import { fixDataPaths } from "./fileFactory.ts";
-import type { Data } from "./jsons.js";
+import type { Data } from "./wishgranter.jsons.js";
 import { Mod, type ModMetadata } from "./mod.ts";
 import type { LoadSequenceElement } from "./mod_menu/loadingBar.ts";
 

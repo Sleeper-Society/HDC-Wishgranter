@@ -1,14 +1,12 @@
 import { WishgranterMod } from "../wishgranterMod.ts";
 import { BaseGameMod } from "../baseGameMod.ts";
 import { Mod } from "../mod.ts";
-import type Jsons from "../jsons.js";
+import type Jsons from "../hyperspace.jsons.js";
 import type {
-    CardAnimations,
     Cards,
     CloudLabels,
     Comms,
     Credits,
-    Data,
     Encounters,
     LootListCard,
     LootListUp,
@@ -18,7 +16,9 @@ import type {
     Tutorials,
     UnlockCond,
     Upgrades,
-} from "../jsons.js";
+} from "../hyperspace.jsons.js";
+import type { Data } from "../wishgranter.jsons.js";
+import type { CardAnimations } from "../wishgranter.jsons.js";
 import type { LoadingBarElement } from "./loadingBar.ts";
 
 const mod_entry_template = document.getElementsByTagName("template")[0];
