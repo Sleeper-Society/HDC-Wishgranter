@@ -15,10 +15,7 @@ export type CardAnimations = Record<
          * If more than one point record is given, any frames without definition will be linearly interpolated.
          * If an array, defined points will be spread evenly across frames
          */
-        points:
-            | CardAnimationPoints
-            | Record<number, CardAnimationPoints>
-            | CardAnimationPoints[];
+        points: CardAnimationPoints;
         /**
          * If defined, instead of shuffling the sprites in sprites to create the sparkel, the sprites will appear in the order spesified. Repeats encouraged.
          */
@@ -103,13 +100,13 @@ export type AnimationFrame = {
         y: number;
     }[];
     originPoint: {
-        name: string;
+        name: "origine";
         x: number;
         y: number;
     };
     centerPoint: {
         automatic: boolean;
-        name: string;
+        name: "centre";
         x: number;
         y: number;
     };

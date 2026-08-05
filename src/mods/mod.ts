@@ -1,4 +1,4 @@
-import { fixDataPaths, get_file_getter, mergeDeep } from "../fileFactory.ts";
+import { fixDataPaths, mergeDeep } from "../fileFactory.ts";
 import type { Jsons } from "../jsons.d.ts";
 
 import type {
@@ -44,8 +44,16 @@ export class Mod {
         file_getter?: (file_path: string) => Promise<string>,
     ) {
         this.enabled = enabled;
-        this.file_getter = file_getter ?? get_file_getter(mod_directory_path);
         this.mod_directory_path = mod_directory_path;
+        this.file_getter =
+            file_getter ??
+            ((file_name) =>
+                window.remote_replace.fsPromise.readFile(
+                    window.remote_replace.path.join(
+                        this.mod_directory_path,
+                        file_name,
+                    ),
+                ));
     }
     async load(
         ...files_to_load: string[]
@@ -102,8 +110,29 @@ export class Mod {
 
         return (this.cached_data = fixDataPaths(data, this.mod_directory_path));
     }
-    getCardAnimations(): Partial<Data> {
-        return {};
+    protected cached_card_animations: Partial<CardAnimations> | undefined =
+        undefined;
+    getCardAnimations(): Partial<CardAnimations> {
+        if (this.cached_card_animations) return this.cached_card_animations;
+        const file = this.file_map.get("card_animations.json");
+        if (!file) return {};
+        try {
+            const card_animations = JSON.parse(file) as CardAnimations;
+            for (const card_id in card_animations) {
+                card_animations[card_id].sprites = card_animations[
+                    card_id
+                ].sprites.map((sprite_file_path) =>
+                    window.remote_replace.path.join(
+                        this.mod_directory_path,
+                        sprite_file_path,
+                    ),
+                );
+            }
+            return (this.cached_card_animations = card_animations);
+        } catch (e: unknown) {
+            console.error(e);
+            return {};
+        }
     }
     protected cached_metadata: ModMetadata | undefined = undefined;
     getMetadata(): ModMetadata {

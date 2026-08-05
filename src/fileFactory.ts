@@ -1,4 +1,4 @@
-import type Jsons from "./hyperspace.jsons.js";
+import type { Jsons } from "./jsons.d.ts";
 import type {
     Cards,
     CloudLabels,
@@ -13,10 +13,10 @@ import type {
     Tutorials,
     UnlockCond,
     Upgrades,
-} from "./hyperspace.jsons.js";
-import type { AnimationFrame } from "./wishgranter.jsons.js";
-import type { Data } from "./wishgranter.jsons.js";
-import type { CardAnimations } from "./wishgranter.jsons.js";
+} from "./hyperspace.jsons.d.ts";
+import type { AnimationFrame } from "./wishgranter.jsons.d.ts";
+import type { Data } from "./wishgranter.jsons.d.ts";
+import type { CardAnimations } from "./wishgranter.jsons.d.ts";
 import type { ModEntry } from "./mod_menu/modEntry.ts";
 
 const cachedJsons = new Map<`${string}.json`, Jsons>();
@@ -71,10 +71,26 @@ export function getDataFromMods(): Data {
                 ) => mergeDeep(file_contents, new_file_contents),
             ),
         getDataFromCardAnimations(
-            getJsonFromMods("card_animations.json"),
+            getCardAnimationsFromMods(),
             getJsonFromMods("cards.json"),
         ),
     ) as Data);
+}
+let cachedCardAnimations: CardAnimations | undefined = undefined;
+function getCardAnimationsFromMods(): CardAnimations {
+    return (cachedCardAnimations ??= (
+        Array.from(
+            document.getElementById("modlist")?.children ?? [],
+        ) as ModEntry[]
+    )
+        .filter((mod_entry) => mod_entry.enabled)
+        .map((mod_entry) => mod_entry.getCardAnimations())
+        .reduce(
+            (
+                file_contents: Partial<CardAnimations>,
+                new_file_contents: Partial<CardAnimations>,
+            ) => mergeDeep(file_contents, new_file_contents),
+        ) as CardAnimations);
 }
 export function getDataFromCardAnimations(
     animations: CardAnimations,
@@ -155,9 +171,9 @@ function getAnimationsOfPorObj(
     variables: never[];
     animations: {
         name: string;
-        useMultipleDirections: boolean;
+        useMultipleDirections: false;
         directions: {
-            looping: boolean;
+            looping: true;
             timeBetweenFrames: number;
             sprites: AnimationFrame[];
         }[];
@@ -182,9 +198,9 @@ function getCardsAnimation(animations: CardAnimations): (
     array: string[],
 ) => {
     name: string;
-    useMultipleDirections: boolean;
+    useMultipleDirections: false;
     directions: {
-        looping: boolean;
+        looping: true;
         timeBetweenFrames: number;
         sprites: AnimationFrame[];
     }[];
@@ -198,17 +214,19 @@ function getCardsAnimation(animations: CardAnimations): (
                     looping: true,
                     timeBetweenFrames: 0.068,
                     sprites: [
-                        ...(animations[card_id].sprites
-                            .map(
-                                getCardsDefaultAnimationFrames(
-                                    animations,
-                                    card_id,
-                                ),
-                            )
-                            .reduce(
-                                reduceAnimationFrames(animations, card_id),
-                                animations[card_id].frame_order ?? [],
-                            ) as AnimationFrame[]),
+                        ...(
+                            animations[card_id].sprites
+                                .map(wrapSpriteFilePath)
+                                .reduce(
+                                    orderAnimationFrames(animations, card_id),
+                                    animations[card_id].frame_order ?? [],
+                                ) as {
+                                image: string;
+                                hasCustomCollisionMask: false;
+                            }[]
+                        ).map(
+                            populateAnimationFramePoints(animations, card_id),
+                        ),
                     ],
                 },
             ],
@@ -216,53 +234,78 @@ function getCardsAnimation(animations: CardAnimations): (
     };
 }
 
-function getCardsDefaultAnimationFrames(
-    animations: CardAnimations,
-    card_id: string,
-): (value: string, index: number, array: string[]) => AnimationFrame {
-    return function (sprite_file_path): AnimationFrame {
-        return {
-            image: sprite_file_path,
-            hasCustomCollisionMask: false as const,
-            points: [],
-            originPoint: {
-                ...animations[card_id].points.origin,
-                name: "origine",
-            },
-            centerPoint: {
-                ...animations[card_id].points.center,
-                name: "centre",
-                automatic: true,
-            },
-        };
+function wrapSpriteFilePath(sprite_file_path: string): {
+    image: string;
+    hasCustomCollisionMask: false;
+} {
+    return {
+        image: sprite_file_path,
+        hasCustomCollisionMask: false as const,
     };
 }
 
-function reduceAnimationFrames(
-    animations: CardAnimations,
-    card_id: string,
-): (
-    previousValue: (number | AnimationFrame)[],
-    currentValue: AnimationFrame,
-    currentIndex: number,
-    array: (number | AnimationFrame)[],
-) => (number | AnimationFrame)[] {
+function orderAnimationFrames(animations: CardAnimations, card_id: string) {
     return function (
-        out: (number | AnimationFrame)[],
-        sprite: AnimationFrame,
+        out: (
+            | number
+            | {
+                  image: string;
+                  hasCustomCollisionMask: false;
+              }
+        )[],
+        sprite: {
+            image: string;
+            hasCustomCollisionMask: false;
+        },
         index: number,
-        array: (number | AnimationFrame)[],
-    ): (number | AnimationFrame)[] {
+        array: (
+            | number
+            | {
+                  image: string;
+                  hasCustomCollisionMask: false;
+              }
+        )[],
+    ): (
+        | number
+        | {
+              image: string;
+              hasCustomCollisionMask: false;
+          }
+    )[] {
         if (animations[card_id].frame_order)
             return out.map((frame_index) =>
                 frame_index == index ? sprite : frame_index,
             );
-        const new_out = [
-            ...out,
-            ...array.slice(index),
-            ...array.slice(0, index),
-        ];
-        return new_out;
+        return [...out, ...array.slice(index), ...array.slice(0, index)];
+    };
+}
+
+function populateAnimationFramePoints(
+    animations: CardAnimations,
+    card_id: string,
+): (
+    value: { image: string; hasCustomCollisionMask: false },
+    index: number,
+    array: { image: string; hasCustomCollisionMask: false }[],
+) => AnimationFrame {
+    return (frame_data) => {
+        return {
+            ...frame_data,
+            centerPoint: {
+                ...animations[card_id].points.center,
+                automatic: true,
+                name: "centre",
+            },
+            originPoint: {
+                ...animations[card_id].points.origin,
+                name: "origine",
+            },
+            points: Object.getOwnPropertyNames(animations[card_id].points).map(
+                (name) => {
+                    return { ...animations[card_id].points[name], name: name };
+                },
+            ),
+        };
     };
 }
 
@@ -332,14 +375,6 @@ export function mergeDeep<MergeTarget = object>(
     }
 
     return out as MergeTarget;
-}
-export function get_file_getter(
-    mod_path: string,
-): (file_name: string) => Promise<string> {
-    return (file_name) =>
-        window.remote_replace.fsPromise.readFile(
-            window.remote_replace.path.join(mod_path, file_name),
-        );
 }
 export function fixDataPaths(
     data: Partial<Data>,

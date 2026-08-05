@@ -167,6 +167,9 @@ class ModEntry extends HTMLElement {
             }
         );
     }
+    getCardAnimations() {
+        return this.mod?.getCardAnimations() ?? {};
+    }
     hasMod(comparison_mod_path: string) {
         return this.mod?.hasModPath(comparison_mod_path) ?? false;
     }
