@@ -217,12 +217,24 @@ function getCardsAnimation(animations: CardAnimations): (
                         ...(
                             animations[card_id].sprites
                                 .map(wrapSpriteFilePath)
+                                .map((animation_frame) => {
+                                    return {
+                                        ...animation_frame,
+                                        customCollisionMask:
+                                            animations[card_id]
+                                                .collison_polygon,
+                                    };
+                                })
                                 .reduce(
                                     orderAnimationFrames(animations, card_id),
                                     animations[card_id].frame_order ?? [],
                                 ) as {
                                 image: string;
-                                hasCustomCollisionMask: false;
+                                hasCustomCollisionMask: true;
+                                customCollisionMask: {
+                                    x: number;
+                                    y: number;
+                                }[][];
                             }[]
                         ).map(
                             populateAnimationFramePoints(animations, card_id),
@@ -234,13 +246,10 @@ function getCardsAnimation(animations: CardAnimations): (
     };
 }
 
-function wrapSpriteFilePath(sprite_file_path: string): {
-    image: string;
-    hasCustomCollisionMask: false;
-} {
+function wrapSpriteFilePath(sprite_file_path: string) {
     return {
         image: sprite_file_path,
-        hasCustomCollisionMask: false as const,
+        hasCustomCollisionMask: true as const,
     };
 }
 
@@ -250,26 +259,22 @@ function orderAnimationFrames(animations: CardAnimations, card_id: string) {
             | number
             | {
                   image: string;
-                  hasCustomCollisionMask: false;
               }
         )[],
         sprite: {
             image: string;
-            hasCustomCollisionMask: false;
         },
         index: number,
         array: (
             | number
             | {
                   image: string;
-                  hasCustomCollisionMask: false;
               }
         )[],
     ): (
         | number
         | {
               image: string;
-              hasCustomCollisionMask: false;
           }
     )[] {
         if (animations[card_id].frame_order)
@@ -284,9 +289,17 @@ function populateAnimationFramePoints(
     animations: CardAnimations,
     card_id: string,
 ): (
-    value: { image: string; hasCustomCollisionMask: false },
+    value: {
+        image: string;
+        hasCustomCollisionMask: true;
+        customCollisionMask: { x: number; y: number }[][];
+    },
     index: number,
-    array: { image: string; hasCustomCollisionMask: false }[],
+    array: {
+        image: string;
+        hasCustomCollisionMask: true;
+        customCollisionMask: { x: number; y: number }[][];
+    }[],
 ) => AnimationFrame {
     return (frame_data) => {
         return {

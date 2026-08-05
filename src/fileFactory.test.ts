@@ -18,6 +18,7 @@ describe("getDataFromCardAnimations", () => {
                         center: { x: 3, y: 4 },
                         other_point: { x: 5, y: 6 },
                     },
+                    collison_polygon: [[{ x: 7, y: 8 }]],
                 },
             },
             {
@@ -101,6 +102,18 @@ describe("getDataFromCardAnimations", () => {
 
             "Other point set",
         );
+        assert.deepStrictEqual(
+            (actual.layouts ?? [])[0].objects
+                .find((my_obj) => my_obj.name == "obj_unit_eh")
+                ?.animations.find(
+                    (animation) => animation.name == "my_sample_card",
+                )
+                ?.directions[0].sprites.find(
+                    (sprite) => sprite.image == "my_sample_png.png",
+                )?.customCollisionMask,
+            [[{ x: 7, y: 8 }]],
+            "Collison Set",
+        );
         assert(
             (actual.layouts ?? [])[0].usedResources.find(
                 (resource) => resource.name == "my_sample_png.png",
@@ -128,6 +141,7 @@ describe("getDataFromCardAnimations", () => {
                         center: { x: 3, y: 4 },
                         other_point: { x: 5, y: 6 },
                     },
+                    collison_polygon: [[{ x: 7, y: 8 }]],
                 },
             },
             {
@@ -236,6 +250,11 @@ describe("getDataFromCardAnimations", () => {
 
                 "Other point set",
             );
+            assert.deepStrictEqual(
+                animation_frame.customCollisionMask,
+                [[{ x: 7, y: 8 }]],
+                "Collison Set",
+            );
         }
         assert(
             (actual.layouts ?? [])[0].usedResources.find(
@@ -273,5 +292,42 @@ describe("getDataFromCardAnimations", () => {
             ),
             "third Sprite in global usedResources",
         );
+    });
+    it("should respect frame order", () => {
+        const frame_order = [1, 2, 2, 1];
+        const actual = getDataFromCardAnimations(
+            {
+                my_sample_card: {
+                    sprites: [
+                        "my_sample_png0.png",
+                        "my_sample_png1.png",
+                        "my_sample_png2.png",
+                    ],
+                    points: {
+                        origin: { x: 1, y: 2 },
+                        center: { x: 3, y: 4 },
+                        other_point: { x: 5, y: 6 },
+                    },
+                    collison_polygon: [[{ x: 7, y: 8 }]],
+                    frame_order: frame_order,
+                },
+            },
+            {
+                my_sample_card: {
+                    por_obj: "obj_unit_eh",
+                },
+            },
+        );
+        frame_order.forEach((sprite_index, frame_index) => {
+            assert.equal(
+                ((actual.layouts ?? [])[0].objects
+                    .find((my_obj) => my_obj.name == "obj_unit_eh")
+                    ?.animations.find(
+                        (animation) => animation.name == "my_sample_card",
+                    )?.directions[0].sprites ?? [])[frame_index].image,
+                `my_sample_png${sprite_index.toString()}.png`,
+                `Frame ${frame_index.toString()} has correct sprite`,
+            );
+        });
     });
 });

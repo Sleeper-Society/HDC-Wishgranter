@@ -17,6 +17,10 @@ export type CardAnimations = Record<
          */
         points: CardAnimationPoints;
         /**
+         * Points of a polygon where the mouse will consider this sprite selected
+         **/
+        collison_polygon: { x: number; y: number }[][];
+        /**
          * If defined, instead of shuffling the sprites in sprites to create the sparkel, the sprites will appear in the order spesified. Repeats encouraged.
          */
         frame_order?: number[];
@@ -89,7 +93,7 @@ export interface Animation {
         sprites: AnimationFrame[];
     }[];
 }
-export type AnimationFrame = {
+export interface AnimationFrame {
     /**
      * Id of a sprite defined in Resources
      */
@@ -110,13 +114,10 @@ export type AnimationFrame = {
         x: number;
         y: number;
     };
-} & (
-    | {
-          hasCustomCollisionMask: true;
-          customCollisionMask: { x: number; y: number }[][];
-      }
-    | { hasCustomCollisionMask: false }
-);
+    hasCustomCollisionMask: true;
+    customCollisionMask: { x: number; y: number }[][];
+}
+
 export interface Resource {
     disablePreload?: boolean;
     file: string;
