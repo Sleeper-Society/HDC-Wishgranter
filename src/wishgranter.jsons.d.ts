@@ -19,7 +19,7 @@ export type CardAnimations = Record<
         /**
          * Points of a polygon where the mouse will consider this sprite selected
          **/
-        collison_polygon: { x: number; y: number }[][];
+        collison_polygon: { x: number; y: number }[];
         /**
          * If defined, instead of shuffling the sprites in sprites to create the sparkel, the sprites will appear in the order spesified. Repeats encouraged.
          */

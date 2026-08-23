@@ -18,7 +18,7 @@ describe("getDataFromCardAnimations", () => {
                         center: { x: 3, y: 4 },
                         other_point: { x: 5, y: 6 },
                     },
-                    collison_polygon: [[{ x: 7, y: 8 }]],
+                    collison_polygon: [{ x: 7, y: 8 }],
                 },
             },
             {
@@ -111,7 +111,7 @@ describe("getDataFromCardAnimations", () => {
                 ?.directions[0].sprites.find(
                     (sprite) => sprite.image == "my_sample_png.png",
                 )?.customCollisionMask,
-            [[{ x: 7, y: 8 }]],
+            [{ x: 7, y: 8 }],
             "Collison Set",
         );
         assert(
@@ -141,7 +141,7 @@ describe("getDataFromCardAnimations", () => {
                         center: { x: 3, y: 4 },
                         other_point: { x: 5, y: 6 },
                     },
-                    collison_polygon: [[{ x: 7, y: 8 }]],
+                    collison_polygon: [{ x: 7, y: 8 }],
                 },
             },
             {
@@ -252,7 +252,7 @@ describe("getDataFromCardAnimations", () => {
             );
             assert.deepStrictEqual(
                 animation_frame.customCollisionMask,
-                [[{ x: 7, y: 8 }]],
+                [{ x: 7, y: 8 }],
                 "Collison Set",
             );
         }
@@ -308,7 +308,7 @@ describe("getDataFromCardAnimations", () => {
                         center: { x: 3, y: 4 },
                         other_point: { x: 5, y: 6 },
                     },
-                    collison_polygon: [[{ x: 7, y: 8 }]],
+                    collison_polygon: [{ x: 7, y: 8 }],
                     frame_order: frame_order,
                 },
             },
