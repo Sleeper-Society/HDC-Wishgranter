@@ -1,20 +1,23 @@
 // @ts-check
 
 import eslint from "@eslint/js";
-import eslintConfigPrettier from "eslint-config-prettier";
-import mochaPlugin from "eslint-plugin-mocha";
-import { defineConfig } from "eslint/config";
-import path from "path";
 import tseslint from "typescript-eslint";
-import tsdoceslint from "eslint-plugin-tsdoc";
+import eslintConfigPrettier from "eslint-config-prettier";
+
+import { defineConfig, globalIgnores } from "eslint/config";
+import path from "path";
+
+import tsdoc_plugin from "eslint-plugin-tsdoc";
+import mocha_plugin from "eslint-plugin-mocha";
 
 export default defineConfig(
+    globalIgnores(["./dist/**"]),
     eslint.configs.recommended,
     tseslint.configs.strictTypeChecked,
     tseslint.configs.stylisticTypeChecked,
     {
         plugins: {
-            tsdoc: tsdoceslint,
+            tsdoc: tsdoc_plugin,
         },
         rules: {
             "tsdoc/syntax": "error",
@@ -57,7 +60,7 @@ export default defineConfig(
     },
     {
         files: ["./**/*.test.ts"],
-        ...mochaPlugin.configs.recommended,
+        ...mocha_plugin.configs.recommended,
     },
     {
         files: ["./**/*.test.ts"],

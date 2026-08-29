@@ -10,6 +10,9 @@ import fsPromise from "fs/promises";
 import os from "os";
 import { findSteamApp } from "steam-locate";
 import type { ModMenu, RemoteReplace, Wishgranter } from "../preload.ts";
+import { updateElectronApp } from "update-electron-app";
+
+updateElectronApp();
 
 const config_path = path.join(os.homedir(), "HDC", "config.json");
 interface Config {

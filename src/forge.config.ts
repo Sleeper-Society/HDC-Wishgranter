@@ -8,12 +8,6 @@ export default {
     makers: [
         {
             name: "@electron-forge/maker-zip",
-            platforms: ["win32", "linux"],
-            config: {},
-        },
-        {
-            name: "@electron-forge/maker-deb",
-            config: {},
         },
     ],
     plugins: [
@@ -36,7 +30,7 @@ export default {
     publishers: [
         {
             name: "@electron-forge/publisher-github",
-            platforms: ["win32", "debian"],
+            platforms: ["win32", "linux"],
             config: {
                 repository: {
                     owner: "Sleeper-Society",

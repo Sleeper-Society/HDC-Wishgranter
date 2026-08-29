@@ -1,112 +1,114 @@
 {
-  "name": "wishgranter",
-  "version": "0.0.3",
-  "description": "Modloader for Sleeper Game's Hyperspace Deck Command",
-  "keywords": [
-    "modloader",
-    "mod-loader",
-    "typescript",
-    "TypeScript",
-    "ts",
-    "game"
-  ],
-  "homepage": "https://wishgranter.dev",
-  "bugs": {
-    "url": "https://github.com/Hederarch/HDC-Modloader/issues",
-    "email": "claire@flechette.net"
-  },
-  "license": "CC-BY-SA-4.0",
-  "author": {
-    "name": "Claire Woods",
-    "email": "claire@flechette.net",
-    "url": "https://flechette.net"
-  },
-  "contributors": [
-    {
-      "name": "Hederarch",
-      "url": "https://github.com/Hederarch"
+    "name": "wishgranter",
+    "version": "0.0.3",
+    "description": "Modloader for Sleeper Game's Hyperspace Deck Command",
+    "keywords": [
+        "modloader",
+        "mod-loader",
+        "typescript",
+        "TypeScript",
+        "ts",
+        "game"
+    ],
+    "homepage": "https://wishgranter.dev",
+    "bugs": {
+        "url": "https://github.com/Hederarch/HDC-Modloader/issues",
+        "email": "claire@flechette.net"
+    },
+    "license": "CC-BY-SA-4.0",
+    "author": {
+        "name": "Claire Woods",
+        "email": "claire@flechette.net",
+        "url": "https://flechette.net"
+    },
+    "contributors": [
+        {
+            "name": "Hederarch",
+            "url": "https://github.com/Hederarch"
+        }
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/Hederarch/HDC-Modloader.git"
+    },
+    "files": [
+        "tsconfig.json",
+        "src/**/*.ts",
+        "!src/forge.config.ts",
+        "dist/**/*.js",
+        "dist/**/*.js.map",
+        "dist/**/*.d.ts",
+        "dist/**/*.d.ts.map"
+    ],
+    "type": "module",
+    "main": "dist/node_env/index.js",
+    "scripts": {
+        "prepare": "husky && cd node_modules/electron && node install.js",
+        "postlint": "npm run pretty",
+        "lint": "eslint --cache --fix && stylelint *.css --fix",
+        "pretest": "npm run build",
+        "test": "NODE_OPTIONS=--enable-source-maps mocha",
+        "\n========== Building ==========": "",
+        "prebuild": "npm run clean",
+        "build": "tsc && tsc -p preload.tsconfig.json",
+        "clean": "shx rm -rf ./dist/*",
+        "pretty": "prettier --write .",
+        "\n========== Exporting ========": "",
+        "prestart": "npm run build",
+        "start": "electron-forge start",
+        "prepackage": "npm run build",
+        "package": "electron-forge package && electron-forge package -- --platform win32",
+        "publish": "electron-forge publish",
+        "premake": "npm run build",
+        "make": "electron-forge make",
+        "preversion": "npm test",
+        "postversion": "git push && git push --tags"
+    },
+    "dependencies": {
+        "update-electron-app": "^3.3.0"
+    },
+    "optionalDependencies": {
+        "steam-locate": "^1.0.6"
+    },
+    "devDependencies": {
+        "@electron-forge/cli": "^7.11.2",
+        "@electron-forge/maker-zip": "^7.11.2",
+        "@electron-forge/plugin-auto-unpack-natives": "^7.11.2",
+        "@electron-forge/plugin-fuses": "^7.11.2",
+        "@electron-forge/publisher-github": "^7.11.2",
+        "@electron/fuses": "^1.8.0",
+        "@eslint/js": "^10.0.1",
+        "@types/node": "^25.9.1",
+        "electron": "^42.0.0",
+        "eslint": "^10.2.0",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-mocha": "^11.3.0",
+        "eslint-plugin-tsdoc": "^0.5.2",
+        "husky": "^9.1.7",
+        "lint-staged": "^16.4.0",
+        "mocha": "^11.7.6",
+        "prettier": "^3.8.1",
+        "shx": "^0.4.0",
+        "stylelint": "^17.13.0",
+        "stylelint-config-standard": "^40.0.0",
+        "typescript": "^6.0.2",
+        "typescript-eslint": "^8.58.0"
+    },
+    "overrides": {
+        "yauzl": "^3.3.1"
+    },
+    "lint-staged": {
+        "*.ts": "eslint --cache --fix",
+        "*.css": "stylelint --fix",
+        "*.{ts,js,css,md,html,json,yml}": "prettier --write"
+    },
+    "mocha": {
+        "spec": "./dist/**.test.js"
+    },
+    "config": {
+        "forge": "./dist/forge.config.js"
+    },
+    "allowScripts": {
+        "electron-winstaller@5.4.0": true
     }
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+ssh://git@github.com/Hederarch/HDC-Modloader.git"
-  },
-  "files": [
-    "tsconfig.json",
-    "src/**/*.ts",
-    "!src/forge.config.ts",
-    "dist/**/*.js",
-    "dist/**/*.js.map",
-    "dist/**/*.d.ts",
-    "dist/**/*.d.ts.map"
-  ],
-  "type": "module",
-  "main": "dist/node_env/index.js",
-  "scripts": {
-    "prepare": "husky && cd node_modules/electron && node install.js",
-    "postlint": "npm run pretty",
-    "lint": "eslint src --cache --fix && stylelint *.css --fix",
-    "pretest": "npm run build",
-    "test": "NODE_OPTIONS=--enable-source-maps mocha",
-    "\n========== Building ==========": "",
-    "prebuild": "npm run clean",
-    "build": "tsc && tsc -p preload.tsconfig.json",
-    "clean": "shx rm -rf ./dist/*",
-    "pretty": "prettier --write src/",
-    "\n========== Exporting ========": "",
-    "prestart": "npm run build",
-    "start": "electron-forge start",
-    "prepackage": "npm run build",
-    "package": "electron-forge package ",
-    "make": "electron-forge make"
-  },
-  "optionalDependencies": {
-    "steam-locate": "^1.0.6"
-  },
-  "devDependencies": {
-    "@electron-forge/cli": "^7.11.2",
-    "@electron-forge/maker-deb": "^7.11.2",
-    "@electron-forge/maker-rpm": "^7.11.2",
-    "@electron-forge/maker-squirrel": "^7.11.2",
-    "@electron-forge/maker-zip": "^7.11.2",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.11.2",
-    "@electron-forge/plugin-fuses": "^7.11.2",
-    "@electron-forge/publisher-github": "^7.11.2",
-    "@electron/fuses": "^1.8.0",
-    "@eslint/js": "^10.0.1",
-    "@types/node": "^25.9.1",
-    "degit": "^3.4.2",
-    "electron": "^42.0.0",
-    "electron-winstaller": "^5.4.0",
-    "eslint": "^10.2.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-mocha": "^11.3.0",
-    "eslint-plugin-tsdoc": "^0.5.2",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.4.0",
-    "mocha": "^11.7.6",
-    "prettier": "^3.8.1",
-    "shx": "^0.4.0",
-    "stylelint": "^17.13.0",
-    "stylelint-config-standard": "^40.0.0",
-    "typescript": "^6.0.2",
-    "typescript-eslint": "^8.58.0"
-  },
-  "overrides": {
-    "yauzl": "^3.3.1"
-  },
-  "lint-staged": {
-    "*.ts": "eslint --cache --fix",
-    "*.css": "stylelint --fix",
-    "*.{ts,js,css,md,html}": "prettier --write"
-  },
-  "mocha": {
-    "spec": "./dist/**.test.js"
-  },
-  "config": {
-    "forge": "./dist/forge.config.js"
-  },
-  "allowScripts": {
-    "electron-winstaller@5.4.0": true
-  }
 }

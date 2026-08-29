@@ -1,39 +1,36 @@
 {
-  "configurations": [
-    {
-      "name": "Mocha",
-      "type": "node",
-      "request": "launch",
-      "preLaunchTask": "npm: build",
-      "runtimeArgs": [
-        "${workspaceRoot}/node_modules/.bin/mocha",
-        "--inspect-brk",
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-    },
-    {
-        "command": "npm run debug",
-        "name": "Electron: Main",
-        "request": "launch",
-        "type": "node-terminal"
-    },
-    {
-      "name": "Electron: Renderer",
-      "type": "chrome",
-      "request": "attach",
-      "port": 9223,
-      "webRoot": "${workspaceFolder}",
-      "timeout": 5000
-    }
-  ],
-  "compounds": [
-    {
-      "name": "Electron: All",
-      "configurations": [
-        "Electron: Main",
-        "Electron: Renderer"
-      ]
-    }
-  ]
+    "configurations": [
+        {
+            "name": "Mocha",
+            "type": "node",
+            "request": "launch",
+            "preLaunchTask": "npm: build",
+            "runtimeArgs": [
+                "${workspaceRoot}/node_modules/.bin/mocha",
+                "--inspect-brk"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        },
+        {
+            "command": "npm run debug",
+            "name": "Electron: Main",
+            "request": "launch",
+            "type": "node-terminal"
+        },
+        {
+            "name": "Electron: Renderer",
+            "type": "chrome",
+            "request": "attach",
+            "port": 9223,
+            "webRoot": "${workspaceFolder}",
+            "timeout": 5000
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Electron: All",
+            "configurations": ["Electron: Main", "Electron: Renderer"]
+        }
+    ]
 }

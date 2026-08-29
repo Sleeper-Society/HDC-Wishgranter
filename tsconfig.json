@@ -1,31 +1,23 @@
 {
-  "compilerOptions": {
-    "target": "esnext",
-    "lib": [
-      "ESNext",
-      "ES2021",
-      "DOM"
-    ],
-    "module": "nodenext",
-    "rootDir": "src",
-    "allowJs": true,
-    "checkJs": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "outDir": "dist",
-    "declarationDir": "dist",
-    "rewriteRelativeImportExtensions": true,
-    "forceConsistentCasingInFileNames": true,
-    "allowImportingTsExtensions": true,
-    "strict": true,
-    "strictBuiltinIteratorReturn": true,
-    "skipLibCheck": true,
-    "types": [
-      "node"
-    ]
-  },
-  "include": [
-    "./src"
-  ]
+    "compilerOptions": {
+        "target": "esnext",
+        "lib": ["ESNext", "ES2021", "DOM"],
+        "module": "nodenext",
+        "rootDir": "./src",
+        "allowJs": true,
+        "checkJs": true,
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "outDir": "dist",
+        "declarationDir": "dist",
+        "rewriteRelativeImportExtensions": true,
+        "forceConsistentCasingInFileNames": true,
+        "allowImportingTsExtensions": true,
+        "strict": true,
+        "strictBuiltinIteratorReturn": true,
+        "skipLibCheck": true,
+        "types": ["node"]
+    },
+    "include": ["./src"]
 }
