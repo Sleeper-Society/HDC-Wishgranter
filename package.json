@@ -32,7 +32,8 @@
     "url": "git+ssh://git@github.com/Hederarch/HDC-Modloader.git"
   },
   "files": [
-    "tsconfig.json",
+    "configs/preload.tsconfig.json",
+    "configs/tsconfig.json",
     "src/**/*.ts",
     "!src/forge.config.ts",
     "dist/**/*.js",
@@ -41,7 +42,7 @@
     "dist/**/*.d.ts.map"
   ],
   "type": "module",
-  "main": "dist/node_env/index.js",
+  "main": "dist/src/node_env/index.js",
   "scripts": {
     "prepare": "husky && cd node_modules/electron && node install.js",
     "postlint": "npm run pretty",
@@ -50,7 +51,7 @@
     "test": "NODE_OPTIONS=--enable-source-maps mocha",
     "\n========== Building ==========": "",
     "prebuild": "npm run clean",
-    "build": "tsc && tsc -p preload.tsconfig.json",
+    "build": "tsc -p configs/tsconfig.json && tsc -p configs/preload.tsconfig.json",
     "clean": "shx rm -rf ./dist/*",
     "pretty": "prettier --write src/",
     "\n========== Exporting ========": "",
@@ -101,10 +102,10 @@
     "*.{ts,js,css,md,html}": "prettier --write"
   },
   "mocha": {
-    "spec": "./dist/**.test.js"
+    "spec": "./dist/src/**.test.js"
   },
   "config": {
-    "forge": "./dist/forge.config.js"
+    "forge": "./dist/config/forge.config.js"
   },
   "allowScripts": {
     "electron-winstaller@5.4.0": true

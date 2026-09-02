@@ -7,13 +7,13 @@
       "DOM"
     ],
     "module": "nodenext",
-    "rootDir": "src",
+    "rootDir": "..",
     "allowJs": true,
     "checkJs": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "outDir": "dist",
+    "outDir": "../dist",
     "declarationDir": "dist",
     "rewriteRelativeImportExtensions": true,
     "forceConsistentCasingInFileNames": true,
@@ -26,6 +26,7 @@
     ]
   },
   "include": [
-    "./src"
+    "../src",
+    "../configs"
   ]
 }
